@@ -1,0 +1,62 @@
+[
+  {
+    "testKey": "DEMO-8",
+    "status": "EXECUTING",
+    "start": "2015-02-26T12:14:02Z",
+    "executedBy": "admin",
+    "defects": [],
+    "evidences": [],
+    "steps": [
+      {
+        "status": "TODO",
+        "defects": [],
+        "evidences": []
+      }
+    ]
+  },
+  {
+    "testKey": "DEMO-9",
+    "status": "FAIL",
+    "start": "2015-02-26T16:08:28Z",
+    "finish": "2015-02-26T16:08:28Z",
+    "executedBy": "admin",
+    "defects": [
+      "http://yourjirainstance/browse/DEFECT-47"
+    ],
+    "evidences": [
+      {
+        "filename": "evidenfile.json",
+        "contentType": "application/json",
+        "data": "http://yourjirainstance/plugins/servlet/raven/attachment/278/evidenfile.json"
+      }
+    ],
+    "results": [
+      {
+        "name": "HTC One (4.3)",
+        "status": "FAIL",
+        "duration": 17639000,
+        "log": "",
+        "examples": [
+          "PASS",
+          "PASS",
+          "FAIL",
+          "TODO",
+          "TODO"
+        ]
+      },
+      {
+        "name": "Samsung Galaxy S III Mini (NFC) (4.1.2)",
+        "status": "PASS",
+        "duration": 17639000,
+        "log": "",
+        "examples": [
+          "PASS",
+          "PASS",
+          "PASS",
+          "TODO",
+          "TODO"
+        ]
+      }
+    ]
+  }
+]

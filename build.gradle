@@ -1,0 +1,42 @@
+plugins {
+    id "com.jfrog.bintray" version "1.8.5"
+}
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+apply from: rootProject.file('release-bintray.gradle')
+
+group 'eu.tsystems.mms.tic.testerra'
+version moduleVersion
+
+project.ext {
+    testerraVersion = '1.+'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'eu.tsystems.mms.tic.testerra:core:' + testerraVersion
+    implementation "eu.tsystems.mms.tic.testerra:surefire-connector:1-SNAPSHOT"
+
+    compile "com.google.guava:guava:25.1-jre"
+
+    // https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
+    implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.31'
+
+    implementation 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+    implementation 'com.sun.jersey.contribs:jersey-multipart:1.19.3'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.3.1'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.3.1'
+    testImplementation 'commons-codec:commons-codec:1.13'
+
+
+}
+
+test {
+    useTestNG()
+}
+

@@ -1,0 +1,33 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Integration Tests" verbose="4">
+
+    <test name="Utils" parallel="methods" thread-count="4">
+        <classes>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtilsTest"/>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtilsTest"/>
+        </classes>
+    </test>
+
+    <test name="Connector" parallel="methods" thread-count="4">
+        <classes>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnectorTest"/>
+        </classes>
+    </test>
+
+    <test name="Simulated Test Runs Adhoc Strategy" parallel="false">
+        <parameter name="propertiesFileName" value="xray-test-adhoc.properties"/>
+        <classes>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>
+        </classes>
+    </test>
+
+    <test name="Simulated Test Runs Posthoc Strategy" parallel="false">
+        <parameter name="propertiesFileName" value="xray-test-posthoc.properties"/>
+        <classes>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>
+        </classes>
+    </test>
+</suite>
