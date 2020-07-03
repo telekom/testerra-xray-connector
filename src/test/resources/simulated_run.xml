@@ -1,11 +1,6 @@
-<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
 
 <suite name="Suite" verbose="4">
-    <listeners>
-        <listener
-                class-name="eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.ProperMethodReferenceSynchronizer"/>
-    </listeners>
-
     <test name="parallel" parallel="methods" thread-count="4">
         <classes>
             <class name="eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.NoSyncTest">
