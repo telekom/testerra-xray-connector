@@ -40,3 +40,18 @@ test {
     useTestNG()
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+task unitTests(type: Test) {
+    useTestNG() {
+        suites 'src/test/resources/unit_tests.xml'
+    }
+}
+
+task integrationTests(type: Test) {
+    useTestNG() {
+        suites 'src/test/resources/integration_tests.xml'
+    }
+}
