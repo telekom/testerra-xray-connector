@@ -53,6 +53,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.testng.Assert;
@@ -157,7 +158,7 @@ public abstract class SimulatedRunTest {
         before.add(Calendar.MINUTE, -2);
         final Date agoTime = before.getTime();
 
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sZ", Locale.getDefault());
         final Date execStartTime = simpleDateFormat.parse(jiraIssue.getFields().findValue(xrayConfig.getTestExecutionStartTimeFieldName()).asText());
         final Date execFinishTime = simpleDateFormat.parse(jiraIssue.getFields().findValue(xrayConfig.getTestExecutionStartTimeFieldName()).asText());
 

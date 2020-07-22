@@ -27,7 +27,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper.ResultMapp
 
 public class ProperMethodReferenceSynchronizer extends SimulatedTestRunXrayResultsSynchronizer {
 
-    @Override
     public XrayMapper getXrayMapper() {
         return new ResultMapper();
     }

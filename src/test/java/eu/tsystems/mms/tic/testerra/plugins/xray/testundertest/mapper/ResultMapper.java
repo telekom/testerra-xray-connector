@@ -54,6 +54,8 @@ public class ResultMapper implements XrayMapper {
 
     @Override
     public JqlQuery classToXrayTestSet(ITestClass testNgClass) {
-        return null;
+        return JqlQuery.create()
+                .addCondition(new SummaryContainsExact("TSA - all Tests under Test"))
+                .build();
     }
 }

@@ -25,9 +25,8 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper.ClassAffineMapper;
 
-public class ProperClassReferenceSynchronizer extends ProperMethodReferenceSynchronizer {
+public class ProperClassReferenceSynchronizer {
 
-    @Override
     public XrayMapper getXrayMapper() {
         return new ClassAffineMapper();
     }

@@ -26,9 +26,8 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.TestData;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.info.DefaultTestExecutionInfo;
 
-public class MultipleMethodsSynchronizer extends ProperMethodReferenceSynchronizer {
+public class MultipleMethodsSynchronizer {
 
-    @Override
     public XrayTestExecutionInfo getExecutionInfo() {
         return new DefaultTestExecutionInfo() {
 

@@ -36,11 +36,9 @@ import java.text.ParseException;
 import java.util.Calendar;
 import org.testng.TestNG;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import org.testng.xml.XmlSuite;
 
-@Listeners(TesterraListener.class)
 public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
 
     @BeforeMethod(alwaysRun = true)
@@ -69,7 +67,7 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         final Calendar before = Calendar.getInstance();
         final TestNG testNG = new TestNG();
         testNG.setTestClasses(new Class[] {MethodsAnnotatedTest.class});
-        testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
+        testNG.setListenerClasses(ImmutableList.of(TesterraListener.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
         removeListenersFromTesterraEventService(testNG);
@@ -82,7 +80,7 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         final Calendar before = Calendar.getInstance();
         final TestNG testNG = new TestNG();
         testNG.setTestClasses(new Class[] {ClassAnnotatedWithKeyTest.class});
-        testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
+        testNG.setListenerClasses(ImmutableList.of(TesterraListener.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
         removeListenersFromTesterraEventService(testNG);
@@ -96,7 +94,7 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         final Calendar before = Calendar.getInstance();
         final TestNG testNG = new TestNG();
         testNG.setTestClasses(new Class[] {ClassAnnotatedWithoutKeyTest.class});
-        testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
+        testNG.setListenerClasses(ImmutableList.of(TesterraListener.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
         removeListenersFromTesterraEventService(testNG);
