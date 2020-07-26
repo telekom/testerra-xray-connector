@@ -103,9 +103,6 @@ public class FakeTesterraEventTriggerer implements ITestListener, IInvokedMethod
 
     @Override
     public void afterInvocation(IInvokedMethod method, ITestResult testResult) {
-        if (method.isTestMethod()) {
-            ExecutionContextController.clearCurrentTestResult();
-        }
     }
 
     @Override

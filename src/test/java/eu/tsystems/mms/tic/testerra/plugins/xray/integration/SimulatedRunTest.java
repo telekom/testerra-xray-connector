@@ -43,6 +43,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import eu.tsystems.mms.tic.testframework.events.TesterraEventListener;
 import eu.tsystems.mms.tic.testframework.events.TesterraEventService;
+import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -62,7 +63,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 
-public abstract class SimulatedRunTest {
+public abstract class SimulatedRunTest extends TesterraTest {
 
     protected Map<String, XrayTestStatus> fullWithoutParametrized = ImmutableMap.of(
             "SWFTE-4", XrayTestStatus.PASS,

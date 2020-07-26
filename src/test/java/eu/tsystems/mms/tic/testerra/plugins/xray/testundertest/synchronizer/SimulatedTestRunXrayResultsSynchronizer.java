@@ -30,17 +30,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.info.DefaultTestE
 
 public class SimulatedTestRunXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 
-    private static SimulatedTestRunXrayResultsSynchronizer instance;
-
-    public SimulatedTestRunXrayResultsSynchronizer() {
-        logger.debug("calling constructor");
-        instance = this;
-    }
-
-    public static SimulatedTestRunXrayResultsSynchronizer getInstance() {
-        return instance;
-    }
-
     @Override
     public XrayTestExecutionInfo getExecutionInfo() {
         return new DefaultTestExecutionInfo();

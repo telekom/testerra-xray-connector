@@ -23,11 +23,16 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.TestData;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionInfo;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUpdates;
+import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.DefaultTestExecutionUpdates;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.info.DefaultTestExecutionInfo;
+import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper.ResultMapper;
 
 public class MultipleMethodsSynchronizer {
 
+    //    @Override
     public XrayTestExecutionInfo getExecutionInfo() {
         return new DefaultTestExecutionInfo() {
 
@@ -42,4 +47,15 @@ public class MultipleMethodsSynchronizer {
             }
         };
     }
+
+    //    @Override
+    public XrayTestExecutionUpdates getExecutionUpdates() {
+        return new DefaultTestExecutionUpdates();
+    }
+
+    //    @Override
+    public XrayMapper getXrayMapper() {
+        return new ResultMapper();
+    }
+
 }

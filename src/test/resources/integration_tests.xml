@@ -19,7 +19,7 @@
         <parameter name="propertiesFileName" value="xray-test-adhoc.properties"/>
         <classes>
             <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>
+            <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>-->
         </classes>
     </test>
 
@@ -27,7 +27,7 @@
         <parameter name="propertiesFileName" value="xray-test-posthoc.properties"/>
         <classes>
             <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>
+            <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>-->
         </classes>
     </test>
 </suite>
