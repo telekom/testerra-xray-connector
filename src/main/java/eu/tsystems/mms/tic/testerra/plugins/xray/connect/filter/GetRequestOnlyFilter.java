@@ -58,7 +58,6 @@ public class GetRequestOnlyFilter extends ClientFilter {
                 final String schemeSpecificPart = cr.getURI().getSchemeSpecificPart();
                 if (schemeSpecificPart.endsWith("import/execution") || schemeSpecificPart.endsWith("/jira/rest/api/2/issue")) {
                     /* creating execution via xray import */
-                    // example: 200 {"testExecIssue":{"id":"311360","key":"SWFTE-224","self":"https://projectcenter.t-systems-mms.eu/jira/rest/api/2/issue/311360"}}
                     final InBoundHeaders inBoundHeaders = new InBoundHeaders();
                     inBoundHeaders.add("Content-Type", MediaType.APPLICATION_JSON);
                     final byte[] fakeBytes =
@@ -68,7 +67,6 @@ public class GetRequestOnlyFilter extends ClientFilter {
                     return fake;
                 } else if (schemeSpecificPart.endsWith("/jira/rest/api/2/issue")) {
                     /* creating execution via generic jira post */
-                    // example: {"id": "331937", "key": "SWFTE-338", "self": "https://projectcenter.t-systems-mms.eu/jira/rest/api/2/issue/331937"}
                     final InBoundHeaders inBoundHeaders = new InBoundHeaders();
                     inBoundHeaders.add("Content-Type", MediaType.APPLICATION_JSON);
                     final byte[] fakeBytes = String.format("{\"key\":\"%s\"}", XrayConfig.getInstance().getFakeTestExecutionKey()).getBytes();
