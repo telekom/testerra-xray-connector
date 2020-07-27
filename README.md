@@ -38,6 +38,11 @@ xray.rest.service.uri=https://jira.example.com/rest
 xray.project.key=EXAMPLE
 xray.user=jira-sync-user
 xray.password=password
+# Test Execution details
+xray.test.execution.start.time.field.id=
+xray.test.execution.finish.time.field.id=
+xray.test.execution.revision.field.id=
+xray.test.execution.test-environments.field.id=
 # Validations to avoid unintend opertations
 xray.validation.revision.regexp=.*
 xray.validation.summary.regexp=.*
@@ -48,7 +53,7 @@ xray.transitions.on.updated=Test beginnen,Testdurchführung beenden,Testdurchfü
 xray.transitions.on.done=An Test übergeben
 # Store previous results, when Updated test Execution is used.
 xray.previous.result.filename=
-# Debuggin / Logging features
+# Debugging / Logging features
 xray.webresource.filter.logging.enabled=true
 xray.webresource.filter.getrequestsonly.enabled=false
 xray.webresource.filter.getrequestsonly.fake.response.key=EXAMPLE-1
@@ -272,9 +277,12 @@ For example, this simple implementation will add the label "Test Automation" to 
 |xray.project.key|not set|JIRA project key|
 |xray.user|not set|JIRA user to sync test execution|
 |xray.password|not set|Associated password for user|
+|xray.test.execution.start.time.field.id|not set|The JIRA custom field for test execution start time.|
+|xray.test.execution.finish.time.field.id|not set|The JIRA custom field for test execution finish time.|
+|xray.test.execution.revision.field.id|not set|The JIRA custom field for test execution revision.|
+|xray.test.execution.test-environments.field.id|not set|The JIRA custom field for test execution test-environments.|
 |xray.validation.revision.regexp|.*|Revision is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.summary|.*|Summary is validated against this regular expression to prevent unintended creation of test executions.|
-|xray.validation.revision.description|.*|Description is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.description|.*|Description is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.previous.result.filename|not set|When updating test execution, previous results are attached as json files using the defined file name. Default: No file created.|
 |xray.transitions.on.created|not set|Transitions made on JIRA issue of type "Test Execution" when a status 'created' is reached (comma separated)|
@@ -283,4 +291,5 @@ For example, this simple implementation will add the label "Test Automation" to 
 |xray.webresource.filter.logging.enabled|false|Enable logging of all web requests and response sent/received to/from JIRA|
 |xray.webresource.filter.getrequestsonly.enabled|false|Enable this for debugging to avoid PUT/POST/DELETE requests sent to JIRA|
 |xray.webresource.filter.getrequestsonly.fake.response.key|FAKE-666666|This key will returned, when `xray.webresource.filter.getrequestsonly.enabled` set to `true` and PUT/POST/DELETE request was sent.|
+
 
