@@ -63,7 +63,6 @@ public class MultipleMatchesSimulatedRunTest extends SimulatedRunTest {
         testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
-        removeListenersFromTesterraEventService(testNG);
         checkTestExecutionResult(eu.tsystems.mms.tic.testerra.plugins.xray.TestData.TEST_EXEC_KEY_MULTIPLE, before);
     }
 }

@@ -23,10 +23,8 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
-import eu.tsystems.mms.tic.testframework.events.TesterraEvent;
-import eu.tsystems.mms.tic.testframework.events.TesterraEventDataType;
-import eu.tsystems.mms.tic.testframework.events.TesterraEventService;
-import eu.tsystems.mms.tic.testframework.events.TesterraEventType;
+import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
+import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import java.util.List;
@@ -59,20 +57,19 @@ public class FakeTesterraEventTriggerer implements ITestListener, IInvokedMethod
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        TesterraEventService.getInstance().fireEvent(new TesterraEvent(TesterraEventType.SYNC_METHOD_RESULT)
-                .addData(TesterraEventDataType.ITestResult, result));
+
+        TesterraListener.getEventBus().post(new MethodEndEvent());
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        TesterraEventService.getInstance().fireEvent(new TesterraEvent(TesterraEventType.SYNC_METHOD_RESULT)
-                .addData(TesterraEventDataType.ITestResult, result));
+        TesterraListener.getEventBus().post(new MethodEndEvent());
+
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        TesterraEventService.getInstance().fireEvent(new TesterraEvent(TesterraEventType.SYNC_METHOD_RESULT)
-                .addData(TesterraEventDataType.ITestResult, result));
+        TesterraListener.getEventBus().post(new MethodEndEvent());
     }
 
     @Override

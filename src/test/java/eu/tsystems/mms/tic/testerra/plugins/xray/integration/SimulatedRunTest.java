@@ -41,8 +41,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
-import eu.tsystems.mms.tic.testframework.events.TesterraEventListener;
-import eu.tsystems.mms.tic.testframework.events.TesterraEventService;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -58,7 +56,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.testng.Assert;
-import org.testng.TestNG;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
@@ -186,12 +183,4 @@ public abstract class SimulatedRunTest extends TesterraTest {
         }
     }
 
-    protected void removeListenersFromTesterraEventService(TestNG testNG) {
-        testNG.getSuiteListeners().forEach(sl -> {
-            if (sl instanceof TesterraEventListener) {
-                final TesterraEventListener testerraEventListener = (TesterraEventListener) sl;
-                TesterraEventService.removeListener(testerraEventListener);
-            }
-        });
-    }
 }

@@ -69,7 +69,6 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
-        removeListenersFromTesterraEventService(testNG);
         checkTestExecutionResult(TEST_EXEC_KEY_DEFAULT, fullWithoutParametrized, before);
     }
 
@@ -82,7 +81,6 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
-        removeListenersFromTesterraEventService(testNG);
 
         checkTestExecutionResult(TEST_EXEC_KEY_DEFAULT, before);
     }
@@ -96,7 +94,6 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
-        removeListenersFromTesterraEventService(testNG);
         checkTestExecutionResult(TEST_EXEC_KEY_DEFAULT, before);
     }
 
