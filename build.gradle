@@ -7,11 +7,20 @@ apply plugin: 'maven-publish'
 
 apply from: rootProject.file('release-bintray.gradle')
 
-group 'eu.tsystems.mms.tic.testerra'
-version moduleVersion
+ext {
+    // Minimum required Testerra version
+    testerraCompileVersion = '1.0-RC-10'
+    // Unit tests use the latest Testerra version
+    testerraTestVersion = '[1.0-RC,2-SNAPSHOT)'
 
-project.ext {
-    testerraVersion = '[1.0-RC,2-SNAPSHOT)'
+    // Default version
+    moduleVersion = '1-SNAPSHOT'
+    if (System.properties.containsKey('moduleVersion')) {
+        moduleVersion = System.getProperty('moduleVersion')
+    }
+
+    group 'eu.tsystems.mms.tic.testerra'
+    version moduleVersion
 }
 
 repositories {
@@ -19,8 +28,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'eu.tsystems.mms.tic.testerra:core:' + testerraVersion
-    implementation 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraVersion
+    compileOnly 'eu.tsystems.mms.tic.testerra:core:' + testerraCompileVersion
+    compileOnly 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraCompileVersion
 
     compile "com.google.guava:guava:25.1-jre"
 
@@ -31,9 +40,10 @@ dependencies {
     implementation 'com.sun.jersey.contribs:jersey-multipart:1.19.3'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.3.1'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.3.1'
+
+    testImplementation 'eu.tsystems.mms.tic.testerra:core:' + testerraTestVersion
+    testImplementation 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraTestVersion
     testImplementation 'commons-codec:commons-codec:1.13'
-
-
 }
 
 test {

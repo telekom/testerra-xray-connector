@@ -25,12 +25,6 @@ ext {
   licenseName = 'The Apache Software License, Version 2.0'
   licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
   allLicenses = ["Apache-2.0"]
-
-  // Default version
-  moduleVersion = '1-SNAPSHOT'
-  if (System.properties.containsKey('moduleVersion')) {
-    moduleVersion = System.getProperty('moduleVersion')
-  }
 }
 
 // Set up the Maven publication.
