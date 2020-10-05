@@ -37,7 +37,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
-import eu.tsystems.mms.tic.testframework.common.TesterraCommons;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -61,10 +60,6 @@ public class XrayConnectorTest extends AbstractTest {
     private final XrayInfo xrayInfo = new XrayInfo("SWFTE", summary, description, revision);
     private final XrayInfo xrayInfoWithUmlauts = new XrayInfo("SWFTE", "Dummy Umlaut Execution äöüßÄÖÜ",
             "dummy description mit Umlauten äöüßÄÖÜ", revision);
-
-    static {
-        TesterraCommons.init();
-    }
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
