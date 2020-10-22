@@ -26,12 +26,12 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
 import eu.tsystems.mms.tic.testframework.connectors.util.AbstractCommonSynchronizer;
+import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.info.ReportInfo;
-import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
-import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.ITestResult;
+
+import java.io.InputStream;
 
 
 public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSynchronizer implements XrayResultsSynchronizer {
@@ -82,26 +82,26 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
     }
 
     @Override
-    protected void pOnTestSuccess(ITestResult testResult) {
+    protected void pOnTestSuccess(MethodEndEvent event) {
         if (isSyncInitialized) {
-            syncStrategy.onTestSuccess(testResult);
-            ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+            syncStrategy.onTestSuccess(event);
+            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
         }
     }
 
     @Override
-    protected void pOnTestFailure(ITestResult testResult) {
+    protected void pOnTestFailure(MethodEndEvent event) {
         if (isSyncInitialized) {
-            syncStrategy.onTestFailure(testResult);
-            ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+            syncStrategy.onTestFailure(event);
+            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
         }
     }
 
     @Override
-    protected void pOnTestSkip(ITestResult testResult) {
+    protected void pOnTestSkip(MethodEndEvent event) {
         if (isSyncInitialized) {
-            syncStrategy.onTestSkip(testResult);
-            ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+            syncStrategy.onTestSkip(event);
+            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
         }
     }
 

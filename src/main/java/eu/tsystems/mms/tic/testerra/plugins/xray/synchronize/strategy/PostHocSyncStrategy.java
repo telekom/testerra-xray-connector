@@ -33,6 +33,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUpdates;
+import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import java.io.IOException;
 import java.util.Set;
@@ -113,22 +114,23 @@ public class PostHocSyncStrategy extends SyncStrategy {
     }
 
     @Override
-    public void onTestSuccess(ITestResult testResult) {
+    public void onTestSuccess(MethodEndEvent testResult) {
         finishTest(testResult);
     }
 
     @Override
-    public void onTestFailure(ITestResult testResult) {
+    public void onTestFailure(MethodEndEvent testResult) {
         finishTest(testResult);
     }
 
     @Override
-    public void onTestSkip(ITestResult testResult) {
+    public void onTestSkip(MethodEndEvent testResult) {
         finishTest(testResult);
     }
 
-    private void finishTest(ITestResult result) {
-        String testKey = getTestKeyOrHandle(result);
+    private void finishTest(MethodEndEvent event) {
+        final ITestResult result = event.getTestResult();
+        final String testKey = getTestKeyOrHandle(event);
 
         if (testKey != null) {
             final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, result);

@@ -32,6 +32,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUpdates;
+import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import java.io.IOException;
 import org.testng.ITestResult;
@@ -73,28 +74,29 @@ public class AdHocSyncStrategy extends SyncStrategy {
 
 
     @Override
-    public void onTestSuccess(ITestResult testResult) {
-        finishTest(testResult);
+    public void onTestSuccess(MethodEndEvent event) {
+        finishTest(event);
     }
 
     @Override
-    public void onTestFailure(ITestResult testResult) {
-        finishTest(testResult);
+    public void onTestFailure(MethodEndEvent event) {
+        finishTest(event);
     }
 
     @Override
-    public void onTestSkip(ITestResult testResult) {
-        finishTest(testResult);
+    public void onTestSkip(MethodEndEvent event) {
+        finishTest(event);
     }
 
 
-    private void finishTest(ITestResult result) {
+    private void finishTest(MethodEndEvent event) {
 
-        final String testKey = getTestKeyOrHandle(result);
+        final String testKey = getTestKeyOrHandle(event);
 
         if (testKey != null) {
 
-            final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, result);
+            final ITestResult testResult = event.getTestResult();
+            final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, testResult);
 
             final ExistingXrayTestExecution testExecution = new ExistingXrayTestExecution(testExecKey);
             testExecution.setTests(Sets.newHashSet(xrayTestIssue));

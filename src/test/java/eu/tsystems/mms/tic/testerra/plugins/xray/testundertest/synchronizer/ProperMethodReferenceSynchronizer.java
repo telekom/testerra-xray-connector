@@ -25,8 +25,11 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper.ResultMapper;
 
-public class ProperMethodReferenceSynchronizer extends SimulatedTestRunXrayResultsSynchronizer {
 
+// erk: does not inherit AbstractXrayResultsSynchronizer to avoid calling of sync logic twice
+public class ProperMethodReferenceSynchronizer {
+
+    // copied this method to SimulatedTestRunXrayResultsSynchronizer
     public XrayMapper getXrayMapper() {
         return new ResultMapper();
     }
