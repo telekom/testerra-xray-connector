@@ -9,8 +9,7 @@ apply from: rootProject.file('release-bintray.gradle')
 
 ext {
     // Minimum required Testerra version
-    testerraCompileVersion = '1.0-RC-10'
-    testerraSurefireConnectorVersion = '2-SNAPSHOT'
+    testerraCompileVersion = '1.0-RC-14'
     // Unit tests use the latest Testerra version
     testerraTestVersion = '[1.0-RC,2-SNAPSHOT)'
 
@@ -29,8 +28,8 @@ repositories {
 }
 
 dependencies {
-    compile 'eu.tsystems.mms.tic.testerra:core:' + testerraCompileVersion
-    compile 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraSurefireConnectorVersion
+    compileOnly 'eu.tsystems.mms.tic.testerra:core:' + testerraCompileVersion
+    compileOnly 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraCompileVersion
 
     compile "com.google.guava:guava:25.1-jre"
 

@@ -10,10 +10,13 @@ licenses
 out
 build
 gradlew
+gradlew.bat
 /bin/
 /.classpath
 /.project
 **/*.settings
 /integration-tests/src/test/resources/screenreferences/
+
+/test-output
 
 logs/integration-test-log4j.log
