@@ -23,6 +23,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
@@ -32,12 +33,15 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableExceptio
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.TestExecutionAttachment;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUpdates;
+import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
+import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayNoSync;
 import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTest;
 import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTestSet;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -66,18 +70,20 @@ public abstract class SyncStrategy {
         connector = new XrayConnector(xrayInfo);
     }
 
-    private String getTestKeyFromAnnotation(final ITestResult testResult) throws NotSyncableException {
+    private String getTestKeyFromAnnotation(final MethodEndEvent event) throws NotSyncableException {
 
+        final ITestResult testResult = event.getTestResult();
         if (isNoSyncDesired(testResult.getMethod())) {
             throw new NotSyncableException("no sync expected", true);
         }
 
         final String methodResult = readFromMethodAnnotation(testResult.getMethod());
         if (methodResult != null) {
+            saveKeyFromXrayTestAnnotationToReport(event);
             return methodResult;
         }
 
-        final String testSetResult = readFromClassAnnotation(testResult);
+        final String testSetResult = readFromClassAnnotation(event);
         if (testSetResult != null) {
             return testSetResult;
         }
@@ -86,7 +92,8 @@ public abstract class SyncStrategy {
 
     }
 
-    private String readFromClassAnnotation(final ITestResult testResult) {
+    private String readFromClassAnnotation(final MethodEndEvent event) {
+        final ITestResult testResult = event.getTestResult();
         final Class<?> clazz = testResult.getMethod().getTestClass().getRealClass();
 
         if (clazz.isAnnotationPresent(XrayTestSet.class)) {
@@ -107,12 +114,45 @@ public abstract class SyncStrategy {
             if (testSetKey != null && resultToReferenceQuery != null) {
                 /* find test case from test method using methodToReferenceQuery */
                 final Collection<String> testKeys = connector.findTestKeys(testSetKey, resultToReferenceQuery);
-                return getOneMatchOrNull(testKeys);
+                final String oneMatchOrNull = getOneMatchOrNull(testKeys);
+
+                if (oneMatchOrNull != null) {
+                    saveTicketIdForReport(event, oneMatchOrNull);
+                }
+                return oneMatchOrNull;
             }
             logger.warn("no test key could be retrieved for method {} within test set {}, no sync of test result",
                     resultToQualifiedMethodName(testResult), testSetKey);
         }
         return null;
+    }
+
+    private void saveKeyFromXrayTestAnnotationToReport(final MethodEndEvent event) {
+
+        final Method javaMethod = event.getTestResult().getMethod().getConstructorOrMethod().getMethod();
+
+        if (javaMethod.isAnnotationPresent(XrayTest.class)) {
+            final XrayTest annotation = javaMethod.getAnnotation(XrayTest.class);
+            final String ticketId = annotation.key();
+
+            saveTicketIdForReport(event, ticketId);
+        }
+    }
+
+    private void saveTicketIdForReport(final MethodEndEvent event, final String ticketId) {
+
+        final XrayConfig instance = XrayConfig.getInstance();
+        final URI restServiceUri = instance.getRestServiceUri();
+
+        final String jiraBaseUri = restServiceUri.toString().replace(restServiceUri.getPath(), "/browse");
+
+        if (!ticketId.isEmpty()) {
+            final String ticketUriString= jiraBaseUri.concat("/" + ticketId);
+            final String ticketUriHtml = "<a href= '" + ticketUriString +"'>Xray Ticket: " + ticketId + "</a>";
+
+            final MethodContext currentMethodContext = event.getMethodContext();
+            currentMethodContext.infos.add(ticketUriHtml);
+        }
     }
 
     private String resultToQualifiedMethodName(ITestResult testResult) {
@@ -195,7 +235,7 @@ public abstract class SyncStrategy {
         return xrayTestIssue;
     }
 
-    protected String getTestKeyOrHandle(ITestResult result) {
+    protected String getTestKeyOrHandle(MethodEndEvent result) {
         String testKey = null;
         try {
             testKey = getTestKeyFromAnnotation(result);
@@ -210,11 +250,11 @@ public abstract class SyncStrategy {
         return testKey;
     }
 
-    public abstract void onTestSuccess(ITestResult testResult);
+    public abstract void onTestSuccess(MethodEndEvent testResult);
 
-    public abstract void onTestFailure(ITestResult testResult);
+    public abstract void onTestFailure(MethodEndEvent testResult);
 
-    public abstract void onTestSkip(ITestResult testResult);
+    public abstract void onTestSkip(MethodEndEvent testResult);
 
     public abstract void onStart();
 
