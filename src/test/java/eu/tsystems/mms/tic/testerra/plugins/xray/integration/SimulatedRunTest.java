@@ -32,10 +32,6 @@ import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraNullValue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraVerb;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLabels;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
@@ -110,11 +106,6 @@ public abstract class SimulatedRunTest extends TesterraTest {
         }
         execution.setTests(xrayTestIssues);
         XrayUtils.syncTestExecutionReturnKey(webResource, execution);
-        final JiraIssueUpdate update = JiraIssueUpdate.create()
-                .field(new SetLabels(""))
-                .field("versions", JiraVerb.SET, new JiraNullValue())
-                .build();
-        JiraUtils.updateIssue(webResource, testExecutionKey, update);
     }
 
 

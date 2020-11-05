@@ -28,16 +28,13 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrate
 import eu.tsystems.mms.tic.testframework.connectors.util.AbstractCommonSynchronizer;
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.info.ReportInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.io.InputStream;
 
 
-public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSynchronizer implements XrayResultsSynchronizer {
+public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSynchronizer implements XrayResultsSynchronizer, Loggable {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-    private final XrayConfig xrayConfig = XrayConfig.getInstance();
+    protected final XrayConfig xrayConfig = XrayConfig.getInstance();
     private boolean isSyncInitialized = false;
     private SyncStrategy syncStrategy;
 
@@ -64,7 +61,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
                         .newInstance(xrayInfo, getXrayMapper(), getExecutionUpdates());
                 syncStrategy.onStart();
                 isSyncInitialized = true;
-                logger.info("intialization successful");
+                log().info("intialization successful");
             } catch (final Exception e) {
                 disableSyncWithWarning(e);
             }
@@ -117,7 +114,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
         return new EmptyTestExecutionUpdates();
     }
 
-    private void validateSummary(final String summary) throws NotSyncableException {
+    protected void validateSummary(final String summary) throws NotSyncableException {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
         if (!summary.matches(xrayConfig.getValidationRegexSummary())) {
             throw new NotSyncableException(String.format("summary %s does not conform regex %s",
@@ -125,7 +122,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
         }
     }
 
-    private void validateRevision(final String revision) throws NotSyncableException {
+    protected void validateRevision(final String revision) throws NotSyncableException {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
         if (!revision.matches(xrayConfig.getValidationRegexRevision())) {
             throw new NotSyncableException(String.format("revision %s does not conform regex %s",
@@ -133,7 +130,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
         }
     }
 
-    private void validateDescription(final String description) throws NotSyncableException {
+    protected void validateDescription(final String description) throws NotSyncableException {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
         if (!description.matches(xrayConfig.getValidationRegexDescription())) {
             throw new NotSyncableException(String.format("description %s does not conform regex %s",
@@ -153,6 +150,6 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
         isSyncInitialized = false;
         final String message = "An unexpected exception occurred. Syncing is aborted.";
         ReportInfo.getDashboardInfo().addInfo(1, message + e.getMessage());
-        logger.error(message, e);
+        log().error(message, e);
     }
 }
