@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.ClassAnnotatedWithKeyTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.ClassAnnotatedWithoutKeyTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.MethodsAnnotatedTest;
+import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
@@ -66,8 +67,9 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         final Calendar before = Calendar.getInstance();
         final TestNG testNG = new TestNG();
         testNG.setTestClasses(new Class[] {MethodsAnnotatedTest.class});
-        testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
+        testNG.setListenerClasses(ImmutableList.of(TesterraListener.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
+        testNG.setThreadCount(3);
         testNG.run();
         checkTestExecutionResult(TEST_EXEC_KEY_DEFAULT, fullWithoutParametrized, before);
     }
@@ -78,10 +80,9 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         final Calendar before = Calendar.getInstance();
         final TestNG testNG = new TestNG();
         testNG.setTestClasses(new Class[] {ClassAnnotatedWithKeyTest.class});
-        testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
+        testNG.setListenerClasses(ImmutableList.of(TesterraListener.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
-
         checkTestExecutionResult(TEST_EXEC_KEY_DEFAULT, before);
     }
 
@@ -91,7 +92,7 @@ public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
         final Calendar before = Calendar.getInstance();
         final TestNG testNG = new TestNG();
         testNG.setTestClasses(new Class[] {ClassAnnotatedWithoutKeyTest.class});
-        testNG.setListenerClasses(ImmutableList.of(FakeTesterraEventTriggerer.class));
+        testNG.setListenerClasses(ImmutableList.of(TesterraListener.class));
         testNG.setParallel(XmlSuite.ParallelMode.METHODS);
         testNG.run();
         checkTestExecutionResult(TEST_EXEC_KEY_DEFAULT, before);

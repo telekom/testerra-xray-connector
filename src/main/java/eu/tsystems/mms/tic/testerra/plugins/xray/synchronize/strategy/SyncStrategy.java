@@ -147,8 +147,8 @@ public abstract class SyncStrategy {
         final String jiraBaseUri = restServiceUri.toString().replace(restServiceUri.getPath(), "/browse");
 
         if (!ticketId.isEmpty()) {
-            final String ticketUriString= jiraBaseUri.concat("/" + ticketId);
-            final String ticketUriHtml = "<a href= '" + ticketUriString +"'>Xray Ticket: " + ticketId + "</a>";
+            final String ticketUriString = jiraBaseUri.concat("/" + ticketId);
+            final String ticketUriHtml = "<a href= '" + ticketUriString + "'>Xray Ticket: " + ticketId + "</a>";
 
             final MethodContext currentMethodContext = event.getMethodContext();
             currentMethodContext.infos.add(ticketUriHtml);
@@ -242,7 +242,9 @@ public abstract class SyncStrategy {
         } catch (NotSyncableException e) {
             if (!e.isExpected()) {
                 logger.error(e.getMessage());
-                ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to X-Ray failed.");
+                if (ExecutionContextController.getCurrentMethodContext() != null) {
+                    ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to X-Ray failed.");
+                }
             } else {
                 logger.info(XrayNoSync.class.getSimpleName() + " annotation found, no sync of test method is desired");
             }
