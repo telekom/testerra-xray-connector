@@ -25,7 +25,6 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.connect;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
-import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
@@ -41,22 +40,9 @@ public final class RESTClientFactory {
         return Client.create();
     }
 
-    public static Client createWithDefaultProxy() {
-        final URLConnectionClientHandler ch = new URLConnectionClientHandler(new HttpURLConnectionFactory() {
-            @Override
-            public HttpURLConnection getHttpURLConnection(final URL url) throws IOException {
-                PropertyManager.loadProperties("proxysettings.properties");
-                final String hostname = PropertyManager.getProperty("http.proxyHost");
-                final int port = PropertyManager.getIntProperty("http.proxyPort");
-                final InetSocketAddress socketAddress = new InetSocketAddress(hostname, port);
-                final Proxy proxy = new Proxy(Proxy.Type.HTTP, socketAddress);
-                return (HttpURLConnection) url.openConnection(proxy);
-            }
-        });
-        return new Client(ch);
-    }
+    public static Client createWithProxy(final URL proxyUrl) {
 
-    public static Client createWithProxy(final Proxy proxy) {
+        final Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyUrl.getHost(), proxyUrl.getPort()));
         final URLConnectionClientHandler ch = new URLConnectionClientHandler(new HttpURLConnectionFactory() {
             @Override
             public HttpURLConnection getHttpURLConnection(final URL url) throws IOException {

@@ -51,6 +51,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableExceptio
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import eu.tsystems.mms.tic.testframework.logging.LogLevel;
+import eu.tsystems.mms.tic.testframework.utils.ProxyUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -69,17 +70,24 @@ public class XrayConnector {
     private final XrayInfo xrayInfo;
 
     public XrayConnector(final XrayInfo xrayInfo) {
+
         this.xrayInfo = xrayInfo;
-        final Client client = RESTClientFactory.createDefault();
+
+        final Client client = ProxyUtils.getSystemHttpProxyUrl() == null ? RESTClientFactory.createDefault() :
+                RESTClientFactory.createWithProxy(ProxyUtils.getSystemHttpProxyUrl());
+
         xrayConfig = XrayConfig.getInstance();
         webResource = client.resource(xrayConfig.getRestServiceUri());
         webResource.addFilter(new HTTPBasicAuthFilter(xrayConfig.getUsername(), xrayConfig.getPassword()));
+
         if (xrayConfig.isWebResourceFilterGetRequestsOnlyEnabled()) {
             webResource.addFilter(new GetRequestOnlyFilter());
         }
+
         if (xrayConfig.isWebResourceFilterLoggingEnabled()) {
             webResource.addFilter(new Slf4JLoggingFilter(LogLevel.INFO));
         }
+
     }
 
     public List<String> findTestKeys(final String testSetKey, final JqlQuery methodReferenceQuery) {
