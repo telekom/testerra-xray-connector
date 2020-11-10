@@ -22,8 +22,8 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.TestBase;
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTestSet;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
