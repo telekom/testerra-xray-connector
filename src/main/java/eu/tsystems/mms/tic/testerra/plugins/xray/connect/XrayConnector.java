@@ -75,10 +75,10 @@ public class XrayConnector {
 
         final Client client;
 
-        if (ProxyUtils.getSystemHttpProxyUrl() != null) {
-            client = RESTClientFactory.createWithProxy(ProxyUtils.getSystemHttpProxyUrl());
-        } else if (ProxyUtils.getSystemHttpsProxyUrl() != null) {
+        if (ProxyUtils.getSystemHttpsProxyUrl() != null) {
             client = RESTClientFactory.createWithProxy(ProxyUtils.getSystemHttpsProxyUrl());
+        } else if (ProxyUtils.getSystemHttpProxyUrl() != null) {
+            client = RESTClientFactory.createWithProxy(ProxyUtils.getSystemHttpProxyUrl());
         } else {
             client = RESTClientFactory.createDefault();
         }
