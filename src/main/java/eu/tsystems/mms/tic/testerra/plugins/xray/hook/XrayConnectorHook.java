@@ -24,14 +24,14 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.hook;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.reflections.Reflections;
+import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * XrayConnectorHook
@@ -41,9 +41,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Eric Kubenka
  */
-public class XrayConnectorHook implements ModuleHook {
+public class XrayConnectorHook implements ModuleHook, Loggable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(XrayConnectorHook.class);
     private static final List<AbstractXrayResultsSynchronizer> XRAY_LISTENER = new LinkedList<>();
 
     @Override
@@ -66,26 +65,26 @@ public class XrayConnectorHook implements ModuleHook {
 
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
         configurationBuilder.addClassLoader(Thread.currentThread().getContextClassLoader());
-        configurationBuilder.forPackages("eu.tsystems.mms.tic");
+        configurationBuilder.setUrls(ClasspathHelper.forJavaClassPath());
         final Reflections reflections = new Reflections(configurationBuilder);
         final Set<Class<? extends AbstractXrayResultsSynchronizer>> hooks = reflections.getSubTypesOf(AbstractXrayResultsSynchronizer.class);
 
         if (hooks.isEmpty()) {
-            LOGGER.info("No Xray result listener found");
+            log().debug("No Xray result listener found");
         }
 
         hooks.forEach(aClass -> {
             try {
                 final AbstractXrayResultsSynchronizer xrayListener = aClass.getConstructor().newInstance();
-                LOGGER.info("Calling xray result listener " + aClass.getSimpleName() + "...");
+                log().debug("Calling xray result listener " + aClass.getSimpleName() + "...");
                 xrayListener.initialize();
                 TesterraListener.getEventBus().register(xrayListener);
                 XRAY_LISTENER.add(xrayListener);
             } catch (Exception e) {
-                LOGGER.error("Could not load Xray result listener " + aClass.getSimpleName());
+                log().error("Could not load Xray result listener " + aClass.getSimpleName());
             }
         });
 
-        LOGGER.info("Done processing Xray result listener.");
+        log().info("Done processing Xray result listener.");
     }
 }
