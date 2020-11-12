@@ -22,9 +22,9 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest;
 
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayNoSync;
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTest;
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTestSet;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayNoSync;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

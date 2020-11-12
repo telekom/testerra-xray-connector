@@ -22,8 +22,8 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest;
 
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTest;
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTestSet;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testframework.utils.TimerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

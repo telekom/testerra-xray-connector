@@ -23,6 +23,9 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayNoSync;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
@@ -36,9 +39,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUp
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayNoSync;
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTest;
-import eu.tsystems.mms.tic.testframework.testmanagement.annotation.XrayTestSet;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URI;

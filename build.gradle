@@ -9,7 +9,7 @@ apply from: rootProject.file('release-bintray.gradle')
 
 ext {
     // Minimum required Testerra version
-    testerraCompileVersion = '1.0-RC-15'
+    testerraCompileVersion = '1.0-RC-16'
     // Unit tests use the latest Testerra version
     testerraTestVersion = '[1.0-RC,2-SNAPSHOT)'
 

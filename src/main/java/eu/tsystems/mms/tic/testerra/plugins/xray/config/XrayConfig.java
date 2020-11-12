@@ -27,7 +27,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AdHocSyncS
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.PostHocSyncStrategy;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
-import eu.tsystems.mms.tic.testframework.exceptions.TesterraSetupException;
+import eu.tsystems.mms.tic.testframework.exceptions.SetupException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ public class XrayConfig {
                 syncStrategyClass = AdHocSyncStrategy.class;
                 break;
             default:
-                throw new TesterraSetupException("unknown strategy given");
+                throw new SetupException("unknown strategy given");
         }
         webResourceFilterLoggingEnabled = PropertyManager.getBooleanProperty("xray.webresource.filter.logging.enabled", false);
         webResourceFilterGetRequestsOnlyEnabled = PropertyManager.getBooleanProperty("xray.webresource.filter.getrequestsonly.enabled", false);
