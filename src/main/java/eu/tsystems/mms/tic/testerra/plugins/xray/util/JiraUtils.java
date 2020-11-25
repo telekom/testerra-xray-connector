@@ -190,6 +190,16 @@ public final class JiraUtils {
         }
     }
 
+    /**
+     * @param webResource
+     * @param projectKey
+     * @param summary
+     * @param description
+     * @param fixVersions
+     * @return
+     * @throws IOException
+     * @deprecated Please use {@link JiraUtils#createTestExecutionGeneric(WebResource, XrayInfo)}
+     */
     @Deprecated
     public static String createTestExecution(final WebResource webResource, final String projectKey,
                                              final String summary, final String description, final Iterable<String> fixVersions) throws IOException {
@@ -215,6 +225,12 @@ public final class JiraUtils {
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .entity(entity)
                 .post(String.class);
+
+        if (response.isEmpty()) {
+            // avoid NPE on findValue in next line, when response is empty.
+            return response;
+        }
+
         return om.readTree(response).findValue("key").asText();
     }
 
@@ -248,6 +264,12 @@ public final class JiraUtils {
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .entity(entity)
                 .post(String.class);
+
+        if (response.isEmpty()) {
+            // avoid NPE on findValue in next line, when response is empty.
+            return response;
+        }
+
         return om.readTree(response).findValue("key").asText();
     }
 }
