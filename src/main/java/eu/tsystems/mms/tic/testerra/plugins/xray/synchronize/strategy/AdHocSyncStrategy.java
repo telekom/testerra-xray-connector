@@ -72,7 +72,6 @@ public class AdHocSyncStrategy extends SyncStrategy {
         connector.doTransitions(testExecKey, XrayConfig.getInstance().getTransitionsOnDone());
     }
 
-
     @Override
     public void onTestSuccess(MethodEndEvent event) {
         finishTest(event);
@@ -88,25 +87,26 @@ public class AdHocSyncStrategy extends SyncStrategy {
         finishTest(event);
     }
 
-
     private void finishTest(MethodEndEvent event) {
 
-        final String testKey = getTestKeyOrHandle(event);
+        final String[] testKeys = getTestKeys(event);
 
-        if (testKey != null) {
+        if (testKeys != null) {
+            for (final String testKey : testKeys) {
 
-            final ITestResult testResult = event.getTestResult();
-            final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, testResult);
+                final ITestResult testResult = event.getTestResult();
+                final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, testResult);
 
-            final ExistingXrayTestExecution testExecution = new ExistingXrayTestExecution(testExecKey);
-            testExecution.setTests(Sets.newHashSet(xrayTestIssue));
+                final ExistingXrayTestExecution testExecution = new ExistingXrayTestExecution(testExecKey);
+                testExecution.setTests(Sets.newHashSet(xrayTestIssue));
 
-            try {
-                connector.syncTestExecutionReturnKey(testExecution);
-            } catch (final IOException e) {
-                logger.error(e.getMessage());
+                try {
+                    connector.syncTestExecutionReturnKey(testExecution);
+                } catch (final IOException e) {
+                    logger.error(e.getMessage());
+                }
+                connector.updateFinishTimeOfTestExecution(testExecKey);
             }
-            connector.updateFinishTimeOfTestExecution(testExecKey);
         }
     }
 

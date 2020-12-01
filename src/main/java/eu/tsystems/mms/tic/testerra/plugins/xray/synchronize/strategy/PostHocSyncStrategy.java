@@ -130,11 +130,13 @@ public class PostHocSyncStrategy extends SyncStrategy {
 
     private void finishTest(MethodEndEvent event) {
         final ITestResult result = event.getTestResult();
-        final String testKey = getTestKeyOrHandle(event);
+        final String[] testKeys = getTestKeys(event);
 
-        if (testKey != null) {
-            final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, result);
-            tests.add(xrayTestIssue);
+        if (testKeys != null) {
+            for (final String testKey : testKeys) {
+                final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, result);
+                tests.add(xrayTestIssue);
+            }
         }
     }
 }
