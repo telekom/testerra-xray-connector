@@ -34,5 +34,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface XrayTest {
 
-    String key();
+    String[] key() default {};
 }

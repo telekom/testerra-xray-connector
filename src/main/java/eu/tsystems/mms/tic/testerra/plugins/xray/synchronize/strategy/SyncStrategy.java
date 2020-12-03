@@ -70,14 +70,14 @@ public abstract class SyncStrategy {
         connector = new XrayConnector(xrayInfo);
     }
 
-    private String getTestKeyFromAnnotation(final MethodEndEvent event) throws NotSyncableException {
+    private String[] getTestKeysFromAnnotation(final MethodEndEvent event) throws NotSyncableException {
 
         final ITestResult testResult = event.getTestResult();
         if (isNoSyncDesired(testResult.getMethod())) {
             throw new NotSyncableException("no sync expected", true);
         }
 
-        final String methodResult = readFromMethodAnnotation(testResult.getMethod());
+        final String[] methodResult = readFromMethodAnnotation(testResult.getMethod());
         if (methodResult != null) {
             saveKeyFromXrayTestAnnotationToReport(event);
             return methodResult;
@@ -85,11 +85,10 @@ public abstract class SyncStrategy {
 
         final String testSetResult = readFromClassAnnotation(event);
         if (testSetResult != null) {
-            return testSetResult;
+            return new String[] {testSetResult};
         }
 
         throw new NotSyncableException(String.format("no test key retrieved for method %s", resultToQualifiedMethodName(testResult)));
-
     }
 
     private String readFromClassAnnotation(final MethodEndEvent event) {
@@ -133,9 +132,9 @@ public abstract class SyncStrategy {
 
         if (javaMethod.isAnnotationPresent(XrayTest.class)) {
             final XrayTest annotation = javaMethod.getAnnotation(XrayTest.class);
-            final String ticketId = annotation.key();
-
-            saveTicketIdForReport(event, ticketId);
+            for (final String ticketId : annotation.key()) {
+                saveTicketIdForReport(event, ticketId);
+            }
         }
     }
 
@@ -166,7 +165,7 @@ public abstract class SyncStrategy {
         return clazz.isAnnotationPresent(XrayNoSync.class) || javaMethod.isAnnotationPresent(XrayNoSync.class);
     }
 
-    private String readFromMethodAnnotation(final ITestNGMethod testNGMethod) {
+    private String[] readFromMethodAnnotation(final ITestNGMethod testNGMethod) {
         final Method javaMethod = testNGMethod.getConstructorOrMethod().getMethod();
         if (javaMethod.isAnnotationPresent(XrayTest.class)) {
             return javaMethod.getAnnotation(XrayTest.class).key();
@@ -235,10 +234,10 @@ public abstract class SyncStrategy {
         return xrayTestIssue;
     }
 
-    protected String getTestKeyOrHandle(MethodEndEvent result) {
-        String testKey = null;
+    protected String[] getTestKeys(MethodEndEvent result) {
+        String[] testKeys = null;
         try {
-            testKey = getTestKeyFromAnnotation(result);
+            testKeys = getTestKeysFromAnnotation(result);
         } catch (NotSyncableException e) {
             if (!e.isExpected()) {
                 logger.error(e.getMessage());
@@ -249,7 +248,7 @@ public abstract class SyncStrategy {
                 logger.info(XrayNoSync.class.getSimpleName() + " annotation found, no sync of test method is desired");
             }
         }
-        return testKey;
+        return testKeys;
     }
 
     public abstract void onTestSuccess(MethodEndEvent testResult);
