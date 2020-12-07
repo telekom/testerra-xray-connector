@@ -27,8 +27,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import org.testng.collections.Lists;
-
+import java.util.stream.Stream;
 
 public class XrayInfo implements Serializable {
 
@@ -38,7 +37,7 @@ public class XrayInfo implements Serializable {
     private String version;
     private String user;
     private String revision;
-    private List<String> testEnvironments = Lists.newArrayList();
+    private List<String> testEnvironments;
     private Date startDate;
     private Date finishDate;
 
@@ -52,23 +51,44 @@ public class XrayInfo implements Serializable {
         this.revision = revision;
     }
 
-    public XrayInfo(String project, String summary, String description, List<String> testEnvironments, String revision,
-                    String fixVersion, String assignee) {
+    public XrayInfo(
+            String project,
+            String summary,
+            String description,
+            List<String> testEnvironments,
+            String revision,
+            String fixVersion,
+            String assignee
+    ) {
         this.project = project;
         this.summary = summary;
         this.description = description;
         this.revision = revision;
-        this.testEnvironments = Collections.unmodifiableList(testEnvironments);
+        setTestEnvironments(testEnvironments);
         version = fixVersion;
         user = assignee;
     }
 
+    /**
+     * @deprecated Use {@link #readTestEnvironments()} instead
+     * @return
+     */
     public List<String> getTestEnvironments() {
-        return Collections.unmodifiableList(testEnvironments);
+        return testEnvironments;
     }
 
     public void setTestEnvironments(List<String> testEnvironments) {
-        this.testEnvironments = Collections.unmodifiableList(testEnvironments);
+        if (testEnvironments != null) {
+            this.testEnvironments = Collections.unmodifiableList(testEnvironments);
+        }
+    }
+
+    public Stream<String> readTestEnvironments() {
+        if (this.testEnvironments==null) {
+            return Stream.empty();
+        } else {
+            return this.testEnvironments.stream();
+        }
     }
 
     public String getSummary() {

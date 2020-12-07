@@ -22,9 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import static java.lang.String.format;
-
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
+import static java.lang.String.format;
 
 
 public final class JiraUtils {
@@ -255,7 +253,7 @@ public final class JiraUtils {
         fieldsNode.put(XrayConfig.getInstance().getRevisionFieldName(), xrayInfo.getRevision());
         fieldsNode.put(XrayConfig.getInstance().getTestExecutionStartTimeFieldName(), dateFormat.format(new Date()));
         final ArrayNode arrayNode = om.createArrayNode();
-        xrayInfo.getTestEnvironments().forEach(arrayNode::add);
+        xrayInfo.readTestEnvironments().forEach(arrayNode::add);
         fieldsNode.put(XrayConfig.getInstance().getTestEnvironmentsFieldName(), arrayNode);
         jiraIssue.setFields(fieldsNode);
         final String entity = om.writeValueAsString(jiraIssue);
