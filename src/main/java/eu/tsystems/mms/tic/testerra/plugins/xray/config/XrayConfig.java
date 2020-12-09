@@ -238,6 +238,9 @@ public class XrayConfig {
         return password;
     }
 
+    /**
+     * @deprecated Logging is handled by Log4J configuration
+     */
     public boolean isWebResourceFilterLoggingEnabled() {
         return webResourceFilterLoggingEnabled;
     }

@@ -42,12 +42,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GetRequestOnlyFilter extends ClientFilter {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {

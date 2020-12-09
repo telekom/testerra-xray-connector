@@ -31,7 +31,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.GetRequestOnlyFilter;
-import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.Slf4JLoggingFilter;
+import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.LoggingFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
@@ -50,7 +50,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
-import eu.tsystems.mms.tic.testframework.logging.LogLevel;
 import eu.tsystems.mms.tic.testframework.utils.ProxyUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,7 +91,7 @@ public class XrayConnector {
         }
 
         if (xrayConfig.isWebResourceFilterLoggingEnabled()) {
-            webResource.addFilter(new Slf4JLoggingFilter(LogLevel.INFO));
+            webResource.addFilter(new LoggingFilter());
         }
 
     }

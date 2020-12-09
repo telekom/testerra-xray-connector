@@ -26,18 +26,15 @@ import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.filter.ClientFilter;
-import eu.tsystems.mms.tic.testerra.plugins.xray.logging.LoggerUtils;
-import eu.tsystems.mms.tic.testframework.logging.LogLevel;
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.MultivaluedMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class Slf4JLoggingFilter extends ClientFilter {
+public class LoggingFilter extends ClientFilter implements Loggable {
 
     private static final String REQUEST_PREFIX = "> ";
 
@@ -45,16 +42,10 @@ public class Slf4JLoggingFilter extends ClientFilter {
 
     private static final String NOTIFICATION_PREFIX = "* ";
     private final int maxEntitySize = 10 * 1024;
-    private final LogLevel logLevel;
     private long id = 0;
-    private Logger logger = LoggerFactory.getLogger(Slf4JLoggingFilter.class);
-
-    public Slf4JLoggingFilter(LogLevel logLevel) {
-        this.logLevel = logLevel;
-    }
 
     private void log(StringBuilder b) {
-        LoggerUtils.logWithLogLevel(logger, logLevel, b.toString());
+        log().debug(b.toString());
     }
 
     @Override
