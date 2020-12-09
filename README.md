@@ -53,8 +53,7 @@ xray.transitions.on.updated=Test beginnen,Testdurchführung beenden,Testdurchfü
 xray.transitions.on.done=An Test übergeben
 # Store previous results, when Updated test Execution is used.
 xray.previous.result.filename=
-# Debugging / Logging features
-xray.webresource.filter.logging.enabled=true
+# Debugging features
 xray.webresource.filter.getrequestsonly.enabled=false
 xray.webresource.filter.getrequestsonly.fake.response.key=EXAMPLE-1
 ````
