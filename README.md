@@ -98,29 +98,34 @@ public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer 
     @Override
     XrayTestExecutionInfo getExecutionInfo() {
         return new XrayTestExecutionInfo() {
- 
+
             @Override
-            public String getSummary(final ISuite iSuite) {
-                 return "My Test Execution";
+            public String getSummary() {
+                return "My Test Execution";
             }
- 
+
             @Override
-            public String getDescription(final ISuite iSuite) {
+            public String getDescription() {
                 return "Automated test run";
             }
- 
+
             @Override
-            public String getRevision(final ISuite iSuite) {
+            public String getRevision() {
                 return "1.0-RC1";
             }
- 
+
             @Override
-            public String getAssignee(ISuite iSuite) {
-                return "jira-sync-user";
+            public String getAssignee() {
+                return null;
             }
- 
+
             @Override
-            public String getFixVersion(ISuite iSuite) {
+            public String getFixVersion() {
+                return null;
+            }
+
+            @Override
+            public List<String> getTestEnvironments() {
                 return null;
             }
         };
@@ -128,12 +133,12 @@ public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer 
      
     @Override
     public XrayMapper getXrayMapper() {
-        return new EmptyMapper();
+        return null;
     }
  
     @Override
     public XrayTestExecutionUpdates getExecutionUpdates() {
-        return new EmptyTestExecutionUpdates();
+        return null;
     }
 }
 ````
@@ -244,14 +249,14 @@ public class DefaultTestExecutionUpdates implements XrayTestExecutionUpdates {
     @Override
     public JiraIssueUpdate updateOnNewExecutionCreated() {
         return JiraIssueUpdate.create()
-                .field(new SetLabels("Test Automation"))
+                .field(new SetLabels("TestAutomation"))
                 .build();
     }
 
     @Override
     public JiraIssueUpdate updateOnExistingExecutionUpdated() {
         return JiraIssueUpdate.create()
-                .field(new SetLabels("Test Automation"))
+                .field(new SetLabels("TestAutomation"))
                 .build();
     }
 
