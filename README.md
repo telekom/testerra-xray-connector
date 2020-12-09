@@ -33,26 +33,33 @@ The easiest way is to create a file `xray.properties` in `src/test/resources` di
 xray.sync.enabled=true
 xray.sync.skipped=true
 xray.sync.strategy=adhoc
-# Connection details
+
+# Connection details (mandatory)
 xray.rest.service.uri=https://jira.example.com/rest
-xray.project.key=EXAMPLE
+xray.project.key=PROJECT-KEY
 xray.user=jira-sync-user
 xray.password=password
-# Test Execution details
+
+# Jira field IDs (mandatory)
 xray.test.execution.start.time.field.id=
 xray.test.execution.finish.time.field.id=
 xray.test.execution.revision.field.id=
 xray.test.execution.test-environments.field.id=
-# Validations to avoid unintend opertations
+xray.test.execution.test-plan.field.id=
+
+# Validations to avoid unintended operations
 xray.validation.revision.regexp=.*
 xray.validation.summary.regexp=.*
 xray.validation.description.regexp=.*
+
 # Automatically transitions when state reached
 xray.transitions.on.created=
 xray.transitions.on.updated=Test beginnen,Testdurchführung beenden,Testdurchführung zurücksetzen
 xray.transitions.on.done=An Test übergeben
-# Store previous results, when Updated test Execution is used.
+
+# Store previous results, when Updated test Execution is used
 xray.previous.result.filename=
+
 # Debugging features
 xray.webresource.filter.getrequestsonly.enabled=false
 xray.webresource.filter.getrequestsonly.fake.response.key=EXAMPLE-1
@@ -60,16 +67,25 @@ xray.webresource.filter.getrequestsonly.fake.response.key=EXAMPLE-1
 
 With this property file included and filled up with your user account and credentials you should be able to synchronize your test results with the adhoc-strategy.
 
-#### Synchronization strategies
+### Retrieve custom field IDs
 
-##### Adhoc
+The Jira XRAY fields are implemented as custom fields and they may differ with every Jira installation. Thats why you must setup them.
+
+You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.
+
+![](doc/Jira-Field-Ids.jpg)
+
+
+### Synchronization strategies
+
+#### Adhoc
 
 When property `xray.sync.strategy` is set to `adhoc` your test results will be synchronized directly after a test method finished.  
 This will ensure, that you can track the current progress of your test execution in real-time in JIRA.
 
 Please note that uploads and attachments for test execution will be uploaded after the execution finished.
 
-##### Posthoc
+#### Posthoc
 
 When property `xray.sync.strategy` is set to `posthoc` your test results will be synchronized after the *complete* test execution ends.  
 The X-Ray connector will store every test result internally and then progress a bulk-upload of all test results.
@@ -249,6 +265,7 @@ public class DefaultTestExecutionUpdates implements XrayTestExecutionUpdates {
     public JiraIssueUpdate updateOnNewExecutionCreated() {
         return JiraIssueUpdate.create()
                 .field(new SetLabels("TestAutomation"))
+                .field(new TestPlan("TICKET-ID")))
                 .build();
     }
 
@@ -285,6 +302,7 @@ For example, this simple implementation will add the label "Test Automation" to 
 |xray.test.execution.finish.time.field.id|not set|The JIRA custom field for test execution finish time.|
 |xray.test.execution.revision.field.id|not set|The JIRA custom field for test execution revision.|
 |xray.test.execution.test-environments.field.id|not set|The JIRA custom field for test execution test-environments.|
+|xray.test.execution.test-plan.field.id|not set|The JIRA custom field for test execution test-plans.|
 |xray.validation.revision.regexp|.*|Revision is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.summary|.*|Summary is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.description|.*|Description is validated against this regular expression to prevent unintended creation of test executions.|
