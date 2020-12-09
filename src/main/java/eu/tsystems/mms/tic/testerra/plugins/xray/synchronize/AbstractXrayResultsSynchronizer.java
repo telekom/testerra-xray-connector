@@ -74,7 +74,6 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
                         .newInstance(xrayInfo, xrayMapper.orElse(new EmptyMapper()), executionUpdates.orElse(new EmptyTestExecutionUpdates()));
                 syncStrategy.onStart();
                 isSyncInitialized = true;
-                log().info("intialization successful");
             } catch (UniformInterfaceException e) {
                 try {
                     handleException(e);

@@ -97,9 +97,9 @@ public class XrayConfig {
         validationRegexRevision = PropertyManager.getProperty("xray.validation.revision.regexp", ".*");
         validationRegexSummary = PropertyManager.getProperty("xray.validation.summary.regexp", ".*");
 
-        transitionsOnCreated = createTransitionList(PropertyManager.getProperty("xray.transitions.on.created"));
-        transitionsOnUpdated = createTransitionList(PropertyManager.getProperty("xray.transitions.on.updated"));
-        transitionsOnDone = createTransitionList(PropertyManager.getProperty("xray.transitions.on.done"));
+        transitionsOnCreated = createTransitionList(PropertyManager.getProperty("xray.transitions.on.created", ""));
+        transitionsOnUpdated = createTransitionList(PropertyManager.getProperty("xray.transitions.on.updated", ""));
+        transitionsOnDone = createTransitionList(PropertyManager.getProperty("xray.transitions.on.done", ""));
 
     }
 

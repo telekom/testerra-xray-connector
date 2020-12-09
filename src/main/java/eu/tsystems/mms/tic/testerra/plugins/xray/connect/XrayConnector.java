@@ -166,7 +166,7 @@ public class XrayConnector {
 
     private String prepareTestExecutionCreation(final Iterable<String> testKeys, JiraIssueUpdate jiraIssueUpdate)
             throws IOException, NotSyncableException {
-        logger.info("creating test execution");
+        logger.info("Creating test execution");
         //        final String testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayConfig.getProjectKey(), summary, description, revision);
         final String testExecKey;
         if (testKeys != null) {
@@ -176,7 +176,7 @@ public class XrayConnector {
             //            testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo.getProject(), xrayInfo.getSummary(), xrayInfo.getDescription(), xrayInfo.getRevision());
             testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo);
         }
-        logger.info("new test execution id: {}", testExecKey);
+        logger.info("New test execution id: {}", testExecKey);
 
         /* on new transitions */
         doTransitions(testExecKey, xrayConfig.getTransitionsOnCreated());
@@ -194,7 +194,7 @@ public class XrayConnector {
 
     private String prepareTestExecutionUpdate(final Collection<String> testKeys, final String testExecKey, JiraIssueUpdate jiraUpdate) throws
             IOException {
-        logger.info("updating test execution {}", testExecKey);
+        logger.info("Updating test execution {}", testExecKey);
 
         /* attaching previous results */
         final String previousResultsFilename = xrayConfig.getPreviousResultsFilename();
@@ -256,7 +256,7 @@ public class XrayConnector {
             try {
                 JiraUtils.doTransitionByName(webResource, testExecutionKey, transitionName);
             } catch (final IOException e) {
-                logger.error("could not do transition {}", transitionName);
+                logger.error("Could not do transition {}", transitionName);
             }
         }
     }

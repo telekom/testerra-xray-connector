@@ -12,7 +12,8 @@ public enum Fields implements Field {
     SUMMARY(new NameField("summary")),
     DESCRIPTION(new NameField("description")),
     VERSIONS(new NameField("versions")),
-    FIX_VERSIONS(new NameField("fixVersions"))
+    FIX_VERSIONS(new NameField("fixVersions")),
+    COMPONENTS(new NameField("components")),
     ;
 
     private final Field field;
