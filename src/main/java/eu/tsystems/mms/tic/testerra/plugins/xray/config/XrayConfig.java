@@ -23,6 +23,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.config;
 
 import com.google.common.collect.ImmutableList;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AdHocSyncStrategy;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.PostHocSyncStrategy;
@@ -93,6 +94,10 @@ public class XrayConfig {
         fakeTestExecutionKey = PropertyManager.getProperty("xray.webresource.filter.getrequestsonly.fake.response.key", "FAKE-666666");
 
         previousResultsFilename = PropertyManager.getProperty("xray.previous.result.filename", "");
+        
+        /**
+         * @todo Replace by field validation {@link Field#getValidationRegex()}
+         */
         validationRegexDescription = PropertyManager.getProperty("xray.validation.description.regexp", ".*");
         validationRegexRevision = PropertyManager.getProperty("xray.validation.revision.regexp", ".*");
         validationRegexSummary = PropertyManager.getProperty("xray.validation.summary.regexp", ".*");

@@ -310,7 +310,7 @@ For example, this simple implementation will add the label "Test Automation" to 
 |xray.transitions.on.created|not set|Transitions made on JIRA issue of type "Test Execution" when a status 'created' is reached (comma separated)|
 |xray.transitions.on.updated|not set|Transitions made on JIRA issue of type "Test Execution" when a status 'updated' is reached (comma separated)|
 |xray.transitions.on.done|not set|Transitions made on JIRA issue of type "Test Execution" when a status 'done' is reached (comma separated)|
-|xray.webresource.filter.logging.enabled|false|Enable logging of all web requests and response sent/received to/from JIRA|
+|xray.webresource.filter.logging.enabled|false|Enable logging of all web requests and response sent/received to/from JIRA (deprecated)|
 |xray.webresource.filter.getrequestsonly.enabled|false|Enable this for debugging to avoid PUT/POST/DELETE requests sent to JIRA|
 |xray.webresource.filter.getrequestsonly.fake.response.key|FAKE-666666|This key will returned, when `xray.webresource.filter.getrequestsonly.enabled` set to `true` and PUT/POST/DELETE request was sent.|
 
