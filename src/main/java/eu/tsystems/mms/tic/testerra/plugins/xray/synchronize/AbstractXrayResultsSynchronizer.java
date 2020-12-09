@@ -91,6 +91,12 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
         if (isSyncInitialized) {
             try {
                 syncStrategy.onFinish();
+            } catch (UniformInterfaceException e) {
+                try {
+                    handleException(e);
+                } catch (Exception other) {
+                    disableSyncWithWarning(e);
+                }
             } catch (final Exception e) {
                 disableSyncWithWarning(e);
             }

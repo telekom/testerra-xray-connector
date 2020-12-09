@@ -23,6 +23,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.config;
 
 import com.google.common.collect.ImmutableList;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AdHocSyncStrategy;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.PostHocSyncStrategy;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
@@ -55,14 +56,6 @@ public class XrayConfig {
     private final boolean webResourceFilterLoggingEnabled;
     private final boolean webResourceFilterGetRequestsOnlyEnabled;
     private final boolean isSyncSkippedTests;
-    private final String testExecutionStartTimeFieldName;
-    private final String testExecutionStartTimeJQLTerm;
-    private final String testExecutionFinishTimeFieldName;
-    private final String testExecutionFinishTimeJQLTerm;
-    private final String revisionFieldName;
-    private final String revisionJQLTerm;
-    private final String testEnvironmentsFieldName;
-    private final String testEnvironmentsJQLTerm;
 
     private boolean isSyncEnabled;
     private String fakeTestExecutionKey;
@@ -100,22 +93,6 @@ public class XrayConfig {
         fakeTestExecutionKey = PropertyManager.getProperty("xray.webresource.filter.getrequestsonly.fake.response.key", "FAKE-666666");
 
         previousResultsFilename = PropertyManager.getProperty("xray.previous.result.filename", "");
-
-        final int testExecutionStartTimeId = PropertyManager.getIntProperty("xray.test.execution.start.time.field.id", 14270);
-        testExecutionStartTimeFieldName = toFieldName(testExecutionStartTimeId);
-        testExecutionStartTimeJQLTerm = toJQLTerm(testExecutionStartTimeId);
-        final int testExecutionFinishTimeId = PropertyManager.getIntProperty("xray.test.execution.finish.time.field.id", 14271);
-        testExecutionFinishTimeFieldName = toFieldName(testExecutionFinishTimeId);
-        testExecutionFinishTimeJQLTerm = toJQLTerm(testExecutionFinishTimeId);
-
-        final int revisionId = PropertyManager.getIntProperty("xray.test.execution.revision.field.id", 14272);
-        revisionFieldName = toFieldName(revisionId);
-        revisionJQLTerm = toJQLTerm(revisionId);
-
-        final int testEnvironmentsId = PropertyManager.getIntProperty("xray.test.execution.test-environments.field.id", 15155);
-        testEnvironmentsFieldName = toFieldName(testEnvironmentsId);
-        testEnvironmentsJQLTerm = toJQLTerm(testEnvironmentsId);
-
         validationRegexDescription = PropertyManager.getProperty("xray.validation.description.regexp", ".*");
         validationRegexRevision = PropertyManager.getProperty("xray.validation.revision.regexp", ".*");
         validationRegexSummary = PropertyManager.getProperty("xray.validation.summary.regexp", ".*");
@@ -145,36 +122,46 @@ public class XrayConfig {
         return instance;
     }
 
-    private String toJQLTerm(int fieldId) {
-        return String.format("cf[%s]", fieldId);
-    }
-
-    private String toFieldName(int fieldId) {
-        return String.format("customfield_%d", fieldId);
-    }
-
+    /**
+     * @deprecated Use {@link Fields} instead
+     */
     public String getTestExecutionStartTimeFieldName() {
-        return testExecutionStartTimeFieldName;
+        return Fields.TEST_EXECUTION_START_DATE.getFieldName();
     }
 
+    /**
+     * @deprecated Use {@link Fields} instead
+     */
     public String getTestExecutionStartTimeJQLTerm() {
-        return testExecutionStartTimeJQLTerm;
+        return Fields.TEST_EXECUTION_START_DATE.getJQLTerm();
     }
 
+    /**
+     * @deprecated Use {@link Fields} instead
+     */
     public String getTestExecutionFinishTimeFieldName() {
-        return testExecutionFinishTimeFieldName;
+        return Fields.TEST_EXECUTION_FINISH_DATE.getFieldName();
     }
 
+    /**
+     * @deprecated Use {@link Fields} instead
+     */
     public String getTestExecutionFinishTimeJQLTerm() {
-        return testExecutionFinishTimeJQLTerm;
+        return Fields.TEST_EXECUTION_FINISH_DATE.getJQLTerm();
     }
 
+    /**
+     * @deprecated Use {@link Fields} instead
+     */
     public String getRevisionFieldName() {
-        return revisionFieldName;
+        return Fields.REVISION.getFieldName();
     }
 
+    /**
+     * @deprecated Use {@link Fields} instead
+     */
     public String getRevisionJQLTerm() {
-        return revisionJQLTerm;
+        return Fields.REVISION.getJQLTerm();
     }
 
     public boolean isSyncEnabled() {
@@ -262,11 +249,18 @@ public class XrayConfig {
         return isSyncSkippedTests;
     }
 
+
+    /**
+     * @deprecated Use {@link Fields} instead
+     */
     public String getTestEnvironmentsFieldName() {
-        return testEnvironmentsFieldName;
+        return Fields.TEST_ENVIRONMENTS.getFieldName();
     }
 
+    /**
+     * @deprecated Use {@link Fields} instead
+     */
     public String getTestEnvironmentsJQLTerm() {
-        return testEnvironmentsJQLTerm;
+        return Fields.TEST_ENVIRONMENTS.getJQLTerm();
     }
 }
