@@ -166,7 +166,6 @@ public class XrayConnector {
 
     private String prepareTestExecutionCreation(final Iterable<String> testKeys, JiraIssueUpdate jiraIssueUpdate)
             throws IOException, NotSyncableException {
-        logger.info("Creating test execution");
         //        final String testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayConfig.getProjectKey(), summary, description, revision);
         final String testExecKey;
         if (testKeys != null) {

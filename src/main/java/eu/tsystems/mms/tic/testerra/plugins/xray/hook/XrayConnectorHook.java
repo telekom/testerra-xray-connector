@@ -80,7 +80,6 @@ public class XrayConnectorHook implements ModuleHook, Loggable {
                 xrayListener.initialize();
                 TesterraListener.getEventBus().register(xrayListener);
                 XRAY_LISTENER.add(xrayListener);
-                log().info("Done processing Xray result listener");
             } catch (Exception e) {
                 log().error("Could not load Xray result listener", e);
             }
