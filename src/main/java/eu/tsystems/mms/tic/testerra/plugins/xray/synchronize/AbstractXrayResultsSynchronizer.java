@@ -22,6 +22,9 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
@@ -29,7 +32,11 @@ import eu.tsystems.mms.tic.testframework.connectors.util.AbstractCommonSynchroni
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.info.ReportInfo;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
 
 
 public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSynchronizer implements XrayResultsSynchronizer, Loggable {
@@ -44,24 +51,35 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
             try {
                 final String project = XrayConfig.getInstance().getProjectKey();
                 final XrayTestExecutionInfo executionInfo = getExecutionInfo();
-                final String summary = executionInfo.getSummary();
-                validateSummary(summary);
-                final String description = executionInfo.getDescription();
-                validateDescription(description);
-                final String revision = executionInfo.getRevision();
-                validateRevision(revision);
+                if (executionInfo == null) {
+                    throw new RuntimeException("No " + XrayTestExecutionInfo.class.getSimpleName() + " provided");
+                }
+                final Optional<String> summary = Optional.ofNullable(executionInfo.getSummary());
+                summary.ifPresent(this::validateSummary);
+                final Optional<String> description = Optional.ofNullable(executionInfo.getDescription());
+                description.ifPresent(this::validateDescription);
+                final Optional<String> revision = Optional.ofNullable(executionInfo.getRevision());
+                revision.ifPresent(this::validateRevision);
 
-                final XrayInfo xrayInfo = new XrayInfo(project, summary, description, revision);
+                final XrayInfo xrayInfo = new XrayInfo(project, summary.orElse(""), description.orElse(""), revision.orElse(""));
                 xrayInfo.setUser(executionInfo.getAssignee());
                 xrayInfo.setVersion(executionInfo.getFixVersion());
                 xrayInfo.setTestEnvironments(executionInfo.getTestEnvironments());
 
+                Optional<XrayMapper> xrayMapper = Optional.ofNullable(getXrayMapper());
+                Optional<XrayTestExecutionUpdates> executionUpdates = Optional.ofNullable(getExecutionUpdates());
+
                 syncStrategy = xrayConfig.getSyncStrategyClass()
-                        .getDeclaredConstructor(new Class<?>[] {XrayInfo.class, XrayMapper.class, XrayTestExecutionUpdates.class})
-                        .newInstance(xrayInfo, getXrayMapper(), getExecutionUpdates());
+                        .getDeclaredConstructor(new Class<?>[]{XrayInfo.class, XrayMapper.class, XrayTestExecutionUpdates.class})
+                        .newInstance(xrayInfo, xrayMapper.orElse(new EmptyMapper()), executionUpdates.orElse(new EmptyTestExecutionUpdates()));
                 syncStrategy.onStart();
                 isSyncInitialized = true;
-                log().info("intialization successful");
+            } catch (UniformInterfaceException e) {
+                try {
+                    handleException(e);
+                } catch (Exception other) {
+                    disableSyncWithWarning(e);
+                }
             } catch (final Exception e) {
                 disableSyncWithWarning(e);
             }
@@ -72,6 +90,12 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
         if (isSyncInitialized) {
             try {
                 syncStrategy.onFinish();
+            } catch (UniformInterfaceException e) {
+                try {
+                    handleException(e);
+                } catch (Exception other) {
+                    disableSyncWithWarning(e);
+                }
             } catch (final Exception e) {
                 disableSyncWithWarning(e);
             }
@@ -146,10 +170,44 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
         syncStrategy.addTestExecutionComment(comment);
     }
 
-    private void disableSyncWithWarning(Exception e) {
-        isSyncInitialized = false;
-        final String message = "An unexpected exception occurred. Syncing is aborted.";
+    private void reportError(String message, Exception e) {
         ReportInfo.getDashboardInfo().addInfo(1, message + e.getMessage());
         log().error(message, e);
+    }
+
+    private void disableSyncWithWarning(Exception e) {
+        isSyncInitialized = false;
+        reportError("An unexpected exception occurred. Syncing is aborted.", e);
+    }
+
+    private void handleException(UniformInterfaceException e) throws IOException {
+        ClientResponse response = e.getResponse();
+        Map<String, Object> responseMap = new ObjectMapper().readValue(response.getEntityInputStream(), Map.class);
+        isSyncInitialized = false;
+        reportError(formatErrorMessages(responseMap).toString(), e);
+    }
+
+    private StringBuilder formatErrorMessages(Map<String, Object> responseMap) throws ClassCastException {
+        StringBuilder sb = new StringBuilder();
+
+        ArrayList<String> errorMessages = null;
+        if (responseMap.containsKey("errorMessages")) {
+            errorMessages = (ArrayList<String>) responseMap.get("errorMessages");
+            sb.append(String.join("\n", errorMessages));
+        }
+
+        Object errors = responseMap.get("errors");
+        if (errors != null) {
+            if (errorMessages != null && errorMessages.size() > 0) {
+                sb.append(": \n");
+            }
+
+            Map<String, Object> errorsMap = (Map<String, Object>)errors;
+            errorsMap.forEach((s, o) -> {
+                sb.append(s).append(": ").append(o);
+            });
+        }
+
+        return sb;
     }
 }

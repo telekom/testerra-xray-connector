@@ -23,14 +23,13 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef;
 
 
-public class SetAffectedVersions extends VersionsUpdate {
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.FieldUpdate;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraNameValueArray;
+
+public class SetAffectedVersions extends FieldUpdate {
 
     public SetAffectedVersions(final String... versionNames) {
-        super(versionNames);
-    }
-
-    @Override
-    public String getFieldName() {
-        return "versions";
+        super(Fields.VERSIONS, new JiraNameValueArray(versionNames));
     }
 }

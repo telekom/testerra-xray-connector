@@ -29,10 +29,9 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.RESTClientFactory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.GetRequestOnlyFilter;
-import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.Slf4JLoggingFilter;
+import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.LoggingFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
-import eu.tsystems.mms.tic.testframework.logging.LogLevel;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -59,7 +58,7 @@ public class TestUtils {
             webResource.addFilter(new GetRequestOnlyFilter());
         }
         if (xrayConfig.isWebResourceFilterLoggingEnabled()) {
-            webResource.addFilter(new Slf4JLoggingFilter(LogLevel.INFO));
+            webResource.addFilter(new LoggingFilter());
         }
         return webResource;
     }

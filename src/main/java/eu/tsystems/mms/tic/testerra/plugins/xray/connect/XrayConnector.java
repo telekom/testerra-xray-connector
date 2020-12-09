@@ -31,7 +31,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.GetRequestOnlyFilter;
-import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.Slf4JLoggingFilter;
+import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.LoggingFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
@@ -50,7 +50,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
-import eu.tsystems.mms.tic.testframework.logging.LogLevel;
 import eu.tsystems.mms.tic.testframework.utils.ProxyUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,7 +91,7 @@ public class XrayConnector {
         }
 
         if (xrayConfig.isWebResourceFilterLoggingEnabled()) {
-            webResource.addFilter(new Slf4JLoggingFilter(LogLevel.INFO));
+            webResource.addFilter(new LoggingFilter());
         }
 
     }
@@ -167,7 +166,6 @@ public class XrayConnector {
 
     private String prepareTestExecutionCreation(final Iterable<String> testKeys, JiraIssueUpdate jiraIssueUpdate)
             throws IOException, NotSyncableException {
-        logger.info("creating test execution");
         //        final String testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayConfig.getProjectKey(), summary, description, revision);
         final String testExecKey;
         if (testKeys != null) {
@@ -177,7 +175,7 @@ public class XrayConnector {
             //            testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo.getProject(), xrayInfo.getSummary(), xrayInfo.getDescription(), xrayInfo.getRevision());
             testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo);
         }
-        logger.info("new test execution id: {}", testExecKey);
+        logger.info("New test execution id: {}", testExecKey);
 
         /* on new transitions */
         doTransitions(testExecKey, xrayConfig.getTransitionsOnCreated());
@@ -195,7 +193,7 @@ public class XrayConnector {
 
     private String prepareTestExecutionUpdate(final Collection<String> testKeys, final String testExecKey, JiraIssueUpdate jiraUpdate) throws
             IOException {
-        logger.info("updating test execution {}", testExecKey);
+        logger.info("Updating test execution {}", testExecKey);
 
         /* attaching previous results */
         final String previousResultsFilename = xrayConfig.getPreviousResultsFilename();
@@ -257,7 +255,7 @@ public class XrayConnector {
             try {
                 JiraUtils.doTransitionByName(webResource, testExecutionKey, transitionName);
             } catch (final IOException e) {
-                logger.error("could not do transition {}", transitionName);
+                logger.error("Could not do transition {}", transitionName);
             }
         }
     }

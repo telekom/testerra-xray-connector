@@ -33,44 +33,59 @@ The easiest way is to create a file `xray.properties` in `src/test/resources` di
 xray.sync.enabled=true
 xray.sync.skipped=true
 xray.sync.strategy=adhoc
-# Connection details
+
+# Connection details (mandatory)
 xray.rest.service.uri=https://jira.example.com/rest
-xray.project.key=EXAMPLE
+xray.project.key=PROJECT-KEY
 xray.user=jira-sync-user
 xray.password=password
-# Test Execution details
+
+# Jira field IDs (mandatory)
 xray.test.execution.start.time.field.id=
 xray.test.execution.finish.time.field.id=
 xray.test.execution.revision.field.id=
 xray.test.execution.test-environments.field.id=
-# Validations to avoid unintend opertations
+xray.test.execution.test-plan.field.id=
+
+# Validations to avoid unintended operations
 xray.validation.revision.regexp=.*
 xray.validation.summary.regexp=.*
 xray.validation.description.regexp=.*
+
 # Automatically transitions when state reached
 xray.transitions.on.created=
 xray.transitions.on.updated=Test beginnen,Testdurchführung beenden,Testdurchführung zurücksetzen
 xray.transitions.on.done=An Test übergeben
-# Store previous results, when Updated test Execution is used.
+
+# Store previous results, when Updated test Execution is used
 xray.previous.result.filename=
-# Debugging / Logging features
-xray.webresource.filter.logging.enabled=true
+
+# Debugging features
 xray.webresource.filter.getrequestsonly.enabled=false
 xray.webresource.filter.getrequestsonly.fake.response.key=EXAMPLE-1
 ````
 
 With this property file included and filled up with your user account and credentials you should be able to synchronize your test results with the adhoc-strategy.
 
-#### Synchronization strategies
+### Retrieve custom field IDs
 
-##### Adhoc
+The Jira XRAY fields are implemented as custom fields and they may differ with every Jira installation. Thats why you must setup them.
+
+You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.
+
+![](doc/Jira-Field-Ids.jpg)
+
+
+### Synchronization strategies
+
+#### Adhoc
 
 When property `xray.sync.strategy` is set to `adhoc` your test results will be synchronized directly after a test method finished.  
 This will ensure, that you can track the current progress of your test execution in real-time in JIRA.
 
 Please note that uploads and attachments for test execution will be uploaded after the execution finished.
 
-##### Posthoc
+#### Posthoc
 
 When property `xray.sync.strategy` is set to `posthoc` your test results will be synchronized after the *complete* test execution ends.  
 The X-Ray connector will store every test result internally and then progress a bulk-upload of all test results.
@@ -98,29 +113,34 @@ public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer 
     @Override
     XrayTestExecutionInfo getExecutionInfo() {
         return new XrayTestExecutionInfo() {
- 
+
             @Override
-            public String getSummary(final ISuite iSuite) {
-                 return "My Test Execution";
+            public String getSummary() {
+                return "My Test Execution";
             }
- 
+
             @Override
-            public String getDescription(final ISuite iSuite) {
+            public String getDescription() {
                 return "Automated test run";
             }
- 
+
             @Override
-            public String getRevision(final ISuite iSuite) {
+            public String getRevision() {
                 return "1.0-RC1";
             }
- 
+
             @Override
-            public String getAssignee(ISuite iSuite) {
-                return "jira-sync-user";
+            public String getAssignee() {
+                return null;
             }
- 
+
             @Override
-            public String getFixVersion(ISuite iSuite) {
+            public String getFixVersion() {
+                return null;
+            }
+
+            @Override
+            public List<String> getTestEnvironments() {
                 return null;
             }
         };
@@ -128,12 +148,12 @@ public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer 
      
     @Override
     public XrayMapper getXrayMapper() {
-        return new EmptyMapper();
+        return null;
     }
  
     @Override
     public XrayTestExecutionUpdates getExecutionUpdates() {
-        return new EmptyTestExecutionUpdates();
+        return null;
     }
 }
 ````
@@ -244,14 +264,15 @@ public class DefaultTestExecutionUpdates implements XrayTestExecutionUpdates {
     @Override
     public JiraIssueUpdate updateOnNewExecutionCreated() {
         return JiraIssueUpdate.create()
-                .field(new SetLabels("Test Automation"))
+                .field(new SetLabels("TestAutomation"))
+                .field(new TestPlan("TICKET-ID")))
                 .build();
     }
 
     @Override
     public JiraIssueUpdate updateOnExistingExecutionUpdated() {
         return JiraIssueUpdate.create()
-                .field(new SetLabels("Test Automation"))
+                .field(new SetLabels("TestAutomation"))
                 .build();
     }
 
@@ -281,6 +302,7 @@ For example, this simple implementation will add the label "Test Automation" to 
 |xray.test.execution.finish.time.field.id|not set|The JIRA custom field for test execution finish time.|
 |xray.test.execution.revision.field.id|not set|The JIRA custom field for test execution revision.|
 |xray.test.execution.test-environments.field.id|not set|The JIRA custom field for test execution test-environments.|
+|xray.test.execution.test-plan.field.id|not set|The JIRA custom field for test execution test-plans.|
 |xray.validation.revision.regexp|.*|Revision is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.summary|.*|Summary is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.description|.*|Description is validated against this regular expression to prevent unintended creation of test executions.|
@@ -288,7 +310,7 @@ For example, this simple implementation will add the label "Test Automation" to 
 |xray.transitions.on.created|not set|Transitions made on JIRA issue of type "Test Execution" when a status 'created' is reached (comma separated)|
 |xray.transitions.on.updated|not set|Transitions made on JIRA issue of type "Test Execution" when a status 'updated' is reached (comma separated)|
 |xray.transitions.on.done|not set|Transitions made on JIRA issue of type "Test Execution" when a status 'done' is reached (comma separated)|
-|xray.webresource.filter.logging.enabled|false|Enable logging of all web requests and response sent/received to/from JIRA|
+|xray.webresource.filter.logging.enabled|false|Enable logging of all web requests and response sent/received to/from JIRA (deprecated)|
 |xray.webresource.filter.getrequestsonly.enabled|false|Enable this for debugging to avoid PUT/POST/DELETE requests sent to JIRA|
 |xray.webresource.filter.getrequestsonly.fake.response.key|FAKE-666666|This key will returned, when `xray.webresource.filter.getrequestsonly.enabled` set to `true` and PUT/POST/DELETE request was sent.|
 

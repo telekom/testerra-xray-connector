@@ -22,13 +22,38 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 
-public interface FieldUpdate {
+public class FieldUpdate implements Field {
 
-    String getFieldName();
+    private final Field field;
+    private final JiraValue value;
 
-    JiraVerb getJiraVerb();
+    public FieldUpdate(Field field, JiraValue value) {
+        this.field = field;
+        this.value = value;
+    }
 
-    JiraValue getJiraValue();
+    public JiraVerb getJiraVerb() {
+        return JiraVerb.SET;
+    }
 
+    public JiraValue getJiraValue() {
+        return this.value;
+    }
+
+    @Override
+    public String getFieldName() {
+        return this.field.getFieldName();
+    }
+
+    @Override
+    public String getJQLTerm() {
+        return this.field.getJQLTerm();
+    }
+
+    @Override
+    public String getValidationRegex() {
+        return this.field.getValidationRegex();
+    }
 }

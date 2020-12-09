@@ -22,32 +22,13 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.FieldUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraArray;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraValue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraVerb;
 
-
-public class SetLabels implements FieldUpdate {
-
-    private final String[] labels;
+public class SetLabels extends FieldUpdate {
 
     public SetLabels(final String... labels) {
-        this.labels = labels;
-    }
-
-    @Override
-    public String getFieldName() {
-        return "labels";
-    }
-
-    @Override
-    public JiraVerb getJiraVerb() {
-        return JiraVerb.SET;
-    }
-
-    @Override
-    public JiraValue getJiraValue() {
-        return new JiraArray(labels);
+        super(Fields.LABELS, new JiraArray(labels));
     }
 }
