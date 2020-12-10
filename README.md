@@ -1,7 +1,7 @@
 # X-Ray Connector
 
-This module provides a simple synchronization service for JIRA X-Ray plugin. 
-It will register automatically by using `ModuleHook`, but you have to provide a valid property file and concrete implementations of interfaces for its usage.
+This module provides a simple synchronization service for JIRA X-Ray plugin. It will register automatically by using `ModuleHook`,
+but you have to provide a valid property file and concrete implementations of interfaces for its usage.
 
 ---- 
 
@@ -10,12 +10,15 @@ It will register automatically by using `ModuleHook`, but you have to provide a 
 Include the following dependency in your project.
 
 Gradle:
+
 ````groovy
 implementation 'eu.tsystems.mms.tic.testerra:xray-connector:1-SNAPSHOT'
 ````
 
 Maven:
+
 ````xml
+
 <dependency>
     <groupId>eu.tsystems.mms.tic.testerra</groupId>
     <artifactId>xray-connector</artifactId>
@@ -65,16 +68,17 @@ xray.webresource.filter.getrequestsonly.enabled=false
 xray.webresource.filter.getrequestsonly.fake.response.key=EXAMPLE-1
 ````
 
-With this property file included and filled up with your user account and credentials you should be able to synchronize your test results with the adhoc-strategy.
+With this property file included and filled up with your user account and credentials you should be able to synchronize your test
+results with the adhoc-strategy.
 
 ### Retrieve custom field IDs
 
-The Jira XRAY fields are implemented as custom fields and they may differ with every Jira installation. Thats why you must setup them.
+The Jira XRAY fields are implemented as custom fields and they may differ with every Jira installation. Thats why you must setup
+them.
 
 You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.
 
 ![](doc/Jira-Field-Ids.jpg)
-
 
 ### Synchronization strategies
 
@@ -87,7 +91,8 @@ Please note that uploads and attachments for test execution will be uploaded aft
 
 #### Posthoc
 
-When property `xray.sync.strategy` is set to `posthoc` your test results will be synchronized after the *complete* test execution ends.  
+When property `xray.sync.strategy` is set to `posthoc` your test results will be synchronized after the *complete* test execution
+ends.  
 The X-Ray connector will store every test result internally and then progress a bulk-upload of all test results.
 
 ### Implement interfaces
@@ -99,13 +104,15 @@ The easiest way is, to start with this example.
 This implementation will provide static `XrayTestExecutionInfo`, but in practice you should determine these values at runtime.
 
 With this configuration X-Ray connector will lookup for an JIRA issue of type `Test Execution` with matching attributes for:
+
 - summary
 - description
 - revision
 - assignee
 
 If you provide `null` values, the connector will ignore these fields.  
-The default implementations `EmptyMapper` and `EmptyTestExecutionUpdates` can be replaced by your own implementations and will be explained later.
+The default implementations `EmptyMapper` and `EmptyTestExecutionUpdates` can be replaced by your own implementations and will be
+explained later.
 
 ````java
 public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
@@ -159,11 +166,14 @@ public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer 
 ````
 
 ### Mapping
+
 To synchronize your test results to a specific JIRA issue, the X-Ray connector will use some mapping.  
 Basically there are two ways of mapping, both of them are instructed and controlled by annotations.
 
 #### Test method mapping
-To create a one-to-one mapping between your test methods and your JIRA issues of type `Test` you just have to set up the `XrayTest` annotation on your method.
+
+To create a one-to-one mapping between your test methods and your JIRA issues of type `Test` you just have to set up the `XrayTest`
+annotation on your method.
 
 ````java
 public class MethodsAnnotatedTest extends TesterraTest {
@@ -177,12 +187,16 @@ public class MethodsAnnotatedTest extends TesterraTest {
 ````
 
 #### Test class mapping
-Instead of annotating each method by itself, you can annotate just the test class with the `XrayTestSet` annotation  
-and the X-Ray connector will do the rest for you by searching JIRA issues itself with the provided query on your implementation of `XrayMapper.methodToXrayTestQuery`.
 
-For example, you can provide the following simple mapper, that will just grab the test method name and search JIRA issues by matching summary.
+Instead of annotating each method by itself, you can annotate just the test class with the `XrayTestSet` annotation  
+and the X-Ray connector will do the rest for you by searching JIRA issues itself with the provided query on your implementation
+of `XrayMapper.methodToXrayTestQuery`.
+
+For example, you can provide the following simple mapper, that will just grab the test method name and search JIRA issues by
+matching summary.
 
 ````java
+
 @XrayTestSet(key = "EXAMPLE-5")
 public class AnnotatedClassTest extends TesterraTest {
     //...
@@ -212,10 +226,12 @@ public class TestMethodNameMapper implements XrayMapper {
 }
 ````
 
-> Note : The default `EmptyMapper` will return `null`. This will lead in a synchronization error, because no matching JIRA issue was found. 
+> Note : The default `EmptyMapper` will return `null`. This will lead in a synchronization error, because no matching JIRA issue was found.
 
 #### Generic mapping
-If you don't want to annotate your class with `XrayTestSet` and neither your test methods with `XrayTest` you can use a full generic way by implementing the `XrayMapper.classToXrayTestSet()` method as well as the already known `methodToXrayTestQuery()`.
+
+If you don't want to annotate your class with `XrayTestSet` and neither your test methods with `XrayTest` you can use a full generic
+way by implementing the `XrayMapper.classToXrayTestSet()` method as well as the already known `methodToXrayTestQuery()`.
 
 ````java
 public class GenericMapper implements XrayMapper {
@@ -246,17 +262,20 @@ public class GenericMapper implements XrayMapper {
 ````
 
 In this case the X-ray connector will search JIRA issues for an issue of type `TestSet` with matching summary `My Tests`.  
-Then the connector will run a search for all associated test methods for this test set to find an issue of type `Test` and a summary equal the test method name.
+Then the connector will run a search for all associated test methods for this test set to find an issue of type `Test` and a summary
+equal the test method name.
 
 ### Test execution updates on transition
 
-As you may noticed in the cod examples above we provided a `EmptyTestExecutionUpdates` as implementation for `XrayTestExecutionUpdates` in our `FooXrayResultsSynchronizer`.  
+As you may noticed in the cod examples above we provided a `EmptyTestExecutionUpdates` as implementation
+for `XrayTestExecutionUpdates` in our `FooXrayResultsSynchronizer`.  
 Test execution updates should be defined to add metadata to associated JIRA issue of type `Test Execution`.
 
 The X-ray connector will lookup JIRA for Test execution matching your criteria provided as `XrayTestExecutionInfo`.  
 But if no matching Test Execution was found, it will create a new one by using the JIRA API.
 
-To add labels, revision, summary, fix versions, associated version or other execution info you can use your own implementation of `XrayTestExecutionUpdates`.
+To add labels, revision, summary, fix versions, associated version or other execution info you can use your own implementation
+of `XrayTestExecutionUpdates`.
 
 ````java
 public class DefaultTestExecutionUpdates implements XrayTestExecutionUpdates {
@@ -285,7 +304,8 @@ public class DefaultTestExecutionUpdates implements XrayTestExecutionUpdates {
 }
 ````
 
-For example, this simple implementation will add the label "Test Automation" to your "updated" or freshly created test execution and set the "affected version" to "1.0-RC".
+For example, this simple implementation will add the label "Test Automation" to your "updated" or freshly created test execution and
+set the "affected version" to "1.0-RC".
 
 ### Properties
 
@@ -313,6 +333,8 @@ For example, this simple implementation will add the label "Test Automation" to 
 |xray.webresource.filter.logging.enabled|false|Enable logging of all web requests and response sent/received to/from JIRA (deprecated)|
 |xray.webresource.filter.getrequestsonly.enabled|false|Enable this for debugging to avoid PUT/POST/DELETE requests sent to JIRA|
 |xray.webresource.filter.getrequestsonly.fake.response.key|FAKE-666666|This key will returned, when `xray.webresource.filter.getrequestsonly.enabled` set to `true` and PUT/POST/DELETE request was sent.|
+
+---
 
 ## Publication
 
