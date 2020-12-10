@@ -106,7 +106,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
     protected void pOnTestSuccess(MethodEndEvent event) {
         if (isSyncInitialized) {
             syncStrategy.onTestSuccess(event);
-            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
         }
     }
 
@@ -114,7 +114,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
     protected void pOnTestFailure(MethodEndEvent event) {
         if (isSyncInitialized) {
             syncStrategy.onTestFailure(event);
-            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
         }
     }
 
@@ -122,7 +122,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
     protected void pOnTestSkip(MethodEndEvent event) {
         if (isSyncInitialized) {
             syncStrategy.onTestSkip(event);
-            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
         }
     }
 

@@ -22,20 +22,7 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUpdates;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.DefaultTestExecutionUpdates;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper.ResultMapper;
-import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
-import eu.tsystems.mms.tic.testframework.info.ReportInfo;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * This is a valid Xray synchronizer for multiple test executions
@@ -117,26 +104,26 @@ public class MultipleExecutionSimulatedTestRunXrayResultsSynchronizer {
 //        pInitialize();
 //        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
 //            syncStrategy.get().onTestSuccess(event);
-//            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
-//        }
+    //            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
+    //        }
 //    }
 //
 //    @Override
 //    protected void pOnTestFailure(MethodEndEvent event) {
 //        pInitialize();
 //        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
-//            syncStrategy.get().onTestFailure(event);
-//            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
-//        }
+    //            syncStrategy.get().onTestFailure(event);
+    //            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
+    //        }
 //    }
 //
 //    @Override
 //    protected void pOnTestSkip(MethodEndEvent event) {
 //        pInitialize();
 //        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
-//            syncStrategy.get().onTestSkip(event);
-//            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
-//        }
+    //            syncStrategy.get().onTestSkip(event);
+    //            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
+    //        }
 //    }
 //
 //    private void pInitialize() {

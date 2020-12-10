@@ -68,7 +68,7 @@ public class PostHocSyncStrategy extends SyncStrategy {
                 testExecution = freshExec;
             } else {
                 final String message = "must find at maximum one match for jql query";
-                ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to X-ray failed: " + message);
+                ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to Xray failed: " + message);
                 throw new NotSyncableException(message);
             }
         } catch (IOException e) {
