@@ -1,7 +1,7 @@
-# Testerra X-Ray Connector
+# X-Ray Connector
 
-This module for Testerra provides a simple synchronization service for JIRA X-Ray plugin. 
-It will register automatically by using Testerra `ModuleHook`, but you have to provide a valid property file and concrete implementations of interfaces for its usage.
+This module provides a simple synchronization service for JIRA X-Ray plugin. 
+It will register automatically by using `ModuleHook`, but you have to provide a valid property file and concrete implementations of interfaces for its usage.
 
 ---- 
 
@@ -265,7 +265,7 @@ public class DefaultTestExecutionUpdates implements XrayTestExecutionUpdates {
     public JiraIssueUpdate updateOnNewExecutionCreated() {
         return JiraIssueUpdate.create()
                 .field(new SetLabels("TestAutomation"))
-                .field(new TestPlan("TICKET-ID")))
+                .field(new TestPlan("TICKET-ID"))
                 .build();
     }
 
