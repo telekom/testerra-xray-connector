@@ -7,6 +7,11 @@ but you have to provide a valid property file and concrete implementations of in
 
 ## Usage
 
+### Dependencies
+
+* Latest version: `1-SNAPSHOT`
+* Required Testerra version: `1-0-RC-16`
+
 Include the following dependency in your project.
 
 Gradle:
@@ -116,7 +121,7 @@ explained later.
 
 ````java
 public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
-     
+
     @Override
     XrayTestExecutionInfo getExecutionInfo() {
         return new XrayTestExecutionInfo() {
@@ -152,12 +157,12 @@ public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer 
             }
         };
     }
-     
+
     @Override
     public XrayMapper getXrayMapper() {
         return null;
     }
- 
+
     @Override
     public XrayTestExecutionUpdates getExecutionUpdates() {
         return null;
