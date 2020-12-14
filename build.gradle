@@ -29,7 +29,7 @@ repositories {
 
 dependencies {
     compileOnly 'eu.tsystems.mms.tic.testerra:core:' + testerraCompileVersion
-    compileOnly 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraCompileVersion
+    implementation 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraCompileVersion
 
     compile "com.google.guava:guava:25.1-jre"
 

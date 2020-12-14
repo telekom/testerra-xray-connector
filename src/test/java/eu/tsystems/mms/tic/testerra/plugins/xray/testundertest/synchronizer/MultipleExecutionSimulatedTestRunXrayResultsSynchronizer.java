@@ -37,120 +37,128 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResults
  * TODO - For testing purpose only, we have to deactivate this class, because tests will fail otherwise.
  */
 public class MultipleExecutionSimulatedTestRunXrayResultsSynchronizer {
-    //public class MultipleExecutionSimulatedTestRunXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
-    //
-    //    private static final ThreadLocal<Boolean> isSyncInitialized = new ThreadLocal<>();
-    //    private static final ThreadLocal<SyncStrategy> syncStrategy = new ThreadLocal<>();
-    //
-    //    @Override
-    //    public XrayTestExecutionInfo getExecutionInfo() {
-    //
-    //        return new XrayTestExecutionInfo() {
-    //            @Override
-    //            public String getSummary() {
-    //                return "Simulated Test Run - " + Thread.currentThread().getName();
-    //            }
-    //
-    //            @Override
-    //            public String getDescription() {
-    //                return null;
-    //            }
-    //
-    //            @Override
-    //            public String getRevision() {
-    //                return null;
-    //            }
-    //
-    //            @Override
-    //            public String getAssignee() {
-    //                return null;
-    //            }
-    //
-    //            @Override
-    //            public String getFixVersion() {
-    //                return null;
-    //            }
-    //
-    //            @Override
-    //            public List<String> getTestEnvironments() {
-    //                return null;
-    //            }
-    //        };
-    //    }
-    //
-    //    @Override
-    //    public XrayTestExecutionUpdates getExecutionUpdates() {
-    //        return new DefaultTestExecutionUpdates();
-    //    }
-    //
-    //    public XrayMapper getXrayMapper() {
-    //        return new ResultMapper();
-    //    }
-    //
-    //    @Override
-    //    public void initialize() {
-    //        // Do nothing because we want to have a thread-safe way of sync...
-    //    }
-    //
-    //    @Override
-    //    protected void pOnTestSuccess(MethodEndEvent event) {
-    //        pInitialize();
-    //        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
-    //            syncStrategy.get().onTestSuccess(event);
-    //            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+//public class MultipleExecutionSimulatedTestRunXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+//
+//    private static final ThreadLocal<Boolean> isSyncInitialized = new ThreadLocal<>();
+//    private static final ThreadLocal<SyncStrategy> syncStrategy = new ThreadLocal<>();
+//
+//    private static List<SyncStrategy> syncStrategyList = Collections.synchronizedList(new ArrayList<SyncStrategy>());
+//
+//    @Override
+//    public XrayTestExecutionInfo getExecutionInfo() {
+//
+//        return new XrayTestExecutionInfo() {
+//            @Override
+//            public String getSummary() {
+//                return "Simulated Test Run - " + Thread.currentThread().getName();
+//            }
+//
+//            @Override
+//            public String getDescription() {
+//                return null;
+//            }
+//
+//            @Override
+//            public String getRevision() {
+//                return null;
+//            }
+//
+//            @Override
+//            public String getAssignee() {
+//                return null;
+//            }
+//
+//            @Override
+//            public String getFixVersion() {
+//                return null;
+//            }
+//
+//            @Override
+//            public List<String> getTestEnvironments() {
+//                return null;
+//            }
+//        };
+//    }
+//
+//    @Override
+//    public XrayTestExecutionUpdates getExecutionUpdates() {
+//        return new DefaultTestExecutionUpdates();
+//    }
+//
+//    public XrayMapper getXrayMapper() {
+//        return new ResultMapper();
+//    }
+//
+//    @Override
+//    public void initialize() {
+//        // Do nothing because we want to have a thread-safe way of sync...
+//    }
+//
+//    @Override
+//    public void shutdown() {
+//        syncStrategyList.forEach(SyncStrategy::onFinish);
+//    }
+//
+//    @Override
+//    protected void pOnTestSuccess(MethodEndEvent event) {
+//        pInitialize();
+//        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
+//            syncStrategy.get().onTestSuccess(event);
+    //            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
     //        }
-    //    }
-    //
-    //    @Override
-    //    protected void pOnTestFailure(MethodEndEvent event) {
-    //        pInitialize();
-    //        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
+//    }
+//
+//    @Override
+//    protected void pOnTestFailure(MethodEndEvent event) {
+//        pInitialize();
+//        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
     //            syncStrategy.get().onTestFailure(event);
-    //            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+    //            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
     //        }
-    //    }
-    //
-    //    @Override
-    //    protected void pOnTestSkip(MethodEndEvent event) {
-    //        pInitialize();
-    //        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
+//    }
+//
+//    @Override
+//    protected void pOnTestSkip(MethodEndEvent event) {
+//        pInitialize();
+//        if (isSyncInitialized.get() != null && isSyncInitialized.get()) {
     //            syncStrategy.get().onTestSkip(event);
-    //            event.getMethodContext().addPriorityMessage("Synchronization to X-ray successful.");
+    //            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
     //        }
-    //    }
-    //
-    //    private void pInitialize() {
-    //
-    //        if (isSyncInitialized.get() == null) {
-    //            if (xrayConfig.isSyncEnabled()) {
-    //                try {
-    //                    final String project = XrayConfig.getInstance().getProjectKey();
-    //                    final XrayTestExecutionInfo executionInfo = getExecutionInfo();
-    //                    final String summary = executionInfo.getSummary();
-    //                    validateSummary(summary);
-    //                    final String description = executionInfo.getDescription();
-    //                    validateDescription(description);
-    //                    final String revision = executionInfo.getRevision();
-    //                    validateRevision(revision);
-    //
-    //                    final XrayInfo xrayInfo = new XrayInfo(project, summary, description, revision);
-    //                    xrayInfo.setUser(executionInfo.getAssignee());
-    //                    xrayInfo.setVersion(executionInfo.getFixVersion());
-    //                    xrayInfo.setTestEnvironments(executionInfo.getTestEnvironments());
-    //
-    //                    syncStrategy.set(xrayConfig.getSyncStrategyClass()
-    //                            .getDeclaredConstructor(new Class<?>[] {XrayInfo.class, XrayMapper.class, XrayTestExecutionUpdates.class})
-    //                            .newInstance(xrayInfo, getXrayMapper(), getExecutionUpdates()));
-    //                    syncStrategy.get().onStart();
-    //                    isSyncInitialized.set(true);
-    //                    log().info("intialization successful");
-    //                } catch (final Exception e) {
-    //                    isSyncInitialized.set(false);
-    //                    final String message = "An unexpected exception occurred. Syncing is aborted.";
-    //                    ReportInfo.getDashboardInfo().addInfo(1, message + e.getMessage());
-    //                    log().error(message, e);
-    //                }
-    //            }
-    //        }
-    //    }
+//    }
+//
+//    private void pInitialize() {
+//
+//        if (isSyncInitialized.get() == null) {
+//            if (xrayConfig.isSyncEnabled()) {
+//                try {
+//                    final String project = XrayConfig.getInstance().getProjectKey();
+//                    final XrayTestExecutionInfo executionInfo = getExecutionInfo();
+//                    final String summary = executionInfo.getSummary();
+//                    validateSummary(summary);
+//                    final String description = executionInfo.getDescription();
+//                    validateDescription(description);
+//                    final String revision = executionInfo.getRevision();
+//                    validateRevision(revision);
+//
+//                    final XrayInfo xrayInfo = new XrayInfo(project, summary, description, revision);
+//                    xrayInfo.setUser(executionInfo.getAssignee());
+//                    xrayInfo.setVersion(executionInfo.getFixVersion());
+//                    xrayInfo.setTestEnvironments(executionInfo.getTestEnvironments());
+//
+//                    syncStrategy.set(xrayConfig.getSyncStrategyClass()
+//                            .getDeclaredConstructor(new Class<?>[] {XrayInfo.class, XrayMapper.class, XrayTestExecutionUpdates.class})
+//                            .newInstance(xrayInfo, getXrayMapper(), getExecutionUpdates()));
+//                    syncStrategy.get().onStart();
+//                    isSyncInitialized.set(true);
+//                    syncStrategyList.add(syncStrategy.get());
+//                    log().info("intialization successful");
+//                } catch (final Exception e) {
+//                    isSyncInitialized.set(false);
+//                    final String message = "An unexpected exception occurred. Syncing is aborted.";
+//                    ReportInfo.getDashboardInfo().addInfo(1, message + e.getMessage());
+//                    log().error(message, e);
+//                }
+//            }
+//        }
+//    }
 }

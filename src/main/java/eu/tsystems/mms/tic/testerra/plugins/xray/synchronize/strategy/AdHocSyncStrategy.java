@@ -51,7 +51,7 @@ public class AdHocSyncStrategy extends SyncStrategy {
         try {
             testExecKey = connector.findOrCreateTestExecution(updates.updateOnNewExecutionCreated(), updates.updateOnExistingExecutionUpdated());
         } catch (final IOException e) {
-            ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to X-ray failed.");
+            ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to Xray failed.");
             throw new NotSyncableException(e);
         }
         connector.updateStartTimeOfTestExecution(testExecKey);
