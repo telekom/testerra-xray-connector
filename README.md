@@ -7,11 +7,11 @@ but you have to provide a valid property file and concrete implementations of in
 
 ## Releases
 
-* Latest Release: `1.0-RC-3`
+* Latest Release: `1.0-RC-4`
 
 ## Requirements
 
-* Testerra in Version `1.0-RC-16`
+* Testerra in Version `1.0-RC-19`
 
 ## Usage
 
