@@ -5,13 +5,22 @@ It will register automatically by using Testerra `ModuleHook`, but you have to p
 
 ---- 
 
+
+## Releases
+
+* Latest Release: `1.0-RC-3`
+
+## Requirements
+
+* Testerra in Version `1.0-RC-16`
+
 ## Usage
 
 Include the following dependency in your project.
 
 Gradle:
 ````groovy
-implementation 'eu.tsystems.mms.tic.testerra:xray-connector:1-SNAPSHOT'
+implementation 'eu.tsystems.mms.tic.testerra:xray-connector:1.0-RC-3'
 ````
 
 Maven:
@@ -19,7 +28,7 @@ Maven:
 <dependency>
     <groupId>eu.tsystems.mms.tic.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>1-SNAPSHOT</version>
+    <version>1.0-RC-3</version>
 </dependency>
 ````
 
