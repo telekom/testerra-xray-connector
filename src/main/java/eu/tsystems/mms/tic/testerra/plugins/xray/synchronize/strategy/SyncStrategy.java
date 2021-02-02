@@ -242,7 +242,7 @@ public abstract class SyncStrategy {
             if (!e.isExpected()) {
                 logger.error(e.getMessage());
                 if (ExecutionContextController.getCurrentMethodContext() != null) {
-                    ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to X-Ray failed.");
+                    ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to Xray failed.");
                 }
             } else {
                 logger.info(XrayNoSync.class.getSimpleName() + " annotation found, no sync of test method is desired");

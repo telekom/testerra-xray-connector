@@ -1,5 +1,5 @@
-testerra-report
-test-report
+testerra-report/
+test-report/
 **/report-testsundertest-*
 .gradle
 gradle
