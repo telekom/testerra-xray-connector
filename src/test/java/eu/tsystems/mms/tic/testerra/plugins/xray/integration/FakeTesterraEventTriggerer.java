@@ -93,7 +93,7 @@ public class FakeTesterraEventTriggerer implements ITestListener, IInvokedMethod
 
         if (method.isTestMethod()) {
             final MethodContext methodContext = ExecutionContextController
-                    .setCurrentTestResult(testResult, testResult.getTestContext()); // stores the actual testresult, auto-creates the method context
+                    .setCurrentTestResult(testResult); // stores the actual testresult, auto-creates the method context
             ExecutionContextController.setCurrentMethodContext(methodContext);
         }
     }
