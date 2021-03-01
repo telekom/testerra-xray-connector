@@ -23,8 +23,8 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
+import eu.tsystems.mms.tic.testframework.common.Testerra;
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
-import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import java.util.List;
@@ -58,18 +58,18 @@ public class FakeTesterraEventTriggerer implements ITestListener, IInvokedMethod
     @Override
     public void onTestSuccess(ITestResult result) {
 
-        TesterraListener.getEventBus().post(new MethodEndEvent());
+        Testerra.getEventBus().post(new MethodEndEvent());
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        TesterraListener.getEventBus().post(new MethodEndEvent());
+        Testerra.getEventBus().post(new MethodEndEvent());
 
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        TesterraListener.getEventBus().post(new MethodEndEvent());
+        Testerra.getEventBus().post(new MethodEndEvent());
     }
 
     @Override

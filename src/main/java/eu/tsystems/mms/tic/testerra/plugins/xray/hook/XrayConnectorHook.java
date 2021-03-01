@@ -23,9 +23,9 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.hook;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
+import eu.tsystems.mms.tic.testframework.common.Testerra;
 import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
-import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +57,7 @@ public class XrayConnectorHook implements ModuleHook, Loggable {
 
         for (final AbstractXrayResultsSynchronizer xraySynchronizer : XRAY_LISTENER) {
             xraySynchronizer.shutdown();
-            TesterraListener.getEventBus().unregister(xraySynchronizer);
+            Testerra.getEventBus().unregister(xraySynchronizer);
         }
     }
 
@@ -78,7 +78,7 @@ public class XrayConnectorHook implements ModuleHook, Loggable {
                 final AbstractXrayResultsSynchronizer xrayListener = aClass.getConstructor().newInstance();
                 log().debug("Calling xray result listener " + aClass.getSimpleName() + "...");
                 xrayListener.initialize();
-                TesterraListener.getEventBus().register(xrayListener);
+                Testerra.getEventBus().register(xrayListener);
                 XRAY_LISTENER.add(xrayListener);
             } catch (Exception e) {
                 log().error("Could not load Xray result listener", e);
