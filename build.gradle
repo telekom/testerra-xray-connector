@@ -9,7 +9,7 @@ apply from: rootProject.file('release-bintray.gradle')
 
 ext {
     // Minimum required Testerra version
-    testerraCompileVersion = '1.0-RC-19'
+    testerraCompileVersion = '1.0-RC-30'
     // Unit tests use the latest Testerra version
     testerraTestVersion = '[1.0-RC,2-SNAPSHOT)'
 
@@ -31,6 +31,7 @@ dependencies {
     compileOnly 'eu.tsystems.mms.tic.testerra:core:' + testerraCompileVersion
     implementation 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraCompileVersion
 
+    implementation 'org.reflections:reflections:0.9.12'
     compile "com.google.guava:guava:25.1-jre"
 
     // https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
