@@ -1,11 +1,6 @@
-plugins {
-    id "com.jfrog.bintray" version "1.8.5"
-}
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
-
-apply from: rootProject.file('release-bintray.gradle')
 
 ext {
     // Minimum required Testerra version
@@ -22,6 +17,9 @@ ext {
     group 'eu.tsystems.mms.tic.testerra'
     version moduleVersion
 }
+
+// Do not move this integration because `group` and `version` is needed for publishing
+apply from: rootProject.file('publish.gradle')
 
 repositories {
     mavenCentral()
