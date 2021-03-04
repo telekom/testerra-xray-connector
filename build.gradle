@@ -9,12 +9,12 @@ apply from: rootProject.file('release-bintray.gradle')
 
 ext {
     // Minimum required Testerra version
-    testerraCompileVersion = '1.0-RC-19'
+    testerraCompileVersion = '2.0-RC-1'
     // Unit tests use the latest Testerra version
-    testerraTestVersion = '[1.0-RC,2-SNAPSHOT)'
+    testerraTestVersion = '[2.0-RC,2-SNAPSHOT)'
 
     // Default version
-    moduleVersion = '1-SNAPSHOT'
+    moduleVersion = '2-SNAPSHOT'
     if (System.properties.containsKey('moduleVersion')) {
         moduleVersion = System.getProperty('moduleVersion')
     }

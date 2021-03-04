@@ -22,6 +22,7 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.hook;
 
+import com.google.inject.AbstractModule;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testframework.common.Testerra;
 import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
@@ -41,7 +42,7 @@ import org.reflections.util.ConfigurationBuilder;
  *
  * @author Eric Kubenka
  */
-public class XrayConnectorHook implements ModuleHook, Loggable {
+public class XrayConnectorHook extends AbstractModule implements ModuleHook, Loggable {
 
     private static final List<AbstractXrayResultsSynchronizer> XRAY_LISTENER = new LinkedList<>();
 
