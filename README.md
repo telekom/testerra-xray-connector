@@ -7,11 +7,11 @@ but you have to provide a valid property file and concrete implementations of in
 
 ## Releases
 
-* Latest Release: `1.0-RC-5`
+* Latest Release: `2.0-RC-1`
 
 ## Requirements
 
-* Testerra in Version `1.0-RC-30`
+* Testerra in Version `2.0-RC-2`
 
 ## Usage
 
@@ -20,7 +20,7 @@ Include the following dependency in your project.
 Gradle:
 
 ````groovy
-implementation 'eu.tsystems.mms.tic.testerra:xray-connector:1.0-RC-5'
+implementation 'eu.tsystems.mms.tic.testerra:xray-connector:2.0-RC-1'
 ````
 
 Maven:
@@ -30,7 +30,7 @@ Maven:
 <dependency>
     <groupId>eu.tsystems.mms.tic.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>1.0-RC-5</version>
+    <version>2.0-RC-1</version>
 </dependency>
 ````
 
