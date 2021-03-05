@@ -7,11 +7,11 @@ but you have to provide a valid property file and concrete implementations of in
 
 ## Releases
 
-* Latest Release: `1.0-RC-4`
+* Latest Release: `1.0-RC-5`
 
 ## Requirements
 
-* Testerra in Version `1.0-RC-19`
+* Testerra in Version `1.0-RC-30`
 
 ## Usage
 
@@ -20,7 +20,7 @@ Include the following dependency in your project.
 Gradle:
 
 ````groovy
-implementation 'eu.tsystems.mms.tic.testerra:xray-connector:1.0-RC-4'
+implementation 'eu.tsystems.mms.tic.testerra:xray-connector:1.0-RC-5'
 ````
 
 Maven:
@@ -30,7 +30,7 @@ Maven:
 <dependency>
     <groupId>eu.tsystems.mms.tic.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>1.0-RC-4</version>
+    <version>1.0-RC-5</version>
 </dependency>
 ````
 
@@ -348,28 +348,23 @@ set the "affected version" to "1.0-RC".
 
 ### ... to a Maven repo
 
-```sh
+_Publishing to local repo_
+```shell
 gradle publishToMavenLocal
 ```
 
-or pass then properties via. CLI
-
-```sh
+_Publishing to remote repo_
+```shell
 gradle publish -DdeployUrl=<repo-url> -DdeployUsername=<repo-user> -DdeployPassword=<repo-password>
 ```
 
-Set a custom version
-
-```shell script
+_Set a custom version_
+```shell
 gradle publish -DmoduleVersion=<version>
 ```
+### ... to GitHub Packages
 
-### ... to Bintray
+Some hints for using GitHub Packages as Maven repository
 
-Upload and publish this module to Bintray:
-
-````sh
-gradle bintrayUpload -DmoduleVersion=<version> -DBINTRAY_USER=<bintray-user> -DBINTRAY_API_KEY=<bintray-api-key>
-```` 
-
-
+* Deploy URL is https://maven.pkg.github.com/OWNER/REPOSITRY
+* As password generate an access token and grant permissions to ``write:packages`` (Settings -> Developer settings -> Personal access token)
