@@ -21,10 +21,6 @@ ext {
 // Do not move this integration because `group` and `version` is needed for publishing
 apply from: rootProject.file('publish.gradle')
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     compileOnly 'eu.tsystems.mms.tic.testerra:core:' + testerraCompileVersion
     implementation 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraCompileVersion
