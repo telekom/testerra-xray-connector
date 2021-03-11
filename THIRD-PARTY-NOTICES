@@ -9,3 +9,64 @@ to our attention by contacting us via an GitHub issue.
 
 Components:
 -----------
+
+Component: 	eu.tsystems.mms.tic.testerra.driver-ui-desktop
+Version:	1.0-RC-30
+Website:   	https://testerra.io
+Repository:	https://github.com/telekom/testerra
+License:   	Apache-2.0
+
+Component: 	eu.tsystems.mms.tic.testerra.report-ng
+Version:	1.0-RC-30
+Website:   	https://testerra.io
+Repository:	https://github.com/telekom/testerra
+License:   	Apache-2.0
+
+Component: 	org.reflections.reflections
+Version:	0.9.12
+Website:   	https://github.com/ronmamo/reflections
+Repository:	https://github.com/ronmamo/reflections
+License:   	BSD 2-Clause
+
+Component: 	com.google.guava.guava
+Version:	25.1-jre
+Website:   	https://github.com/google/guava/
+Repository:	https://github.com/google/guava/
+License:   	Apache 2.0
+
+Component: 	org.glassfish.jersey.core.jersey-client
+Version:	2.31
+Website:   	https://projects.eclipse.org/projects/ee4j.jersey
+Repository:	https://github.com/eclipse-ee4j/jersey
+License:   	EPL 2.0
+
+Component: 	javax.ws.rs.javax.ws.rs-api
+Version:	2.0.1
+Website:   	http://www.oracle.com/
+Repository:	https://github.com/jax-rs/api
+License:   	CDDL
+
+Component: 	com.sun.jersey.contribs.jersey-multipart
+Version:	1.19.3
+Website:   	http://www.oracle.com/
+Repository:	https://github.com/eclipse-ee4j/jersey
+License:   	CDDL
+
+Component: 	com.fasterxml.jackson.core.jackson-core
+Version:	2.3.1
+Website:   	https://github.com/FasterXML/jackson-core
+Repository:	https://github.com/FasterXML/jackson-core
+License:   	Apache 2.0
+
+Component: 	com.fasterxml.jackson.core.jackson-databind
+Version:	2.3.1
+Website:   	https://github.com/FasterXML/jackson-databind
+Repository:	https://github.com/FasterXML/jackson-databind
+License:   	Apache 2.0
+
+Component: 	commons-codec.commons-codec
+Version:	1.13
+Website:   	http://commons.apache.org/proper/commons-codec/
+Repository:	https://github.com/apache/commons-codec
+License:   	Apache 2.0
+
