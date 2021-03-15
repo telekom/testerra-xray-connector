@@ -7,9 +7,8 @@
 </p>
 
 <p align="center">
-  <a href="#installation">Installation</a> •
+  <a href="#setup">Setup</a> •
   <a href="#documentation">Documentation</a> •
-  <a href="#development">Development</a> •
   <a href="#support-and-feedback">Support</a> •
   <a href="#how-to-contribute">Contribute</a> •
   <a href="#contributors">Contributors</a> •
@@ -18,15 +17,17 @@
 
 ## About this module
 
-This module for Testerra framwork allows to synchronize the test results to the test management plugin Xray for Atlassian Jira.
+This module provides additional features for [Testerra Framework](https://github.com/telekom/testerra) for automated tests.
 
-----
+This module allows to synchronize the test results to the test management plugin Xray for Atlassian Jira.
 
-## Requirements
+## Setup
+
+### Requirements
 
 * Testerra in Version `1.0-RC-30`
 
-## Usage
+### Usage
 
 Include the following dependency in your project.
 
@@ -46,6 +47,8 @@ Maven:
     <version>1.0-RC-5</version>
 </dependency>
 ````
+
+## Documentation
 
 ### Add property file
 
@@ -382,10 +385,6 @@ Some hints for using GitHub Packages as Maven repository
 * Deploy URL is https://maven.pkg.github.com/OWNER/REPOSITRY
 * As password generate an access token and grant permissions to ``write:packages`` (Settings -> Developer settings -> Personal access token)
 
-## Documentation
-
-Check out our comprehensive [Testerra documentation](http://docs.testerra.io)!
-
 ## Code of Conduct
 
 This project has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) in version 2.0 as our code of conduct. Please see the details in our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). All contributors must abide by the code of conduct.
@@ -403,15 +402,6 @@ The following channels are available for discussions, feedback, and support requ
 | ------------------------ | ------------------------------------------------------ |
 | **Issues**   | <a href="/../../issues/new/choose" title="Issues"><img src="https://img.shields.io/github/issues/telekom/testerra-xray-connector?style=flat"></a> |
 | **Other Requests**    | <a href="mailto:testerra@t-systems-mms.com" title="Email us"><img src="https://img.shields.io/badge/email-CWA%20team-green?logo=mail.ru&style=flat-square&logoColor=white"></a>   |
-
-
-## Repositories
-
-| Repository          | Description                                                           |
-| ------------------- | --------------------------------------------------------------------- |
-| [testerra] | Testerra |
-
-[testerra]: https://github.com/telekom/testerra
 
 ## How to Contribute
 
