@@ -4,7 +4,7 @@
 
 // Maven pom.xml attributes
 ext {
-    libraryName = 'Testerra TeamCity Connector'
+    libraryName = 'Testerra Xray Connector'
     packagingType = 'jar'
 
     siteUrl = 'https://testerra.io'
