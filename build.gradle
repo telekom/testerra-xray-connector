@@ -29,7 +29,7 @@ apply from: rootProject.file('publish.gradle')
 
 dependencies {
     compileOnly 'io.testerra:core:' + testerraCompileVersion
-    implementation 'io.testerra:surefire-connector:' + testerraCompileVersion
+    compileOnly 'io.testerra:surefire-connector:' + testerraCompileVersion
 
     implementation 'org.reflections:reflections:0.9.12'
     compile "com.google.guava:guava:25.1-jre"

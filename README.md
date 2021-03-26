@@ -36,6 +36,7 @@ Gradle:
 
 ````groovy
 implementation 'io.testerra:xray-connector:1.0'
+implementation 'io.testerra:surefire-connector:1.0'
 ````
 
 Maven:
@@ -45,6 +46,11 @@ Maven:
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
+    <version>1.0</version>
+</dependency>
+<dependency>
+    <groupId>io.testerra</groupId>
+    <artifactId>surefire-connector</artifactId>
     <version>1.0</version>
 </dependency>
 ````
