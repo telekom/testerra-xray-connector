@@ -1,15 +1,15 @@
 # Testerra Xray Connector
 
 <p align="center">
+    <a href="https://mvnrepository.com/artifact/io.testerra/xray-connector" title="MavenCentral"><img src="https://img.shields.io/maven-central/v/io.testerra/xray-connector?label=Maven%20Central"></a>
     <a href="/../../commits/" title="Last Commit"><img src="https://img.shields.io/github/last-commit/telekom/testerra-xray-connector?style=flat"></a>
     <a href="/../../issues" title="Open Issues"><img src="https://img.shields.io/github/issues/telekom/testerra-xray-connector?style=flat"></a>
     <a href="./LICENSE" title="License"><img src="https://img.shields.io/badge/License-Apache%202.0-green.svg?style=flat"></a>
 </p>
 
 <p align="center">
-  <a href="#installation">Installation</a> •
+  <a href="#setup">Setup</a> •
   <a href="#documentation">Documentation</a> •
-  <a href="#development">Development</a> •
   <a href="#support-and-feedback">Support</a> •
   <a href="#how-to-contribute">Contribute</a> •
   <a href="#contributors">Contributors</a> •
@@ -18,22 +18,25 @@
 
 ## About this module
 
-This module for Testerra framwork allows to synchronize the test results to the test management plugin Xray for Atlassian Jira.
+This module provides additional features for [Testerra Framework](https://github.com/telekom/testerra) for automated tests.
 
-----
+This module allows to synchronize the test results to the test management plugin Xray for Atlassian Jira.
 
-## Requirements
+## Setup
 
-* Testerra in Version `2.0-RC-2`
+### Requirements
 
-## Usage
+![Maven Central](https://img.shields.io/maven-central/v/io.testerra/core/2.0-RC-2?label=Testerra)
+
+### Usage
 
 Include the following dependency in your project.
 
 Gradle:
 
 ````groovy
-implementation 'eu.tsystems.mms.tic.testerra:xray-connector:2.0-RC-1'
+implementation 'io.testerra:xray-connector:2.0-RC-2'
+implementation 'io.testerra:surefire-connector:2.0-RC-2'
 ````
 
 Maven:
@@ -41,11 +44,18 @@ Maven:
 ````xml
 
 <dependency>
-    <groupId>eu.tsystems.mms.tic.testerra</groupId>
+    <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>2.0-RC-1</version>
+    <version>2.0-RC-2</version>
+</dependency>
+<dependency>
+    <groupId>io.testerra</groupId>
+    <artifactId>surefire-connector</artifactId>
+    <version>2.0-RC-2</version>
 </dependency>
 ````
+
+## Documentation
 
 ### Add property file
 
@@ -359,32 +369,24 @@ set the "affected version" to "1.0-RC".
 
 ## Publication
 
-### ... to a Maven repo
+This module is deployed and published to Maven Central. All JAR files are signed via Gradle signing plugin.
 
-_Publishing to local repo_
-```shell
-gradle publishToMavenLocal
-```
+The following properties have to be set via command line or ``~/.gradle/gradle.properties``
 
-_Publishing to remote repo_
-```shell
-gradle publish -DdeployUrl=<repo-url> -DdeployUsername=<repo-user> -DdeployPassword=<repo-password>
-```
+| Property                      | Description                                         |
+| ----------------------------- | --------------------------------------------------- |
+| `moduleVersion`               | Version of deployed module, default is `1-SNAPSHOT` |
+| `deployUrl`                   | Maven repository URL                                |
+| `deployUsername`              | Maven repository username                           |
+| `deployPassword`              | Maven repository password                           |
+| `signing.keyId`               | GPG private key ID (short form)                     |
+| `signing.password`            | GPG private key password                            |
+| `signing.secretKeyRingFile`   | Path to GPG private key                             |
 
-_Set a custom version_
-```shell
-gradle publish -DmoduleVersion=<version>
-```
-### ... to GitHub Packages
-
-Some hints for using GitHub Packages as Maven repository
-
-* Deploy URL is https://maven.pkg.github.com/OWNER/REPOSITRY
-* As password generate an access token and grant permissions to ``write:packages`` (Settings -> Developer settings -> Personal access token)
-
-## Documentation
-
-Check out our comprehensive [Testerra documentation](http://docs.testerra.io)!
+If all properties are set, call the following to build, deploy and release this module:
+````shell
+gradle publish closeAndReleaseRepository
+````
 
 ## Code of Conduct
 
@@ -403,15 +405,6 @@ The following channels are available for discussions, feedback, and support requ
 | ------------------------ | ------------------------------------------------------ |
 | **Issues**   | <a href="/../../issues/new/choose" title="Issues"><img src="https://img.shields.io/github/issues/telekom/testerra-xray-connector?style=flat"></a> |
 | **Other Requests**    | <a href="mailto:testerra@t-systems-mms.com" title="Email us"><img src="https://img.shields.io/badge/email-CWA%20team-green?logo=mail.ru&style=flat-square&logoColor=white"></a>   |
-
-
-## Repositories
-
-| Repository          | Description                                                           |
-| ------------------- | --------------------------------------------------------------------- |
-| [testerra] | Testerra |
-
-[testerra]: https://github.com/telekom/testerra
 
 ## How to Contribute
 

@@ -1,6 +1,12 @@
+plugins {
+    id "io.codearte.nexus-staging" version "0.30.0"
+}
+
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply plugin: 'io.codearte.nexus-staging'
 
 ext {
     // Minimum required Testerra version
@@ -14,7 +20,7 @@ ext {
         moduleVersion = System.getProperty('moduleVersion')
     }
 
-    group 'eu.tsystems.mms.tic.testerra'
+    group 'io.testerra'
     version moduleVersion
 }
 
@@ -22,8 +28,8 @@ ext {
 apply from: rootProject.file('publish.gradle')
 
 dependencies {
-    compileOnly 'eu.tsystems.mms.tic.testerra:core:' + testerraCompileVersion
-    implementation 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraCompileVersion
+    compileOnly 'io.testerra:core:' + testerraCompileVersion
+    compileOnly 'io.testerra:surefire-connector:' + testerraCompileVersion
 
     implementation 'org.reflections:reflections:0.9.12'
     compile "com.google.guava:guava:25.1-jre"
@@ -36,8 +42,8 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.3.1'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.3.1'
 
-    testImplementation 'eu.tsystems.mms.tic.testerra:core:' + testerraTestVersion
-    testImplementation 'eu.tsystems.mms.tic.testerra:surefire-connector:' + testerraTestVersion
+    testImplementation 'io.testerra:core:' + testerraTestVersion
+    testImplementation 'io.testerra:surefire-connector:' + testerraTestVersion
     testImplementation 'commons-codec:commons-codec:1.13'
 }
 
