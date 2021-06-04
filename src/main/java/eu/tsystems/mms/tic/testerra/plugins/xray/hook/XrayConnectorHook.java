@@ -70,7 +70,7 @@ public class XrayConnectorHook implements ModuleHook, Loggable {
         final Set<Class<? extends AbstractXrayResultsSynchronizer>> hooks = reflections.getSubTypesOf(AbstractXrayResultsSynchronizer.class);
 
         if (hooks.isEmpty()) {
-            log().debug("No Xray result listener found");
+            log().warn("No " + AbstractXrayResultsSynchronizer.class.getSimpleName() + " found");
         }
 
         hooks.forEach(aClass -> {
