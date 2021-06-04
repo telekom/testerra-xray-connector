@@ -1,7 +1,7 @@
 # Testerra Xray Connector
 
 <p align="center">
-    <a href="https://mvnrepository.com/artifact/io.testerra/xray-connector" title="MavenCentral"><img src="https://img.shields.io/maven-central/v/io.testerra/xray-connector?label=Maven%20Central"></a>
+    <a href="https://mvnrepository.com/artifact/io.testerra/xray-connector" title="MavenCentral"><img src="https://img.shields.io/maven-central/v/io.testerra/xray-connector/1?label=Maven%20Central"></a>
     <a href="/../../commits/" title="Last Commit"><img src="https://img.shields.io/github/last-commit/telekom/testerra-xray-connector?style=flat"></a>
     <a href="/../../issues" title="Open Issues"><img src="https://img.shields.io/github/issues/telekom/testerra-xray-connector?style=flat"></a>
     <a href="./LICENSE" title="License"><img src="https://img.shields.io/badge/License-Apache%202.0-green.svg?style=flat"></a>
@@ -30,13 +30,13 @@ This module allows to synchronize the test results to the test management plugin
 
 ### Usage
 
-Include the following dependency in your project.
+Include the following dependency in your project. Please replace `1-SNAPSHOT` with the latest version.
 
 Gradle:
 
 ````groovy
-implementation 'io.testerra:xray-connector:1.0'
-implementation 'io.testerra:surefire-connector:1.0'
+implementation 'io.testerra:xray-connector:1-SNAPSHOT'
+implementation 'io.testerra:surefire-connector:1-SNAPSHOT'
 ````
 
 Maven:
@@ -46,12 +46,12 @@ Maven:
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>1.0</version>
+    <version>1-SNAPSHOT</version>
 </dependency>
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>surefire-connector</artifactId>
-    <version>1.0</version>
+    <version>1-SNAPSHOT</version>
 </dependency>
 ````
 
@@ -141,15 +141,13 @@ With this configuration Xray connector will lookup for an Jira issue of type `Te
 - revision
 - assignee
 
-If you provide `null` values, the connector will ignore these fields.  
-The default implementations `EmptyMapper` and `EmptyTestExecutionUpdates` can be replaced by your own implementations and will be
-explained later.
+If you provide `null` values, the connector will ignore these fields.
 
 ```java
-public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+public class XrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 
     @Override
-    XrayTestExecutionInfo getExecutionInfo() {
+    public XrayTestExecutionInfo getExecutionInfo() {
         return new XrayTestExecutionInfo() {
 
             @Override
@@ -184,15 +182,15 @@ public class FooXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer 
         };
     }
 
-    @Override
-    public XrayMapper getXrayMapper() {
-        return null;
-    }
+//    @Override
+//    public XrayMapper getXrayMapper() {
+//        return null;
+//    }
 
-    @Override
-    public XrayTestExecutionUpdates getExecutionUpdates() {
-        return null;
-    }
+//    @Override
+//    public XrayTestExecutionUpdates getExecutionUpdates() {
+//        return null;
+//    }
 }
 ```
 
