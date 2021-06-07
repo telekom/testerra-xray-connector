@@ -173,7 +173,6 @@ public class JiraUtilsTest extends AbstractTest {
         final XrayInfo xrayInfo = new XrayInfo(projectKey, summary, description, testEnvironments, revision, "1.0.2", "fnu-jira-testerra");
         final String key = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo);
 
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
         final JiraIssue issue = JiraUtils.getIssue(webResource, key,
                 Lists.newArrayList("project", "summary", "description",
                         Fields.REVISION.getFieldName(),

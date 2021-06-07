@@ -88,7 +88,6 @@ public class XrayUtilsTest extends AbstractTest {
                 XrayUtils.createFreshTestExecution(xrayInfo, Arrays.asList("SWFTE-1", "SWFTE-2", "SWFTE-3"));
         final String key = XrayUtils.syncTestExecutionReturnKey(webResource, freshTestExecution);
 
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
         final JiraIssue issue = JiraUtils.getIssue(webResource, key,
                 Lists.newArrayList("project", "summary", "description",
                         Fields.REVISION.getFieldName(),
