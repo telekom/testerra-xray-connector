@@ -26,7 +26,9 @@ This module allows to synchronize the test results to the test management plugin
 
 ### Requirements
 
-![Maven Central](https://img.shields.io/maven-central/v/io.testerra/core/1.0.0?label=Testerra)
+| Xray connector | Testerra     |
+| -------------- | -------------|
+| `1.0`          | ` >= 1.0.0`  |
 
 ### Usage
 
