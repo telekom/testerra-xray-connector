@@ -22,10 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -35,6 +31,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.GlobalTestData;
 import eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.FreshXrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
@@ -43,6 +40,12 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
+import org.apache.commons.codec.binary.Base64;
+import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import javax.ws.rs.core.MediaType;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -53,22 +56,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import javax.ws.rs.core.MediaType;
-import org.apache.commons.codec.binary.Base64;
-import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class XrayUtilsTest extends AbstractTest {
 
     private WebResource webResource;
+    private XrayConfig xrayConfig;
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
         webResource =
                 TestUtils.prepareWebResource(Paths.get(getClass().getResource("/xray-test-posthoc.properties").toURI()).getFileName().toString());
     }
-
 
     @Test
     public void testCreateTestExecution() throws Exception {
@@ -90,20 +91,20 @@ public class XrayUtilsTest extends AbstractTest {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
         final JiraIssue issue = JiraUtils.getIssue(webResource, key,
                 Lists.newArrayList("project", "summary", "description",
-                        xrayConfig.getRevisionFieldName(),
-                        xrayConfig.getTestExecutionStartTimeFieldName(),
-                        xrayConfig.getTestEnvironmentsFieldName()
+                        Fields.REVISION.getFieldName(),
+                        Fields.TEST_EXECUTION_START_DATE.getFieldName(),
+                        Fields.TEST_ENVIRONMENTS.getFieldName()
                 )
         );
         Assert.assertEquals(issue.getKey(), key);
         Assert.assertEquals(issue.getFields().findValue("project").findValue("name").asText(), "Spielwiese Framework-Tests");
         Assert.assertEquals(issue.getFields().findValue("summary").asText(), summary);
         Assert.assertEquals(issue.getFields().findValue("description").asText(), description);
-        Assert.assertEquals(issue.getFields().findValue(xrayConfig.getRevisionFieldName()).asText(), revision);
-        issue.getFields().findValue(xrayConfig.getTestEnvironmentsFieldName())
+        Assert.assertEquals(issue.getFields().findValue(Fields.REVISION.getFieldName()).asText(), revision);
+        issue.getFields().findValue(Fields.TEST_ENVIRONMENTS.getFieldName())
                 .forEach(x -> assertTrue(testEnvironments.contains(x.textValue())));
 
-        final JsonNode startDateNode = issue.getFields().findValue(xrayConfig.getTestExecutionStartTimeFieldName());
+        final JsonNode startDateNode = issue.getFields().findValue(Fields.TEST_EXECUTION_START_DATE.getFieldName());
         assertNotNull(startDateNode);
         final Date startDate = JiraUtils.dateFormat.parse(startDateNode.asText());
         final Calendar calInFuture = Calendar.getInstance();
@@ -114,7 +115,6 @@ public class XrayUtilsTest extends AbstractTest {
         /** set global property to use later */
         GlobalTestData.getInstance().setKeyOfNewTestExecution(key);
     }
-
 
     @Test(dependsOnMethods = "testCreateTestExecution")
     public void testExportTestExecutionAsJson() throws Exception {
@@ -192,7 +192,6 @@ public class XrayUtilsTest extends AbstractTest {
             xrayEvidences.addAll(Arrays.asList(htmlEvidence, zipEvidence));
             testBLA13138.setEvidences(xrayEvidences);
         }
-
 
         execution.setTests(existingTests);
         XrayUtils.syncTestExecutionReturnKey(webResource, execution);
