@@ -22,11 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -43,6 +38,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTest
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestTypeEquals;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
@@ -53,6 +49,11 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.SimpleJiraIs
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLabels;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
+import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -65,10 +66,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class JiraUtilsTest extends AbstractTest {
 
@@ -84,7 +85,7 @@ public class JiraUtilsTest extends AbstractTest {
 
     @DataProvider
     private Object[][] provideExistingIssues() {
-        return new Object[][] {
+        return new Object[][]{
                 {"SWFTE-1", "TM - passes"},
                 {"SWFTE-2", "TM - fails"},
                 {"SWFTE-3", "TM - skips"},
@@ -119,7 +120,7 @@ public class JiraUtilsTest extends AbstractTest {
 
     @Test
     public void testUpdateIssueWithPredefsRemoveAllLabels() throws IOException {
-        String[] labelsToSet = new String[] {};
+        String[] labelsToSet = new String[]{};
         final JiraIssueUpdate update = JiraIssueUpdate.create()
                 .field(new SetLabels(labelsToSet))
                 .build();
@@ -133,7 +134,7 @@ public class JiraUtilsTest extends AbstractTest {
 
     @Test(dependsOnMethods = "testUpdateIssueWithPredefsRemoveAllLabels")
     public void testUpdateIssueWithPredefsSetLabels() throws IOException {
-        String[] labelsToSet = new String[] {"Test-Automatisierung", "Aufräumaktion"};
+        String[] labelsToSet = new String[]{"Test-Automatisierung", "Aufräumaktion"};
         final JiraIssueUpdate update = JiraIssueUpdate.create()
                 .field(new SetLabels(labelsToSet))
                 .build();
@@ -145,7 +146,6 @@ public class JiraUtilsTest extends AbstractTest {
         Assert.assertTrue(foundLabels.containsAll(Arrays.asList(labelsToSet)));
         Assert.assertTrue(Arrays.asList(labelsToSet).containsAll(foundLabels));
     }
-
 
     @Test(dependsOnMethods = "testUpdateIssueWithPredefsSetLabels")
     public void testUpdateIssueWithPredefsRemoveSingleLabel() throws IOException {
@@ -173,23 +173,22 @@ public class JiraUtilsTest extends AbstractTest {
         final XrayInfo xrayInfo = new XrayInfo(projectKey, summary, description, testEnvironments, revision, "1.0.2", "fnu-jira-testerra");
         final String key = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo);
 
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
         final JiraIssue issue = JiraUtils.getIssue(webResource, key,
                 Lists.newArrayList("project", "summary", "description",
-                        xrayConfig.getRevisionFieldName(),
-                        xrayConfig.getTestExecutionStartTimeFieldName(),
-                        xrayConfig.getTestEnvironmentsFieldName()
+                        Fields.REVISION.getFieldName(),
+                        Fields.TEST_EXECUTION_START_DATE.getFieldName(),
+                        Fields.TEST_ENVIRONMENTS.getFieldName()
                 )
         );
         assertEquals(issue.getKey(), key);
         assertEquals(issue.getFields().findValue("project").findValue("name").asText(), "Spielwiese Framework-Tests");
         assertEquals(issue.getFields().findValue("summary").asText(), summary);
         assertEquals(issue.getFields().findValue("description").asText(), description);
-        assertEquals(issue.getFields().findValue(xrayConfig.getRevisionFieldName()).asText(), revision);
-        issue.getFields().findValue(xrayConfig.getTestEnvironmentsFieldName())
+        assertEquals(issue.getFields().findValue(Fields.REVISION.getFieldName()).asText(), revision);
+        issue.getFields().findValue(Fields.TEST_ENVIRONMENTS.getFieldName())
                 .forEach(x -> assertTrue(testEnvironments.contains(x.textValue())));
 
-        final JsonNode startDateNode = issue.getFields().findValue(xrayConfig.getTestExecutionStartTimeFieldName());
+        final JsonNode startDateNode = issue.getFields().findValue(Fields.TEST_EXECUTION_START_DATE.getFieldName());
         assertNotNull(startDateNode);
         final Date startDate = JiraUtils.dateFormat.parse(startDateNode.asText());
         final Calendar calendar = Calendar.getInstance();
@@ -200,7 +199,6 @@ public class JiraUtilsTest extends AbstractTest {
         /* set global property to use later */
         GlobalTestData.getInstance().setKeyOfNewTestExecution(key);
     }
-
 
     @Test(groups = "issueStatus")
     public void testGetIssueStatus() throws IOException {
@@ -230,7 +228,6 @@ public class JiraUtilsTest extends AbstractTest {
         JiraUtils.doTransitionByName(webResource, statusIssueKey, "Arbeit beginnen");
         JiraStatus newStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
         assertEquals(newStatus.getName(), "In Arbeit");
-
 
         JiraUtils.doTransitionByName(webResource, statusIssueKey, "Arbeit beenden");
         newStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
