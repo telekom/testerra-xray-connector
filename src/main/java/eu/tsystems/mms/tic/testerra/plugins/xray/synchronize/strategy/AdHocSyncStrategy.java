@@ -66,7 +66,7 @@ public class AdHocSyncStrategy extends SyncStrategy {
             try {
                 connector.updateIssue(testExecKey, onExecutionDone);
             } catch (final JsonProcessingException e) {
-                logger.error(e.getMessage());
+                log().error(e.getMessage());
             }
         }
         connector.doTransitions(testExecKey, XrayConfig.getInstance().getTransitionsOnDone());
@@ -88,10 +88,8 @@ public class AdHocSyncStrategy extends SyncStrategy {
     }
 
     private void finishTest(MethodEndEvent event) {
-
-        final String[] testKeys = getTestKeys(event);
-
-        if (testKeys != null) {
+        getTestKeysFromAnnotation(event).ifPresent(testKeys -> {
+            log().info("Synchronize: " + String.join(", ", testKeys));
             for (final String testKey : testKeys) {
 
                 final ITestResult testResult = event.getTestResult();
@@ -103,11 +101,11 @@ public class AdHocSyncStrategy extends SyncStrategy {
                 try {
                     connector.syncTestExecutionReturnKey(testExecution);
                 } catch (final IOException e) {
-                    logger.error(e.getMessage());
+                    log().error(e.getMessage());
                 }
                 connector.updateFinishTimeOfTestExecution(testExecKey);
             }
-        }
+        });
     }
 
 }

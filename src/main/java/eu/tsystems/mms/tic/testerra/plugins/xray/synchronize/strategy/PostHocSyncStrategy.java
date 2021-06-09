@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.util.Set;
 import org.testng.ITestResult;
 
-
 public class PostHocSyncStrategy extends SyncStrategy {
 
     private XrayTestExecution testExecution;
@@ -49,7 +48,6 @@ public class PostHocSyncStrategy extends SyncStrategy {
 
     public PostHocSyncStrategy(XrayInfo xrayInfo, XrayMapper xrayMapper, XrayTestExecutionUpdates updates) {
         super(xrayInfo, xrayMapper, updates);
-        logger.info("calling constructor");
     }
 
     @Override
@@ -72,7 +70,7 @@ public class PostHocSyncStrategy extends SyncStrategy {
                 throw new NotSyncableException(message);
             }
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            log().error(e.getMessage());
         }
 
     }
@@ -109,7 +107,7 @@ public class PostHocSyncStrategy extends SyncStrategy {
             connector.doTransitions(testExecKey, XrayConfig.getInstance().getTransitionsOnDone());
             connector.updateFinishTimeOfTestExecution(testExecKey);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            log().error(e.getMessage());
         }
     }
 
@@ -130,13 +128,12 @@ public class PostHocSyncStrategy extends SyncStrategy {
 
     private void finishTest(MethodEndEvent event) {
         final ITestResult result = event.getTestResult();
-        final String[] testKeys = getTestKeys(event);
-
-        if (testKeys != null) {
+        getTestKeysFromAnnotation(event).ifPresent(testKeys -> {
+            log().info("Synchronize: " + String.join(", ", testKeys));
             for (final String testKey : testKeys) {
                 final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, result);
                 tests.add(xrayTestIssue);
             }
-        }
+        });
     }
 }

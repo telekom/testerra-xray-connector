@@ -138,13 +138,13 @@ This approach let you configure nearly everything that can be configured - at ru
 The easiest way is, to start with this example.  
 This implementation will provide static `XrayTestExecutionInfo`, but in practice you should determine these values at runtime.
 
-With this configuration Xray connector will lookup for an Jira issue of type `Test Execution` with matching attributes for:
+With this configuration, the Xray connector will lookup for a Jira issue with the following matching properties:
 
-- summary
-- description
-- revision
-- assignee
+- Type: `Test Execution`
+- Summary (title)
+- Revision
 
+If a test execution could be found, it will be reused and updated, otherwise a new one will be created.
 If you provide `null` values, the connector will ignore these fields.
 
 ```java

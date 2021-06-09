@@ -37,6 +37,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.TestExecutionAttach
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUpdates;
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import java.io.InputStream;
@@ -45,6 +46,7 @@ import java.net.URI;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
@@ -53,12 +55,11 @@ import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 
 
-public abstract class SyncStrategy {
+public abstract class SyncStrategy implements Loggable {
 
     protected final XrayConnector connector;
     protected final XrayTestExecutionUpdates updates;
     protected final XrayInfo xrayInfo;
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
     private final XrayMapper xrayMapper;
     private final BlockingQueue<TestExecutionAttachment> attachmentQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> commentQueue = new LinkedBlockingQueue<>();
@@ -70,25 +71,25 @@ public abstract class SyncStrategy {
         connector = new XrayConnector(xrayInfo);
     }
 
-    private String[] getTestKeysFromAnnotation(final MethodEndEvent event) throws NotSyncableException {
+    protected Optional<String[]> getTestKeysFromAnnotation(final MethodEndEvent event) throws NotSyncableException {
 
         final ITestResult testResult = event.getTestResult();
         if (isNoSyncDesired(testResult.getMethod())) {
-            throw new NotSyncableException("no sync expected", true);
+            return Optional.empty();
         }
 
         final String[] methodResult = readFromMethodAnnotation(testResult.getMethod());
         if (methodResult != null) {
             saveKeyFromXrayTestAnnotationToReport(event);
-            return methodResult;
+            return Optional.of(methodResult);
         }
 
         final String testSetResult = readFromClassAnnotation(event);
         if (testSetResult != null) {
-            return new String[] {testSetResult};
+            return Optional.of(new String[] {testSetResult});
         }
 
-        throw new NotSyncableException(String.format("no test key retrieved for method %s", resultToQualifiedMethodName(testResult)));
+        return Optional.empty();
     }
 
     private String readFromClassAnnotation(final MethodEndEvent event) {
@@ -120,7 +121,7 @@ public abstract class SyncStrategy {
                 }
                 return oneMatchOrNull;
             }
-            logger.warn("no test key could be retrieved for method {} within test set {}, no sync of test result",
+            log().warn("no test key could be retrieved for method {} within test set {}, no sync of test result",
                     resultToQualifiedMethodName(testResult), testSetKey);
         }
         return null;
@@ -175,12 +176,12 @@ public abstract class SyncStrategy {
 
     private <T> T getOneMatchOrNull(final Collection<T> collection) throws NotSyncableException {
         if (collection.isEmpty()) {
-            logger.error("collection is empty, returning null");
+            log().error("collection is empty, returning null");
             return null;
         } else if (collection.size() == 1) {
             return collection.iterator().next();
         } else {
-            logger.error("more than one item in collection: {}, returning null", collection);
+            log().error("more than one item in collection: {}, returning null", collection);
             return null;
         }
     }
@@ -204,7 +205,7 @@ public abstract class SyncStrategy {
             try {
                 connector.addTestExecutionComment(testExecutionKey, comment);
             } catch (JsonProcessingException e) {
-                logger.error("adding test execution comment threw exception", e);
+                log().error("adding test execution comment threw exception", e);
             }
         }
     }
@@ -227,28 +228,18 @@ public abstract class SyncStrategy {
                 xrayTestIssue.setStatus(XrayTestStatus.SKIPPED);
                 break;
             default:
-                logger.error("test-ng result status {} cannot be processed", result.getStatus());
+                log().error("test-ng result status {} cannot be processed", result.getStatus());
         }
 
         xrayTestIssue.setFinish(new Date(result.getEndMillis()));
         return xrayTestIssue;
     }
 
+    /**
+     * @deprecated USe {@link #getTestKeysFromAnnotation(MethodEndEvent)} instead
+     */
     protected String[] getTestKeys(MethodEndEvent result) {
-        String[] testKeys = null;
-        try {
-            testKeys = getTestKeysFromAnnotation(result);
-        } catch (NotSyncableException e) {
-            if (!e.isExpected()) {
-                logger.error(e.getMessage());
-                if (ExecutionContextController.getCurrentMethodContext() != null) {
-                    ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to Xray failed.");
-                }
-            } else {
-                logger.info(XrayNoSync.class.getSimpleName() + " annotation found, no sync of test method is desired");
-            }
-        }
-        return testKeys;
+        return getTestKeysFromAnnotation(result).orElse(null);
     }
 
     public abstract void onTestSuccess(MethodEndEvent testResult);
