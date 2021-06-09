@@ -44,6 +44,7 @@ dependencies {
 
     testImplementation 'io.testerra:core:' + testerraTestVersion
     testImplementation 'io.testerra:surefire-connector:' + testerraTestVersion
+    testImplementation 'io.testerra:report-ng:' + testerraTestVersion
     testImplementation 'commons-codec:commons-codec:1.13'
 }
 
