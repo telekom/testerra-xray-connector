@@ -26,9 +26,10 @@ This module allows to synchronize the test results to the test management plugin
 
 ### Requirements
 
-| Xray connector | Testerra     |
-| -------------- | -------------|
-| `1.0`          | ` >= 1.0.0`  |
+| Xray connector | Testerra         |
+| -------------- | ---------------- |
+| `1.0`          | ` 1.3 >= 1.0.0`  |
+| `1.1`          | ` >= 1.0.0`      |
 
 ### Usage
 
