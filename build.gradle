@@ -2,14 +2,14 @@ plugins {
     id "io.codearte.nexus-staging" version "0.30.0"
 }
 
-apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'io.codearte.nexus-staging'
 
 ext {
     // Minimum required Testerra version
+//    testerraCompileVersion = '1.4-SNAPSHOT'
     testerraCompileVersion = '2-SNAPSHOT'
     // Unit tests use the latest Testerra version
     testerraTestVersion = '[2.0-RC,3-SNAPSHOT)'
@@ -32,12 +32,13 @@ dependencies {
     compileOnly 'io.testerra:surefire-connector:' + testerraCompileVersion
 
     implementation 'org.reflections:reflections:0.9.12'
-    compile "com.google.guava:guava:25.1-jre"
+    api 'com.google.guava:guava:28.1-jre'
 
     // https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
     implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.31'
 
     implementation 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+    implementation 'com.sun.jersey:jersey-client:1.19.3'
     implementation 'com.sun.jersey.contribs:jersey-multipart:1.19.3'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.3.1'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.3.1'
