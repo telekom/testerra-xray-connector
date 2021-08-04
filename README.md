@@ -33,14 +33,14 @@ This module allows to synchronize the test results to the test management plugin
 
 ### Usage
 
-Include the following dependency in your project. Please replace `1-SNAPSHOT` with the latest version.
+Include the following dependency in your project. Please replace the versions with the latest version.
 
 Gradle:
 
 ````groovy
-implementation 'io.testerra:xray-connector:1.0'
+implementation 'io.testerra:xray-connector:1.1'
 // From Testerra framework
-implementation 'io.testerra:surefire-connector:1.0.0'
+implementation 'io.testerra:surefire-connector:1.5'
 ````
 
 Maven:
