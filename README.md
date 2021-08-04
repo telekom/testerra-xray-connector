@@ -50,13 +50,13 @@ Maven:
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 </dependency>
 <!-- From Testerra framework -->
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>surefire-connector</artifactId>
-    <version>1.0.0</version>
+    <version>1.5</version>
 </dependency>
 ````
 
