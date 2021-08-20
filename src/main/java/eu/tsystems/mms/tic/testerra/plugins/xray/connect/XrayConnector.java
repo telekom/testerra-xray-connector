@@ -51,6 +51,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableExceptio
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import eu.tsystems.mms.tic.testframework.utils.ProxyUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -58,6 +59,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,15 +79,20 @@ public class XrayConnector {
 
         if (ProxyUtils.getSystemHttpsProxyUrl() != null) {
             client = RESTClientFactory.createWithProxy(ProxyUtils.getSystemHttpsProxyUrl());
-        } else if (ProxyUtils.getSystemHttpProxyUrl() != null) {
-            client = RESTClientFactory.createWithProxy(ProxyUtils.getSystemHttpProxyUrl());
         } else {
             client = RESTClientFactory.createDefault();
         }
 
         xrayConfig = XrayConfig.getInstance();
         webResource = client.resource(xrayConfig.getRestServiceUri());
-        webResource.addFilter(new HTTPBasicAuthFilter(xrayConfig.getUsername(), xrayConfig.getPassword()));
+
+        if (StringUtils.isNotEmpty(xrayConfig.getToken())) {
+            logger.info("Use Bearer token authentication");
+            webResource.addFilter(new HTTPBasicAuthFilter(xrayConfig.getUsername(), xrayConfig.getPassword()));
+        } else {
+            logger.info("Use Basic authentication");
+            webResource.addFilter(new HttpBearerTokenAuthFilter(xrayConfig.getToken()));
+        }
 
         if (xrayConfig.isWebResourceFilterGetRequestsOnlyEnabled()) {
             webResource.addFilter(new GetRequestOnlyFilter());
