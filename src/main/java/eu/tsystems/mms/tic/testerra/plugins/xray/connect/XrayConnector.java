@@ -88,10 +88,10 @@ public class XrayConnector {
 
         if (StringUtils.isNotEmpty(xrayConfig.getToken())) {
             logger.info("Use Bearer token authentication");
-            webResource.addFilter(new HTTPBasicAuthFilter(xrayConfig.getUsername(), xrayConfig.getPassword()));
+            webResource.addFilter(new HttpBearerTokenAuthFilter(xrayConfig.getToken()));
         } else {
             logger.info("Use Basic authentication");
-            webResource.addFilter(new HttpBearerTokenAuthFilter(xrayConfig.getToken()));
+            webResource.addFilter(new HTTPBasicAuthFilter(xrayConfig.getUsername(), xrayConfig.getPassword()));
         }
 
         if (xrayConfig.isWebResourceFilterGetRequestsOnlyEnabled()) {
