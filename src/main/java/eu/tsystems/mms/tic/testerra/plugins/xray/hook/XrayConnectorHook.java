@@ -22,9 +22,13 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.hook;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestAnnotationConverter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import eu.tsystems.mms.tic.testframework.report.DefaultReport;
+import eu.tsystems.mms.tic.testframework.report.Report;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,11 +53,15 @@ public class XrayConnectorHook implements ModuleHook, Loggable {
     public void init() {
 
         this.initListener();
+        DefaultReport report = (DefaultReport) TesterraListener.getReport();
+        report.registerAnnotationConverter(XrayTest.class, new XrayTestAnnotationConverter());
 
     }
 
     @Override
     public void terminate() {
+        DefaultReport report = (DefaultReport) TesterraListener.getReport();
+        report.unregisterAnnotationConverter(XrayTest.class);
 
         for (final AbstractXrayResultsSynchronizer xraySynchronizer : XRAY_LISTENER) {
             xraySynchronizer.shutdown();
