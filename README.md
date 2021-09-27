@@ -33,7 +33,7 @@ This module allows to synchronize the test results to the test management plugin
 
 ### Usage
 
-Include the following dependency in your project. Please replace `2-SNAPSHOT` with the latest version.
+Include the following dependency in your project. Please replace the versions with the latest version.
 
 Gradle:
 

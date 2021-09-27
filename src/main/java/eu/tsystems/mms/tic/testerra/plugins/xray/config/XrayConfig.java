@@ -58,7 +58,6 @@ public class XrayConfig {
     private final boolean webResourceFilterGetRequestsOnlyEnabled;
     private final boolean isSyncSkippedTests;
 
-    private boolean isSyncEnabled;
     private String fakeTestExecutionKey;
 
     private XrayConfig() {
@@ -68,7 +67,6 @@ public class XrayConfig {
         username = PropertyManager.getProperty("xray.user");
         password = PropertyManager.getProperty("xray.password");
 
-        isSyncEnabled = PropertyManager.getBooleanProperty("xray.sync.enabled", false);
         isSyncSkippedTests = PropertyManager.getBooleanProperty("xray.sync.skipped", false);
 
         URI uri = null;
@@ -94,7 +92,7 @@ public class XrayConfig {
         fakeTestExecutionKey = PropertyManager.getProperty("xray.webresource.filter.getrequestsonly.fake.response.key", "FAKE-666666");
 
         previousResultsFilename = PropertyManager.getProperty("xray.previous.result.filename", "");
-        
+
         /**
          * @todo Replace by field validation {@link Field#getValidationRegex()}
          */
@@ -170,7 +168,7 @@ public class XrayConfig {
     }
 
     public boolean isSyncEnabled() {
-        return isSyncEnabled;
+        return PropertyManager.getBooleanProperty("xray.sync.enabled", false);
     }
 
     private List<String> createTransitionList(String prop) {
