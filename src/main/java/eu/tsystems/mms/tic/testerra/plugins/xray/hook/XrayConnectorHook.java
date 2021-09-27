@@ -29,9 +29,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResults
 import eu.tsystems.mms.tic.testframework.common.Testerra;
 import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
-import eu.tsystems.mms.tic.testframework.report.DefaultReport;
 import eu.tsystems.mms.tic.testframework.report.Report;
-import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -55,14 +53,14 @@ public class XrayConnectorHook extends AbstractModule implements ModuleHook, Log
     public void init() {
 
         this.initListener();
-        DefaultReport report = (DefaultReport) TesterraListener.getReport();
+        Report report = Testerra.getInjector().getInstance(Report.class);
         report.registerAnnotationConverter(XrayTest.class, new XrayTestAnnotationConverter());
 
     }
 
     @Override
     public void terminate() {
-        DefaultReport report = (DefaultReport) TesterraListener.getReport();
+        Report report = Testerra.getInjector().getInstance(Report.class);
         report.unregisterAnnotationConverter(XrayTest.class);
 
         for (final AbstractXrayResultsSynchronizer xraySynchronizer : XRAY_LISTENER) {
