@@ -7,6 +7,9 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'io.codearte.nexus-staging'
 
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
 ext {
     // Minimum required Testerra version
     testerraCompileVersion = '2-SNAPSHOT'
