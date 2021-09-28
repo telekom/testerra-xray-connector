@@ -1,2 +1,2 @@
 rootProject.name = 'xray-connector'
-includeBuild "../testerra"
+//includeBuild "../testerra"
