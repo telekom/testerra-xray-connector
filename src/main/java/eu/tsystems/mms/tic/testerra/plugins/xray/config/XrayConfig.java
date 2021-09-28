@@ -30,10 +30,12 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.PostHocSyn
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.exceptions.SetupException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,7 @@ public class XrayConfig {
     private final List<String> transitionsOnCreated;
     private final List<String> transitionsOnUpdated;
     private final String password;
+    private final String token;
     private final boolean webResourceFilterLoggingEnabled;
     private final boolean webResourceFilterGetRequestsOnlyEnabled;
     private final boolean isSyncSkippedTests;
@@ -66,6 +69,7 @@ public class XrayConfig {
         projectKey = PropertyManager.getProperty("xray.project.key");
         username = PropertyManager.getProperty("xray.user");
         password = PropertyManager.getProperty("xray.password");
+        token = PropertyManager.getProperty("xray.token");
 
         isSyncSkippedTests = PropertyManager.getBooleanProperty("xray.sync.skipped", false);
 
@@ -228,6 +232,10 @@ public class XrayConfig {
         return password;
     }
 
+    public String getToken() {
+        return token;
+    }
+
     /**
      * @deprecated Logging is handled by Log4J configuration
      */
@@ -251,7 +259,6 @@ public class XrayConfig {
     public boolean isSyncSkippedTests() {
         return isSyncSkippedTests;
     }
-
 
     /**
      * @deprecated Use {@link Fields} instead

@@ -75,8 +75,14 @@ xray.sync.strategy=adhoc
 # Connection details (mandatory)
 xray.rest.service.uri=https://jira.example.com/rest
 xray.project.key=PROJECT-KEY
+
+# Xray connector supports Token based authentication or basic authentication
+# If no token is defined, Xray connector uses 'user/password'
+xray.token=jiratoken
+# or
 xray.user=jira-sync-user
 xray.password=password
+
 
 # Jira field IDs (mandatory)
 xray.test.execution.start.time.field.id=
