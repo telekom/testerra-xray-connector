@@ -40,9 +40,9 @@ Include the following dependency in your project. Please replace the versions wi
 Gradle:
 
 ````groovy
-implementation 'io.testerra:xray-connector:1.1'
+implementation 'io.testerra:xray-connector:1.2'
 // From Testerra framework
-implementation 'io.testerra:surefire-connector:1.5'
+implementation 'io.testerra:surefire-connector:1.8'
 ````
 
 Maven:
@@ -52,13 +52,13 @@ Maven:
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 </dependency>
 <!-- From Testerra framework -->
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>surefire-connector</artifactId>
-    <version>1.5</version>
+    <version>1.8</version>
 </dependency>
 ````
 
