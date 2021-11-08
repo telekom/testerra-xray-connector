@@ -12,9 +12,9 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 ext {
     // Minimum required Testerra version
-    testerraCompileVersion = '1.8'
+    testerraCompileVersion = '1.9'
     // Unit tests use the latest Testerra version
-    testerraTestVersion = '[1.0-RC,2-SNAPSHOT)'
+    testerraTestVersion = '[1.9,2-SNAPSHOT)'
 
     // Default version
     moduleVersion = '1-SNAPSHOT'
