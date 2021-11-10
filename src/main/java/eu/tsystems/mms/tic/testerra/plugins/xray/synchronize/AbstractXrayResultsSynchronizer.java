@@ -30,7 +30,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
 import eu.tsystems.mms.tic.testframework.connectors.util.AbstractCommonSynchronizer;
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
-import eu.tsystems.mms.tic.testframework.info.ReportInfo;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -171,7 +170,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
     }
 
     private void reportError(String message, Exception e) {
-        ReportInfo.getDashboardInfo().addInfo(1, message + e.getMessage());
+        //ReportInfo.getDashboardInfo().addInfo(1, message + e.getMessage());
         log().error(message, e);
     }
 
