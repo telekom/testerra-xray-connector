@@ -34,7 +34,7 @@ dependencies {
     compileOnly 'io.testerra:surefire-connector:' + testerraCompileVersion
 
     implementation 'org.reflections:reflections:0.9.12'
-    api 'com.google.guava:guava:28.1-jre'
+    //api 'com.google.guava:guava:28.1-jre'
 
     // https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
     implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.31'

@@ -32,8 +32,8 @@ import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.GlobalTestData;
 import eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils;
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTests;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
@@ -48,6 +48,8 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraVerb;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.SimpleJiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLabels;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
+import eu.tsystems.mms.tic.testframework.common.PropertyManager;
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
@@ -71,16 +73,19 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class JiraUtilsTest extends AbstractTest {
+public class JiraUtilsTest extends AbstractTest implements Loggable {
 
     private WebResource webResource;
     private String updateIssueKey = "SWFTE-802";
     private String statusIssueKey = "SWFTE-809";
+    private JiraUtils jiraUtils;
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
         webResource =
                 TestUtils.prepareWebResource(Paths.get(getClass().getResource("/xray-test-posthoc.properties").toURI()).getFileName().toString());
+
+        jiraUtils = new JiraUtils(webResource);
     }
 
     @DataProvider
@@ -97,10 +102,37 @@ public class JiraUtilsTest extends AbstractTest {
 
     @Test(dataProvider = "provideExistingIssues")
     public void testGetIssue(final String key, final String summary) throws IOException {
-        final JiraIssue issue = JiraUtils.getIssue(webResource, key, Lists.newArrayList("summary"));
+        final JiraIssue issue = JiraUtils.getIssue(webResource, key);
         assertEquals(issue.getKey(), key);
-        final JsonNode fields = issue.getFields();
-        assertEquals(fields.get("summary").asText(), summary);
+        assertEquals(issue.getSummary(), summary);
+    }
+
+    @Test
+    public void test_updateIssueNew() throws IOException {
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        issueToUpdate.setSummary("Neues Ticket");
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
+
+        JiraIssue updatedIssue = jiraUtils.getIssue(issueToUpdate.getKey());
+        assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
+    }
+
+    @Test
+    public void test_createIssue() throws IOException {
+        JiraIssue newIssue = new JiraIssue();
+        newIssue.setSummary("Mein Test-Test");
+        newIssue.getProject().setKey(PropertyManager.getProperty("xray.project.key"));
+        newIssue.setIssueType(IssueType.Test.getIssueType());
+        newIssue.setDescription("Dies ist ein Test zum Anlegen von Tests");
+        jiraUtils.createOrUpdateIssue(newIssue);
+        log().info("Create issue " + newIssue.getKey());
+        assertNotNull(newIssue.getKey());
+        assertNotNull(newIssue.getProject().getKey());
+
+        JiraIssue createdIssue = jiraUtils.getIssue(newIssue.getKey());
+        assertEquals(createdIssue.getSummary(), newIssue.getSummary());
+        assertEquals(createdIssue.getDescription(), newIssue.getDescription());
+        assertEquals(createdIssue.getProject().getKey(), newIssue.getProject().getKey());
     }
 
     @Test

@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.util.Set;
 import org.testng.ITestResult;
 
-public class PostHocSyncStrategy extends SyncStrategy {
+public class PostHocSyncStrategy extends AbstractSyncStrategy {
 
     private XrayTestExecution testExecution;
     private Set<XrayTestIssue> tests = Sets.newConcurrentHashSet();

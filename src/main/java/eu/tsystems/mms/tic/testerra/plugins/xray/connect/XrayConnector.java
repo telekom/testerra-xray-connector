@@ -47,6 +47,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.FreshXrayTestExecut
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecution;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
@@ -60,6 +61,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -290,17 +292,25 @@ public class XrayConnector {
     }
 
     public List<String> findTestSetKeys(final JqlQuery classReferenceQuery) {
+        return findTestSets(classReferenceQuery).map(JiraIssue::getKey).collect(Collectors.toList());
+    }
+
+    public Stream<XrayTestSetIssue> findTestSets(final JqlQuery classReferenceQuery) {
         final JqlQuery baseQuery = JqlQuery.create()
                 .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
                 .addCondition(new IssueTypeEquals(IssueType.TestSet))
                 .build();
         final JqlQuery jqlQuery = JqlQuery.combine(baseQuery, classReferenceQuery);
-        final Set<JiraIssue> jiraIssues = JiraUtils.searchIssues(webResource, jqlQuery.createJql());
-        return jiraIssues.stream().map(JiraIssue::getKey).collect(Collectors.toList());
+        return JiraUtils.searchIssues(webResource, jqlQuery.createJql())
+                .stream()
+                .map(XrayTestSetIssue::new);
     }
 
     public void updateIssue(String testExecutionKey, JiraIssueUpdate jiraIssueUpdate) throws JsonProcessingException {
         JiraUtils.updateIssue(webResource, testExecutionKey, jiraIssueUpdate);
     }
 
+    public WebResource getWebResource() {
+        return this.webResource;
+    }
 }

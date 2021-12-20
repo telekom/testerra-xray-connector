@@ -20,10 +20,19 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
+package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JiraStatus extends JiraIssueNameReference {
+public class XrayTestSetIssue extends JiraIssue {
+
+    public XrayTestSetIssue() {
+
+    }
+
+    public XrayTestSetIssue(JiraIssue issue) {
+        super(issue);
+    }
 }

@@ -23,6 +23,9 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
+import java.util.Optional;
 import org.testng.ITestClass;
 import org.testng.ITestResult;
 
@@ -37,8 +40,15 @@ public interface XrayMapper {
      *
      * @param testNgResult the test result
      * @return JqlQuery that is able to match a single Xray-Test or null
+     * @deprecated Use {@link #createXrayTestQuery(ITestResult)}
      */
-    JqlQuery resultToXrayTest(ITestResult testNgResult);
+    default JqlQuery resultToXrayTest(ITestResult testNgResult) {
+        return createXrayTestQuery(testNgResult).orElse(null);
+    }
+
+    default Optional<JqlQuery> createXrayTestQuery(ITestResult testNgResult) {
+        return Optional.empty();
+    }
 
     /**
      * called for matching Test class against Xray TestSet
@@ -48,7 +58,19 @@ public interface XrayMapper {
      *
      * @param testNgClass test class
      * @return JqlQuery that is able to match a single Xray-TestSet or null
+     * @deprecated Use {@link #createXrayTestSetQuery(ITestClass)} instead
      */
-    JqlQuery classToXrayTestSet(ITestClass testNgClass);
+    default JqlQuery classToXrayTestSet(ITestClass testNgClass) {
+        return createXrayTestSetQuery(testNgClass).orElse(null);
+    }
 
+    default Optional<JqlQuery> createXrayTestSetQuery(ITestClass testNgClass) {
+        return Optional.empty();
+    }
+
+    default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue) {
+    }
+
+    default void updateXrayTest(XrayTestIssue xrayTestIssue) {
+    }
 }

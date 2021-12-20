@@ -29,33 +29,38 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.TestExecutionAttachment;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUpdates;
+import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
-import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.testng.ITestClass;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 
 
-public abstract class SyncStrategy implements Loggable {
+public abstract class AbstractSyncStrategy implements Loggable {
 
     protected final XrayConnector connector;
     protected final XrayTestExecutionUpdates updates;
@@ -63,12 +68,15 @@ public abstract class SyncStrategy implements Loggable {
     private final XrayMapper xrayMapper;
     private final BlockingQueue<TestExecutionAttachment> attachmentQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> commentQueue = new LinkedBlockingQueue<>();
+    private final Map<String, JiraIssue> issueCache = new ConcurrentHashMap<>();
+    private final JiraUtils jiraUtils;
 
-    public SyncStrategy(XrayInfo xrayInfo, XrayMapper xrayMapper, XrayTestExecutionUpdates updates) {
+    public AbstractSyncStrategy(XrayInfo xrayInfo, XrayMapper xrayMapper, XrayTestExecutionUpdates updates) {
         this.xrayInfo = xrayInfo;
         this.xrayMapper = xrayMapper;
         this.updates = updates;
         connector = new XrayConnector(xrayInfo);
+        jiraUtils = new JiraUtils(connector.getWebResource());
     }
 
     protected Optional<String[]> getTestKeysFromAnnotation(final MethodEndEvent event) throws NotSyncableException {
@@ -92,16 +100,82 @@ public abstract class SyncStrategy implements Loggable {
         return Optional.empty();
     }
 
+    private Optional<XrayTestSetIssue> queryTestSetIssue(ITestClass testNgClass) {
+        Class<?> clazz = testNgClass.getRealClass();
+
+        if (!clazz.isAnnotationPresent(XrayTestSet.class)) {
+            return Optional.empty();
+        }
+        XrayTestSetIssue xrayTestSetIssue = null;
+
+        // Test set key is present
+        String testSetKey = clazz.getAnnotation(XrayTestSet.class).key();
+        if (StringUtils.isNotBlank(testSetKey)) {
+            if (this.issueCache.containsKey(testSetKey)) {
+                return Optional.of(this.issueCache.get(testSetKey))
+                        .map(issue -> (XrayTestSetIssue) issue);
+            }
+
+
+
+            try {
+                JiraIssue issue = JiraUtils.getIssue(this.connector.getWebResource(), testSetKey);
+                xrayTestSetIssue = new XrayTestSetIssue(issue);
+                this.issueCache.put(testSetKey, xrayTestSetIssue);
+            } catch (IOException e) {
+                log().error("Unable to query issue by key", e);
+            }
+        }
+
+        // Try querying the test set by mapper
+        if (xrayTestSetIssue == null) {
+            Optional<JqlQuery> xrayTestQuery = xrayMapper.createXrayTestSetQuery(testNgClass);
+            if (xrayTestQuery.isPresent()) {
+                Optional<XrayTestSetIssue> firstTestSet = this.connector.findTestSets(xrayTestQuery.get()).findFirst();
+                if (firstTestSet.isPresent()) {
+                    xrayTestSetIssue = firstTestSet.get();
+                }
+            }
+        }
+
+        if (xrayTestSetIssue == null) {
+            xrayTestSetIssue = new XrayTestSetIssue();
+        }
+        xrayMapper.updateXrayTestSet(xrayTestSetIssue);
+
+        try {
+            jiraUtils.createOrUpdateIssue(xrayTestSetIssue);
+        } catch (IOException e) {
+           log().error("Unable to update issue", e);
+
+           if (StringUtils.isBlank(xrayTestSetIssue.getKey())) {
+               return Optional.empty();
+           }
+        }
+
+        this.issueCache.put(xrayTestSetIssue.getKey(), xrayTestSetIssue);
+
+        return Optional.of(xrayTestSetIssue);
+    }
+
     private String readFromClassAnnotation(final MethodEndEvent event) {
         final ITestResult testResult = event.getTestResult();
         final Class<?> clazz = testResult.getMethod().getTestClass().getRealClass();
 
+        this.queryTestSetIssue(testResult.getMethod().getTestClass()).ifPresent(xrayTestSetIssue -> {
+
+        });
+
         if (clazz.isAnnotationPresent(XrayTestSet.class)) {
+
             final JqlQuery classReferenceQuery = xrayMapper.classToXrayTestSet(testResult.getMethod().getTestClass());
             final JqlQuery resultToReferenceQuery = xrayMapper.resultToXrayTest(testResult);
 
             String testSetKey = null;
             final String annotatedTestSetKey = clazz.getAnnotation(XrayTestSet.class).key();
+
+
+
 
             /* retrieve test set key */
             if (!annotatedTestSetKey.isEmpty()) {

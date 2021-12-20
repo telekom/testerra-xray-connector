@@ -22,19 +22,26 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssueType;
 
 public enum IssueType {
-    Test("Test"), TestExecution("Test Execution"), TestSet("Test Set");
+    Test(new JiraIssueType("Test")),
+    TestExecution(new JiraIssueType("Test Execution")),
+    TestSet(new JiraIssueType("Test Set")),
+    ;
 
-    private final String literal;
+    private final JiraIssueType issueType;
 
-    IssueType(String literal) {
-
-        this.literal = literal;
+    IssueType(JiraIssueType literal) {
+        this.issueType = literal;
     }
 
     @Override
     public String toString() {
-        return literal;
+        return issueType.getName();
+    }
+
+    public JiraIssueType getIssueType() {
+        return this.issueType;
     }
 }

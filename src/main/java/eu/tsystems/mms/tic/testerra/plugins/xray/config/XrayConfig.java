@@ -27,7 +27,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AdHocSyncStrategy;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.PostHocSyncStrategy;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AbstractSyncStrategy;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.exceptions.SetupException;
 
@@ -47,7 +47,7 @@ public class XrayConfig {
     private final String previousResultsFilename;
     private final String projectKey;
     private final String username;
-    private final Class<? extends SyncStrategy> syncStrategyClass;
+    private final Class<? extends AbstractSyncStrategy> syncStrategyClass;
     private final String validationRegexDescription;
     private final String validationRegexRevision;
     private final String validationRegexSummary;
@@ -184,7 +184,7 @@ public class XrayConfig {
         }
     }
 
-    public Class<? extends SyncStrategy> getSyncStrategyClass() {
+    public Class<? extends AbstractSyncStrategy> getSyncStrategyClass() {
         return syncStrategyClass;
     }
 

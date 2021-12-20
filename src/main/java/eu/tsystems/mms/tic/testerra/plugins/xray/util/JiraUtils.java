@@ -22,62 +22,111 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraFieldsSearchResult;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssueKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssuesSearchResult;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransitionsSearchResult;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import static java.lang.String.format;
 
 
-public final class JiraUtils {
+public final class JiraUtils implements Loggable {
 
     private static final String ATTACHMENT_PATH = "api/2/attachment";
     private static final String ISSUE_PATH = "api/2/issue";
     private static final String SEARCH_PATH = "api/2/search";
     public static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    private final WebResource webResource;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private JiraUtils() {
+    public JiraUtils(WebResource webResource) {
+        this.webResource = webResource;
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        //objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
     }
 
+    /**
+     * @deprecated Use {@link #getIssue(String)} instead
+     * @param webResource
+     * @param issueKey
+     * @return
+     * @throws IOException
+     */
     public static JiraIssue getIssue(final WebResource webResource, final String issueKey) throws IOException {
         return getIssue(webResource, issueKey, Lists.newArrayList("\"\""));
     }
 
-    public static JiraIssue getIssue(final WebResource webResource, final String issueKey,
-                                     final Collection<String> fields) throws IOException {
-        final String result = webResource
-                .path(format("%s/%s", ISSUE_PATH, issueKey))
-                .queryParam("fields", StringUtils.join(fields, ','))
-                .get(String.class);
-        return new ObjectMapper().readValue(result, JiraIssue.class);
+    public JiraIssue getIssue(String issueKey) throws IOException {
+        try {
+            return getIssue(this.webResource, issueKey, Lists.newArrayList());
+        } catch (UniformInterfaceException e) {
+            unwrapException(e);
+        }
+        return new JiraIssue();
     }
 
+    /**
+     * @deprecated Use {@link #getIssue(WebResource, String)} instead
+     */
+    public static JiraIssue getIssue(
+            final WebResource webResource,
+            final String issueKey,
+            final Collection<String> fields
+    ) throws IOException {
+        JiraUtils jiraUtils = new JiraUtils(webResource);
+        WebResource path = webResource.path(format("%s/%s", ISSUE_PATH, issueKey));
+        if (!fields.isEmpty()) {
+            path = path.queryParam("fields", StringUtils.join(fields, ','));
+        }
+        String result = path.get(String.class);
+        return jiraUtils.objectMapper.readValue(result, JiraIssue.class);
+    }
+
+    /**
+     * @deprecated Use {@link #createOrUpdateIssue(JiraIssue)}
+     * @param webResource
+     * @param issueKey
+     * @param update
+     * @throws JsonProcessingException
+     */
     public static void updateIssue(final WebResource webResource, final String issueKey,
                                    final JiraIssueUpdate update) throws JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -86,6 +135,40 @@ public final class JiraUtils {
         webResource.path(format("%s/%s", ISSUE_PATH, issueKey))
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .put(string);
+    }
+
+    public void createOrUpdateIssue(JiraIssue issue) throws IOException {
+        final String string = objectMapper.writeValueAsString(issue);
+        String resourcePath;
+        try {
+            String responseJson;
+            if (issue.hasKey()) {
+                resourcePath = String.format("%s/%s", ISSUE_PATH, issue.getKey());
+                responseJson = webResource.path(resourcePath)
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .put(String.class, string);
+            } else {
+                resourcePath = ISSUE_PATH;
+                responseJson = webResource.path(resourcePath)
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .post(String.class, string);
+
+            }
+            JiraIssueKeyReference jiraIssueKeyReference = objectMapper.readValue(responseJson, JiraIssueKeyReference.class);
+            issue.setKey(jiraIssueKeyReference.getKey());
+            issue.setId(jiraIssueKeyReference.getId());
+
+        } catch (UniformInterfaceException e) {
+            unwrapException(e);
+        }
+    }
+
+    private void unwrapException(UniformInterfaceException e) throws IOException {
+        String errorMessage = e.getResponse().getEntity(String.class);
+//        String errorMessage = new BufferedReader(new InputStreamReader(e.getResponse().getEntityInputStream(), StandardCharsets.UTF_8))
+//                .lines()
+//                .collect(Collectors.joining("\n"));
+        throw new IOException(errorMessage, e);
     }
 
     /**
@@ -188,50 +271,6 @@ public final class JiraUtils {
         }
     }
 
-    /**
-     * @param webResource
-     * @param projectKey
-     * @param summary
-     * @param description
-     * @param fixVersions
-     * @return
-     * @throws IOException
-     * @deprecated Please use {@link JiraUtils#createTestExecutionGeneric(WebResource, XrayInfo)}
-     */
-    @Deprecated
-    public static String createTestExecution(final WebResource webResource, final String projectKey,
-                                             final String summary, final String description, final Iterable<String> fixVersions) throws IOException {
-
-        final JiraIssue jiraIssue = new JiraIssue();
-        final ObjectMapper om = new ObjectMapper();
-        om.enable(SerializationFeature.INDENT_OUTPUT);
-        om.enable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-        final ObjectNode fieldsNode = om.createObjectNode();
-        fieldsNode.put("project", om.createObjectNode().put("key", projectKey));
-        fieldsNode.put("summary", summary);
-        fieldsNode.put("description", description);
-        fieldsNode.put("issuetype", om.createObjectNode().put("name", "Test Execution"));
-        final ArrayNode fixVersionsNode = om.createArrayNode();
-        for (final String fixVersion : fixVersions) {
-            fixVersionsNode.add(om.createObjectNode().put("name", fixVersion));
-        }
-        fieldsNode.put("fixVersions", fixVersionsNode);
-        jiraIssue.setFields(fieldsNode);
-        final String entity = om.writeValueAsString(jiraIssue);
-
-        final String response = webResource.path(ISSUE_PATH)
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .entity(entity)
-                .post(String.class);
-
-        if (response.isEmpty()) {
-            // avoid NPE on findValue in next line, when response is empty.
-            return response;
-        }
-
-        return om.readTree(response).findValue("key").asText();
-    }
-
     public static String createTestExecutionGeneric(final WebResource webResource,
                                                     XrayInfo xrayInfo) throws IOException {
 
@@ -240,7 +279,10 @@ public final class JiraUtils {
         om.enable(SerializationFeature.INDENT_OUTPUT);
         om.enable(SerializationFeature.WRITE_NULL_MAP_VALUES);
         final ObjectNode fieldsNode = om.createObjectNode();
-        fieldsNode.put("issuetype", om.createObjectNode().put("name", "Test Execution"));
+
+
+
+        fieldsNode.put("issuetype", om.createObjectNode().put("name", IssueType.TestExecution.toString()));
         fieldsNode.put("project", om.createObjectNode().put("key", xrayInfo.getProject()));
         fieldsNode.put("summary", xrayInfo.getSummary());
         fieldsNode.put("description", xrayInfo.getDescription());
@@ -250,11 +292,11 @@ public final class JiraUtils {
         if (xrayInfo.getUser() != null) {
             fieldsNode.put("assignee", om.createObjectNode().put("name", xrayInfo.getUser()));
         }
-        fieldsNode.put(XrayConfig.getInstance().getRevisionFieldName(), xrayInfo.getRevision());
-        fieldsNode.put(XrayConfig.getInstance().getTestExecutionStartTimeFieldName(), dateFormat.format(new Date()));
+        fieldsNode.put(Fields.REVISION.getFieldName(), xrayInfo.getRevision());
+        fieldsNode.put(Fields.TEST_EXECUTION_START_DATE.getFieldName(), dateFormat.format(new Date()));
         final ArrayNode arrayNode = om.createArrayNode();
         xrayInfo.readTestEnvironments().forEach(arrayNode::add);
-        fieldsNode.put(XrayConfig.getInstance().getTestEnvironmentsFieldName(), arrayNode);
+        fieldsNode.put(Fields.TEST_ENVIRONMENTS.getFieldName(), arrayNode);
         jiraIssue.setFields(fieldsNode);
         final String entity = om.writeValueAsString(jiraIssue);
 

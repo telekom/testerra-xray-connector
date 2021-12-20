@@ -27,7 +27,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.SyncStrategy;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AbstractSyncStrategy;
 import eu.tsystems.mms.tic.testframework.connectors.util.AbstractCommonSynchronizer;
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
@@ -42,7 +42,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
 
     protected final XrayConfig xrayConfig = XrayConfig.getInstance();
     private boolean isSyncInitialized = false;
-    private SyncStrategy syncStrategy;
+    private AbstractSyncStrategy syncStrategy;
 
     public void initialize() {
 
