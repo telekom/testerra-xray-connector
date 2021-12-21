@@ -24,7 +24,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 
 import java.util.Map;
 
-public class JiraStatus extends JiraIssueNameReference {
+public class JiraStatus extends JiraNameReference {
     public JiraStatus(Map<String, Object> map) {
         super(map);
     }

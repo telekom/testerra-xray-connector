@@ -86,7 +86,7 @@ public class XrayConnectorTest extends AbstractTest {
 
     @Test
     public void testSearchForNonExistingTestExecution() throws Exception {
-        final XrayInfo nonExisitngExecution = (XrayInfo) SerializationUtils.clone(xrayInfo);
+        final XrayInfo nonExisitngExecution = xrayInfo;
         nonExisitngExecution.setRevision("not existing");
         final XrayConnector xrayConnector = new XrayConnector(nonExisitngExecution);
         final Set<String> testExecKeys = xrayConnector.searchForExistingTestExecutions();

@@ -23,22 +23,24 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
-public class JiraIssue extends JiraIssueKeyReference implements Loggable {
-    private Map<String, Object> fields;
+public class JiraIssue extends JiraKeyReference implements Loggable {
+    private final Map<String, Object> fields;
+    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     public JiraIssue() {
         this.fields = new HashMap<>();
@@ -56,36 +58,61 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
 
     public JiraIssue(JiraIssue issue) {
         this.setKey(issue.getKey());
+        this.setId(issue.getId());
         this.fields = issue.fields;
     }
 
-    @Deprecated
-    public JsonNode getFields() {
-        ObjectMapper om = new ObjectMapper();
-        return om.valueToTree(this.fields);
+    public Map<String, Object> getFields() {
+        return this.fields;
     }
 
-    @Deprecated
-    public void setFields(final JsonNode fields) {
-        ObjectMapper om = new ObjectMapper();
+    protected Date dateFromString(String dateString) {
         try {
-            this.fields = om.treeToValue(fields, Map.class);
-        } catch (JsonProcessingException e) {
-           log().error("Unable to set fields", e);
+            return dateFormat.parse(dateString);
+        } catch (ParseException e) {
+            log().warn(String.format("Unable to parse date string: %s", dateString), e);
+            return null;
         }
     }
 
-    private <ENTITY extends Object> ENTITY getOrCreateEntity(String name, Function<Map<String,Object>, ENTITY> fieldSupplier) {
+    protected String dateToString(Date date) {
+        return dateFormat.format(date);
+    }
+
+//    @Deprecated
+//    public void setFields(final JsonNode fields) {
+//        ObjectMapper om = new ObjectMapper();
+//        try {
+//            this.fields = om.treeToValue(fields, Map.class);
+//        } catch (JsonProcessingException e) {
+//           log().error("Unable to set fields", e);
+//        }
+//    }
+
+    protected Optional<Date> getDateFromField(String name) {
+        String dateString = (String)this.getFields().getOrDefault(name, null);
+        Date date = null;
+        if (dateString != null) {
+            date = this.dateFromString(dateString);
+        }
+        return Optional.ofNullable(date);
+    }
+
+    protected <ENTITY, TYPE> ENTITY getOrCreateField(
+            String name,
+            Class<TYPE> jiraType,
+            Function<TYPE, ENTITY> fieldSupplier
+    ) {
         ENTITY val;
         if (!this.fields.containsKey(name)) {
-            val = fieldSupplier.apply(new HashMap<>());
+            val = fieldSupplier.apply(null);
             this.fields.put(name, val);
             return val;
         }
 
-        Object fieldVal = this.fields.get(name);
-        if (fieldVal instanceof Map) {
-            val = fieldSupplier.apply((Map<String, Object>)fieldVal);
+        Object jiraField = this.fields.get(name);
+        if (jiraType.isInstance(jiraField)) {
+            val = fieldSupplier.apply((TYPE)jiraField);
             this.fields.put(name, val);
         } else {
             val = (ENTITY)this.fields.get(name);
@@ -93,20 +120,53 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
         return val;
     }
 
-    private <TYPE extends Object> TYPE getOrCreateField(String name, Supplier<TYPE> fieldSupplier) {
-        TYPE val;
-        if (!this.fields.containsKey(name)) {
-            val = fieldSupplier.get();
-            this.fields.put(name, val);
-            return val;
-        } else {
-            return (TYPE)this.fields.get(name);
-        }
+    protected <ENTITY extends Object> ENTITY getOrCreateEntity(String name, Function<Map<String, Object>, ENTITY> entitySupplier) {
+        return getOrCreateField(name, Map.class, map -> {
+            if (map == null) {
+                map = new HashMap<String, Object>();
+            }
+            return entitySupplier.apply((Map<String, Object>)map);
+        });
+    }
+
+    protected <ENTITY> List<ENTITY> getOrCreateFieldList(String name, Function<List<? extends Object>, List<ENTITY>> listSupplier) {
+        return this.getOrCreateField(name, List.class, list -> {
+            if (list == null) {
+                list = new ArrayList<>();
+            }
+            return listSupplier.apply(list);
+        });
+    }
+
+    protected <ENTITY> List<ENTITY> getOrCreateEntityList(String name, Function<Map<String, Object>, ENTITY> entitySupplier) {
+        return this.getOrCreateFieldList(name, list -> {
+            return list.stream()
+                    .filter(o -> o instanceof Map)
+                    .map(o -> (Map<String, Object>) o)
+                    .map(entitySupplier)
+                    .collect(Collectors.toList());
+        });
+    }
+
+//    @Deprecated
+//    protected  <TYPE extends Object> TYPE getOrCreateField(String name, Supplier<TYPE> fieldSupplier) {
+//        TYPE val;
+//        if (!this.fields.containsKey(name)) {
+//            val = fieldSupplier.get();
+//            this.fields.put(name, val);
+//            return val;
+//        } else {
+//            return (TYPE)this.fields.get(name);
+//        }
+//    }
+
+    protected List<String> getOrCreateStringList(String name) {
+        return getOrCreateFieldList(name, list -> (List<String>)list);
     }
 
     @JsonIgnore
     public List<String> getLabels() {
-        return getOrCreateField("labels", ArrayList::new);
+        return getOrCreateStringList("labels");
     }
 
     @JsonIgnore
@@ -116,7 +176,7 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
 
     @JsonIgnore
     public String getSummary() {
-        return (String)this.fields.getOrDefault("summary", "");
+        return (String)this.fields.getOrDefault("summary", null);
     }
 
     @JsonIgnore
@@ -135,12 +195,12 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
     }
 
     @JsonIgnore
-    public JiraIssueKeyReference getProject() {
-        return getOrCreateEntity("project", JiraIssueKeyReference::new);
+    public JiraNameReference getProject() {
+        return getOrCreateEntity("project", JiraNameReference::new);
     }
 
     @JsonIgnore
-    public void setProject(JiraIssueKeyReference project) {
+    public void setProject(JiraNameReference project) {
         this.fields.put("project", project);
     }
 
@@ -156,11 +216,41 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
 
     @JsonIgnore
     public String getDescription() {
-        return (String)this.fields.getOrDefault("description", "");
+        return (String)this.fields.getOrDefault("description", null);
     }
 
     @JsonIgnore
     public void setDescription(String description) {
         this.fields.put("description", description);
+    }
+
+    @JsonIgnore
+    public JiraNameReference getAssignee() {
+        return getOrCreateEntity("assignee", JiraNameReference::new);
+    }
+
+    @JsonIgnore
+    public void setAssignee(JiraNameReference assignee) {
+        this.fields.put("assignee", assignee);
+    }
+
+    @JsonIgnore
+    public List<JiraAttachment> getAttachments() {
+        return getOrCreateEntityList("attachments", JiraAttachment::new);
+    }
+
+    @JsonIgnore
+    public void setAttachments(List<JiraAttachment> attachments) {
+        this.fields.put("attachments", attachments);
+    }
+
+    @JsonIgnore
+    public List<JiraNameReference> getVersions() {
+        return getOrCreateEntityList("versions", JiraNameReference::new);
+    }
+
+    @JsonIgnore
+    public void setVersions(List<JiraNameReference> versions) {
+        this.getFields().put("versions", versions);
     }
 }

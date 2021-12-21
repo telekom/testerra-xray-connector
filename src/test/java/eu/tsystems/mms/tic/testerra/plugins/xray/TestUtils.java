@@ -38,9 +38,9 @@ import java.util.Date;
 public class TestUtils {
 
     public static Date getDateFromField(final JiraIssue issue, final String fieldName) throws ParseException {
-        final JsonNode foundFieldValue = issue.getFields().findValue(fieldName);
-        if (!foundFieldValue.isNull()) {
-            return JiraUtils.dateFormat.parse(foundFieldValue.asText());
+        final Object foundFieldValue = issue.getFields().get(fieldName);
+        if (foundFieldValue != null) {
+            return JiraUtils.dateFormat.parse(foundFieldValue.toString());
         } else {
             return null;
         }

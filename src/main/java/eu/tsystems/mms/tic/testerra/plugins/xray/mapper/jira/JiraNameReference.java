@@ -3,19 +3,19 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
-public class JiraIssueNameReference extends JiraIssueKeyReference {
+public class JiraNameReference extends JiraKeyReference {
     private String name;
 
-    public JiraIssueNameReference(Map<String, Object> map) {
+    public JiraNameReference(Map<String, Object> map) {
         super(map);
         this.name = (String)map.getOrDefault("name", null);
     }
 
-    public JiraIssueNameReference() {
+    public JiraNameReference() {
         super();
     }
 
-    public JiraIssueNameReference(String name) {
+    public JiraNameReference(String name) {
         super();
         this.name = name;
     }

@@ -37,6 +37,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.FreshXrayTestExecut
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayEvidence;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
@@ -83,29 +84,30 @@ public class XrayUtilsTest extends AbstractTest {
         final List<String> testEnvironments = ImmutableList.of("Android", "Samsung");
 
         final XrayInfo xrayInfo = new XrayInfo(projectKey, summary, description, revision);
-        xrayInfo.setTestEnvironments(testEnvironments);
+        xrayInfo.setLabels(testEnvironments);
         final FreshXrayTestExecution freshTestExecution =
                 XrayUtils.createFreshTestExecution(xrayInfo, Arrays.asList("SWFTE-1", "SWFTE-2", "SWFTE-3"));
         final String key = XrayUtils.syncTestExecutionReturnKey(webResource, freshTestExecution);
 
-        final JiraIssue issue = JiraUtils.getIssue(webResource, key,
+        final JiraIssue rawIssue = JiraUtils.getIssue(webResource, key,
                 Lists.newArrayList("project", "summary", "description",
                         Fields.REVISION.getFieldName(),
                         Fields.TEST_EXECUTION_START_DATE.getFieldName(),
                         Fields.TEST_ENVIRONMENTS.getFieldName()
                 )
         );
-        Assert.assertEquals(issue.getKey(), key);
-        Assert.assertEquals(issue.getFields().findValue("project").findValue("name").asText(), "Spielwiese Framework-Tests");
-        Assert.assertEquals(issue.getFields().findValue("summary").asText(), summary);
-        Assert.assertEquals(issue.getFields().findValue("description").asText(), description);
-        Assert.assertEquals(issue.getFields().findValue(Fields.REVISION.getFieldName()).asText(), revision);
-        issue.getFields().findValue(Fields.TEST_ENVIRONMENTS.getFieldName())
-                .forEach(x -> assertTrue(testEnvironments.contains(x.textValue())));
 
-        final JsonNode startDateNode = issue.getFields().findValue(Fields.TEST_EXECUTION_START_DATE.getFieldName());
-        assertNotNull(startDateNode);
-        final Date startDate = JiraUtils.dateFormat.parse(startDateNode.asText());
+        XrayTestExecutionIssue issue = new XrayTestExecutionIssue(rawIssue);
+        Assert.assertEquals(issue.getKey(), key);
+        Assert.assertEquals(issue.getProject().getName(), "Spielwiese Framework-Tests");
+        Assert.assertEquals(issue.getSummary(), summary);
+        Assert.assertEquals(issue.getDescription(), description);
+        Assert.assertEquals(issue.getRevision(), revision);
+        issue.getTestEnvironments()
+                .forEach(x -> assertTrue(testEnvironments.contains(x)));
+
+        final Date startDate = issue.getStartDate();
+        assertNotNull(startDate);
         final Calendar calInFuture = Calendar.getInstance();
         calInFuture.add(Calendar.MINUTE, 2);
         assertTrue(startDate.before(calInFuture.getTime()), String.format("start time %s is before %s", startDate, calInFuture.getTime()));

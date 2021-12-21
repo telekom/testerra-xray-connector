@@ -63,7 +63,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
                 final XrayInfo xrayInfo = new XrayInfo(project, summary.orElse(""), description.orElse(""), revision.orElse(""));
                 xrayInfo.setUser(executionInfo.getAssignee());
                 xrayInfo.setVersion(executionInfo.getFixVersion());
-                xrayInfo.setTestEnvironments(executionInfo.getTestEnvironments());
+                xrayInfo.setLabels(executionInfo.getTestEnvironments());
 
                 Optional<XrayMapper> xrayMapper = Optional.ofNullable(getXrayMapper());
                 Optional<XrayTestExecutionUpdates> executionUpdates = Optional.ofNullable(getExecutionUpdates());

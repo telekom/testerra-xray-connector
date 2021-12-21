@@ -32,7 +32,9 @@ import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
@@ -51,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Optional;
@@ -117,20 +120,22 @@ public abstract class SimulatedRunTest extends TesterraTest {
                                   Calendar before) throws IOException, ParseException {
 
         /* get data to check */
-        final JiraIssue jiraIssue = JiraUtils.getIssue(webResource, testExecutionKey, Arrays.asList(
+        final JiraIssue rawIssue = JiraUtils.getIssue(webResource, testExecutionKey, Arrays.asList(
                 "summary", "description", "labels", "versions",
                 xrayConfig.getRevisionFieldName(),
                 xrayConfig.getTestExecutionStartTimeFieldName(),
                 xrayConfig.getTestExecutionFinishTimeFieldName()));
+
+        XrayTestExecutionIssue jiraIssue = new XrayTestExecutionIssue(rawIssue);
         final Set<XrayTestIssue> testIssues = XrayUtils.getTestsFromExecution(webResource, testExecutionKey);
 
         /* check string fields */
-        final String foundSummary = jiraIssue.getFields().get("summary").asText();
-        final String foundDescription = jiraIssue.getFields().get("description").asText();
-        final String foundRevision = jiraIssue.getFields().get(xrayConfig.getRevisionFieldName()).asText();
-        final List<String> foundLabels = newArrayList(new ObjectMapper().treeToValue(jiraIssue.getFields().get("labels"), String[].class));
+        final String foundSummary = jiraIssue.getSummary();
+        final String foundDescription = jiraIssue.getDescription();
+        final String foundRevision = jiraIssue.getRevision();
+        final List<String> foundLabels = jiraIssue.getLabels();
 
-        final List<String> foundAffectedVersions = jiraIssue.getFields().get("versions").findValuesAsText("name");
+        final List<String> foundAffectedVersions = jiraIssue.getVersions().stream().map(JiraNameReference::getName).collect(Collectors.toList());
 
         assertEquals(foundSummary, getExpectedSummary());
         assertEquals(foundDescription, getExpectedDescription());
@@ -146,10 +151,8 @@ public abstract class SimulatedRunTest extends TesterraTest {
         /* loosen before time since test execution times ignore seconds */
         before.add(Calendar.MINUTE, -2);
         final Date agoTime = before.getTime();
-
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sZ", Locale.getDefault());
-        final Date execStartTime = simpleDateFormat.parse(jiraIssue.getFields().findValue(xrayConfig.getTestExecutionStartTimeFieldName()).asText());
-        final Date execFinishTime = simpleDateFormat.parse(jiraIssue.getFields().findValue(xrayConfig.getTestExecutionStartTimeFieldName()).asText());
+        final Date execStartTime = jiraIssue.getStartDate();
+        final Date execFinishTime = jiraIssue.getFinishDate();
 
         Assert.assertFalse(execFinishTime.before(execStartTime));
         assertTrue(execStartTime.after(agoTime),

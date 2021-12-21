@@ -22,14 +22,13 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class XrayTestSetIssue extends JiraIssue {
+public class XrayTestSetIssue extends XrayIssue {
 
     public XrayTestSetIssue() {
-
+        this.setIssueType(IssueType.TestExecution.getIssueType());
     }
 
     public XrayTestSetIssue(JiraIssue issue) {

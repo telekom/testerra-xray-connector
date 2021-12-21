@@ -22,7 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
@@ -48,6 +47,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraVerb;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.SimpleJiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLabels;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
@@ -138,24 +138,24 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
     }
 
-    @Test
-    public void test_createIssue() throws IOException {
-        final String expectedSummary = "Testerra Xray Connector New Test Ticket";
-        JiraIssue newIssue = new JiraIssue();
-        newIssue.setSummary(expectedSummary);
-        newIssue.getProject().setKey(projectKey);
-        newIssue.setIssueType(IssueType.Test.getIssueType());
-        newIssue.setDescription("Dies ist ein Test zum Anlegen von Tests");
-        jiraUtils.createOrUpdateIssue(newIssue);
-        log().info("Create issue " + newIssue.getKey());
-        assertNotNull(newIssue.getKey());
-        assertNotNull(newIssue.getProject().getKey());
-
-        JiraIssue createdIssue = jiraUtils.getIssue(newIssue.getKey());
-        assertEquals(createdIssue.getSummary(), newIssue.getSummary());
-        assertEquals(createdIssue.getDescription(), newIssue.getDescription());
-        assertEquals(createdIssue.getProject().getKey(), newIssue.getProject().getKey());
-    }
+//    @Test
+//    public void test_createIssue() throws IOException {
+//        final String expectedSummary = "Testerra Xray Connector New Test Ticket";
+//        JiraIssue newIssue = new JiraIssue();
+//        newIssue.setSummary(expectedSummary);
+//        newIssue.getProject().setKey(projectKey);
+//        newIssue.setIssueType(IssueType.Test.getIssueType());
+//        newIssue.setDescription("Dies ist ein Test zum Anlegen von Tests");
+//        jiraUtils.createOrUpdateIssue(newIssue);
+//        log().info("Create issue " + newIssue.getKey());
+//        assertNotNull(newIssue.getKey());
+//        assertNotNull(newIssue.getProject().getKey());
+//
+//        JiraIssue createdIssue = jiraUtils.getIssue(newIssue.getKey());
+//        assertEquals(createdIssue.getSummary(), newIssue.getSummary());
+//        assertEquals(createdIssue.getDescription(), newIssue.getDescription());
+//        assertEquals(createdIssue.getProject().getKey(), newIssue.getProject().getKey());
+//    }
 
     @Test
     public void testUpdateIssue() throws IOException {
@@ -169,7 +169,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         JiraUtils.updateIssue(webResource, updateIssueKey, jiraIssueUpdate);
         final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("description"));
         assertEquals(issue.getKey(), updateIssueKey);
-        assertEquals(issue.getFields().get("description").asText(), randomizedDescription);
+        assertEquals(issue.getDescription(), randomizedDescription);
     }
 
     @Test
@@ -182,8 +182,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         JiraUtils.updateIssue(webResource, updateIssueKey, update);
         final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
         assertEquals(issue.getKey(), updateIssueKey);
-        final List<String> foundLabels = Arrays.asList(new ObjectMapper().treeToValue(issue.getFields().get("labels"), String[].class));
-        Assert.assertTrue(foundLabels.isEmpty());
+        Assert.assertTrue(issue.getLabels().isEmpty());
     }
 
     @Test(dependsOnMethods = "testUpdateIssueWithPredefsRemoveAllLabels")
@@ -196,7 +195,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         JiraUtils.updateIssue(webResource, updateIssueKey, update);
         final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
         assertEquals(issue.getKey(), updateIssueKey);
-        final List<String> foundLabels = Arrays.asList(new ObjectMapper().treeToValue(issue.getFields().get("labels"), String[].class));
+        final List<String> foundLabels = issue.getLabels();
         Assert.assertTrue(foundLabels.containsAll(Arrays.asList(labelsToSet)));
         Assert.assertTrue(Arrays.asList(labelsToSet).containsAll(foundLabels));
     }
@@ -210,7 +209,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         JiraUtils.updateIssue(webResource, updateIssueKey, update);
         final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
         assertEquals(issue.getKey(), updateIssueKey);
-        final List<String> foundLabels = Arrays.asList(new ObjectMapper().treeToValue(issue.getFields().get("labels"), String[].class));
+        final List<String> foundLabels = issue.getLabels();
         Assert.assertEquals(foundLabels.size(), 1);
         Assert.assertTrue(foundLabels.contains("Test-Automatisierung"));
         Assert.assertTrue(!foundLabels.contains("Aufräumaktion"));
@@ -227,24 +226,24 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         final XrayInfo xrayInfo = new XrayInfo(projectKey, summary, description, testEnvironments, revision, "1.0.2", "fnu-jira-testerra");
         final String key = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo);
 
-        final JiraIssue issue = JiraUtils.getIssue(webResource, key,
+        final JiraIssue rawIssue = JiraUtils.getIssue(webResource, key,
                 Lists.newArrayList("project", "summary", "description",
                         Fields.REVISION.getFieldName(),
                         Fields.TEST_EXECUTION_START_DATE.getFieldName(),
                         Fields.TEST_ENVIRONMENTS.getFieldName()
                 )
         );
+        XrayTestExecutionIssue issue = new XrayTestExecutionIssue(rawIssue);
         assertEquals(issue.getKey(), key);
-        assertEquals(issue.getFields().findValue("project").findValue("name").asText(), "Spielwiese Framework-Tests");
-        assertEquals(issue.getFields().findValue("summary").asText(), summary);
-        assertEquals(issue.getFields().findValue("description").asText(), description);
-        assertEquals(issue.getFields().findValue(Fields.REVISION.getFieldName()).asText(), revision);
-        issue.getFields().findValue(Fields.TEST_ENVIRONMENTS.getFieldName())
-                .forEach(x -> assertTrue(testEnvironments.contains(x.textValue())));
+        assertEquals(issue.getProject().getName(), "Spielwiese Framework-Tests");
+        assertEquals(issue.getSummary(), summary);
+        assertEquals(issue.getDescription(), description);
+        assertEquals(issue.getRevision(), revision);
+        issue.getTestEnvironments()
+                .forEach(x -> assertTrue(testEnvironments.contains(x)));
 
-        final JsonNode startDateNode = issue.getFields().findValue(Fields.TEST_EXECUTION_START_DATE.getFieldName());
-        assertNotNull(startDateNode);
-        final Date startDate = JiraUtils.dateFormat.parse(startDateNode.asText());
+        final Date startDate = issue.getStartDate();
+        assertNotNull(issue.getStartDate());
         final Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, -1);
         assertTrue(startDate.before(Calendar.getInstance().getTime()));
@@ -298,8 +297,8 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         final String attachmentFilename = "testBliBlaBlubb.json";
         JiraUtils.uploadJsonAttachment(webResource, issueKey, "content", attachmentFilename);
         final JiraIssue issue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
-        Assert.assertNotNull(issue.getFields().findValue("filename"));
-        final String foundFileName = issue.getFields().findValue("attachment").findValue("filename").asText();
+        Assert.assertEquals(issue.getAttachments().size(), 1);
+        final String foundFileName = issue.getAttachments().get(0).getFilename();
         //TODO also assert content of file
         assertEquals(foundFileName, attachmentFilename);
     }
@@ -311,7 +310,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         final String attachmentFilename = "archive.zip";
         JiraUtils.uploadAttachment(webResource, issueKey, is, attachmentFilename);
         final JiraIssue issue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
-        final String foundFileName = issue.getFields().findValue("attachment").findValue("filename").asText();
+        final String foundFileName = issue.getAttachments().get(0).getFilename();
         //TODO also assert content of file
         assertEquals(foundFileName, attachmentFilename);
     }
@@ -321,13 +320,13 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         final String issueKey = "SWFTE-12";
 
         final JiraIssue originalIssue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
-        int attachmentCount = originalIssue.getFields().findValue("attachment").size();
+        int attachmentCount = originalIssue.getAttachments().size();
         assertTrue(attachmentCount > 0);
 
         JiraUtils.deleteAllAttachments(webResource, issueKey);
 
         final JiraIssue nakedIssue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
-        attachmentCount = nakedIssue.getFields().findValue("attachment").size();
+        attachmentCount = nakedIssue.getAttachments().size();
         assertEquals(attachmentCount, 0);
     }
 
