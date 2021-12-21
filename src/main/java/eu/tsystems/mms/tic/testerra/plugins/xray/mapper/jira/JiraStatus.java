@@ -22,8 +22,13 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.Map;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class JiraStatus extends JiraIssueNameReference {
+    public JiraStatus(Map<String, Object> map) {
+        super(map);
+    }
+    public JiraStatus() {
+        super();
+    }
 }

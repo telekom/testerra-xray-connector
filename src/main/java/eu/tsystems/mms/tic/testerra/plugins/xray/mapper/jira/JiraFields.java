@@ -24,6 +24,9 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 
 import java.util.Set;
 
+/**
+ * @deprecated Use {@link JiraIssue} instead
+ */
 public class JiraFields {
 
     private String summary;

@@ -22,17 +22,18 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 
@@ -41,6 +42,11 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
 
     public JiraIssue() {
         this.fields = new HashMap<>();
+    }
+
+    public JiraIssue(Map<String, Object> map) {
+        super(map);
+        this.fields = (Map<String, Object>)map.getOrDefault("fields", new HashMap<>());
     }
 
     public JiraIssue(String key) {
@@ -69,42 +75,42 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
         }
     }
 
-    private <T extends Object> T getOrCreateField(String name, Supplier<T> fieldSupplier) {
-        T val;
+    private <ENTITY extends Object> ENTITY getOrCreateEntity(String name, Function<Map<String,Object>, ENTITY> fieldSupplier) {
+        ENTITY val;
+        if (!this.fields.containsKey(name)) {
+            val = fieldSupplier.apply(new HashMap<>());
+            this.fields.put(name, val);
+            return val;
+        }
+
+        Object fieldVal = this.fields.get(name);
+        if (fieldVal instanceof Map) {
+            val = fieldSupplier.apply((Map<String, Object>)fieldVal);
+            this.fields.put(name, val);
+        } else {
+            val = (ENTITY)this.fields.get(name);
+        }
+        return val;
+    }
+
+    private <TYPE extends Object> TYPE getOrCreateField(String name, Supplier<TYPE> fieldSupplier) {
+        TYPE val;
         if (!this.fields.containsKey(name)) {
             val = fieldSupplier.get();
             this.fields.put(name, val);
             return val;
+        } else {
+            return (TYPE)this.fields.get(name);
         }
-        try {
-            val = (T)this.fields.get(name);
-        } catch (ClassCastException e) {
-            val = fieldSupplier.get();
-            this.fields.put(name, val);
-        }
-        return val;
-    }
-//
-//    private <T extends Object> Optional<T> getMappableField(String name, Class<T> targetClass) {
-//        if (!this.fields.containsKey(name)) {
-//            return Optional.empty();
-//        }
-//
-//        Object val = this.fields.get(name);
-//        if (!targetClass.isInstance(val)) {
-//            return Optional.empty();
-//        } else {
-//            return Optional.of((T)val);
-//        }
-//    }
-
-    @JsonIgnore
-    public Set<String> getLabels() {
-        return (Set<String>)this.fields.getOrDefault("labels", new HashSet<String>());
     }
 
     @JsonIgnore
-    public void setLabels(final Set<String> labels) {
+    public List<String> getLabels() {
+        return getOrCreateField("labels", ArrayList::new);
+    }
+
+    @JsonIgnore
+    public void setLabels(List<String> labels) {
         this.fields.put("labels", labels);
     }
 
@@ -120,7 +126,7 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
 
     @JsonIgnore
     public JiraStatus getStatus() {
-        return getOrCreateField("status", JiraStatus::new);
+        return getOrCreateEntity("status", JiraStatus::new);
     }
 
     @JsonIgnore
@@ -130,7 +136,7 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
 
     @JsonIgnore
     public JiraIssueKeyReference getProject() {
-        return getOrCreateField("project", JiraIssueKeyReference::new);
+        return getOrCreateEntity("project", JiraIssueKeyReference::new);
     }
 
     @JsonIgnore
@@ -140,7 +146,7 @@ public class JiraIssue extends JiraIssueKeyReference implements Loggable {
 
     @JsonIgnore
     public JiraIssueType getIssueType() {
-        return getOrCreateField("project", JiraIssueType::new);
+        return getOrCreateEntity("issuetype", JiraIssueType::new);
     }
 
     @JsonIgnore

@@ -91,7 +91,7 @@ public final class JiraUtils implements Loggable {
      * @throws IOException
      */
     public static JiraIssue getIssue(final WebResource webResource, final String issueKey) throws IOException {
-        return getIssue(webResource, issueKey, Lists.newArrayList("\"\""));
+        return new JiraUtils(webResource).getIssue(issueKey);
     }
 
     public JiraIssue getIssue(String issueKey) throws IOException {
@@ -159,7 +159,9 @@ public final class JiraUtils implements Loggable {
             issue.setId(jiraIssueKeyReference.getId());
 
         } catch (UniformInterfaceException e) {
-            unwrapException(e);
+            if (e.getResponse().getStatus() != 204) {
+                unwrapException(e);
+            }
         }
     }
 

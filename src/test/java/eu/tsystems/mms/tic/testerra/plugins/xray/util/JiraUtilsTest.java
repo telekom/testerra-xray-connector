@@ -76,9 +76,10 @@ import static org.testng.Assert.assertTrue;
 public class JiraUtilsTest extends AbstractTest implements Loggable {
 
     private WebResource webResource;
-    private String updateIssueKey = "SWFTE-802";
-    private String statusIssueKey = "SWFTE-809";
+    private final String updateIssueKey = "SWFTE-802";
+    private final String statusIssueKey = "SWFTE-809";
     private JiraUtils jiraUtils;
+    private final String projectKey = PropertyManager.getProperty("xray.project.key");
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
@@ -105,23 +106,44 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         final JiraIssue issue = JiraUtils.getIssue(webResource, key);
         assertEquals(issue.getKey(), key);
         assertEquals(issue.getSummary(), summary);
+        assertEquals(issue.getProject().getKey(), projectKey);
     }
 
     @Test
     public void test_updateIssueNew() throws IOException {
         JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
-        issueToUpdate.setSummary("Neues Ticket");
+        issueToUpdate.setSummary("Neues Ticket: " + RandomUtils.generateRandomString());
+        List<String> labels = issueToUpdate.getLabels();
+        labels.add("Testerra");
+        labels.add("XRay");
+        labels.add("Connector");
         jiraUtils.createOrUpdateIssue(issueToUpdate);
 
         JiraIssue updatedIssue = jiraUtils.getIssue(issueToUpdate.getKey());
+        assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
+        assertEquals(updatedIssue.getLabels().stream().sorted().collect(Collectors.toList()), labels.stream().sorted().collect(Collectors.toList()));
+    }
+
+    @Test
+    public void test_updateIssueWithoutChange() throws IOException {
+        final String expectedSummary = "Testerra Xray Connector Test Ticket";
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        issueToUpdate.setSummary(expectedSummary);
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
+
+        JiraIssue updatedIssue = jiraUtils.getIssue(issueToUpdate.getKey());
+        assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
+
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
         assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
     }
 
     @Test
     public void test_createIssue() throws IOException {
+        final String expectedSummary = "Testerra Xray Connector New Test Ticket";
         JiraIssue newIssue = new JiraIssue();
-        newIssue.setSummary("Mein Test-Test");
-        newIssue.getProject().setKey(PropertyManager.getProperty("xray.project.key"));
+        newIssue.setSummary(expectedSummary);
+        newIssue.getProject().setKey(projectKey);
         newIssue.setIssueType(IssueType.Test.getIssueType());
         newIssue.setDescription("Dies ist ein Test zum Anlegen von Tests");
         jiraUtils.createOrUpdateIssue(newIssue);
