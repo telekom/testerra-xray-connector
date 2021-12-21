@@ -22,16 +22,34 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import java.util.List;
+import java.util.Map;
 
 public class XrayTestSetIssue extends XrayIssue {
 
     public XrayTestSetIssue() {
-        this.setIssueType(IssueType.TestExecution.getIssueType());
+        this.setIssueType(IssueType.TestSet.getIssueType());
     }
 
     public XrayTestSetIssue(JiraIssue issue) {
         super(issue);
     }
+
+    public XrayTestSetIssue(Map<String, Object> map) {
+        super(map);
+    }
+
+    @JsonIgnore
+    public List<String> getTestKeys() {
+        return getOrCreateStringList(Fields.TESTS.getFieldName());
+    }
+
+    public void setTestKeys(List<String> testKeys) {
+        this.getFields().put(Fields.TESTS.getFieldName(), testKeys);
+    }
+
 }

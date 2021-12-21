@@ -101,8 +101,6 @@ public class XrayInfo extends XrayTestExecutionIssue {
      * @deprecated Use {@link #setProject(JiraNameReference)} instead
      */
     public void setProject(String project) {
-        JiraNameReference projectRef = new JiraNameReference();
-        projectRef.setKey(project);
-        this.setProject(projectRef);
+        getProject().setKey(project);
     }
 }

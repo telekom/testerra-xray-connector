@@ -32,7 +32,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.GlobalTestData;
 import eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTests;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
@@ -48,9 +47,11 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.SimpleJiraIs
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLabels;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
+import java.util.ArrayList;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
@@ -90,7 +91,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
     }
 
     @DataProvider
-    private Object[][] provideExistingIssues() {
+    private Object[][] provideExistingTestIssues() {
         return new Object[][]{
                 {"SWFTE-1", "TM - passes"},
                 {"SWFTE-2", "TM - fails"},
@@ -101,7 +102,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         };
     }
 
-    @Test(dataProvider = "provideExistingIssues")
+    @Test(dataProvider = "provideExistingTestIssues")
     public void testGetIssue(final String key, final String summary) throws IOException {
         final JiraIssue issue = JiraUtils.getIssue(webResource, key);
         assertEquals(issue.getKey(), key);
@@ -138,24 +139,24 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
     }
 
-//    @Test
-//    public void test_createIssue() throws IOException {
-//        final String expectedSummary = "Testerra Xray Connector New Test Ticket";
-//        JiraIssue newIssue = new JiraIssue();
-//        newIssue.setSummary(expectedSummary);
-//        newIssue.getProject().setKey(projectKey);
-//        newIssue.setIssueType(IssueType.Test.getIssueType());
-//        newIssue.setDescription("Dies ist ein Test zum Anlegen von Tests");
-//        jiraUtils.createOrUpdateIssue(newIssue);
-//        log().info("Create issue " + newIssue.getKey());
-//        assertNotNull(newIssue.getKey());
-//        assertNotNull(newIssue.getProject().getKey());
-//
-//        JiraIssue createdIssue = jiraUtils.getIssue(newIssue.getKey());
-//        assertEquals(createdIssue.getSummary(), newIssue.getSummary());
-//        assertEquals(createdIssue.getDescription(), newIssue.getDescription());
-//        assertEquals(createdIssue.getProject().getKey(), newIssue.getProject().getKey());
-//    }
+    @Test
+    public void test_createTestSet() throws IOException {
+        final String testToLink = "SWFTE-1";
+        XrayTestSetIssue testSet = new XrayTestSetIssue();
+        testSet.setSummary("Testerra Xray Connector TestSet");
+        testSet.getProject().setKey(projectKey);
+        testSet.setDescription("Test set");
+        testSet.setTestKeys(Lists.newArrayList(testToLink));
+
+        jiraUtils.createOrUpdateIssue(testSet);
+
+        assertNotNull(testSet.getKey());
+        log().info("Created test set: " + testSet.getKey());
+
+        XrayTestSetIssue updatedIssue = jiraUtils.getIssue(testSet.getKey(), XrayTestSetIssue::new);
+        assertEquals(updatedIssue.getKey(), testSet.getKey());
+        assertEquals(testSet.getTestKeys().get(0), testToLink);
+    }
 
     @Test
     public void testUpdateIssue() throws IOException {

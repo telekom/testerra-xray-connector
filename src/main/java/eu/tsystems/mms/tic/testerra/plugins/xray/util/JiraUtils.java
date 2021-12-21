@@ -34,6 +34,7 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraFieldsSearchResult;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIdReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssuesSearchResult;
@@ -49,6 +50,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import static java.lang.String.format;
@@ -88,6 +91,10 @@ public final class JiraUtils implements Loggable {
             unwrapException(e);
         }
         return new JiraIssue();
+    }
+
+    public <T extends JiraIdReference> T getIssue(String issueKey, Function<JiraIssue, T> issueSupplier) throws IOException {
+        return issueSupplier.apply(getIssue(issueKey));
     }
 
     /**
@@ -139,7 +146,6 @@ public final class JiraUtils implements Loggable {
                 responseJson = webResource.path(resourcePath)
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .post(String.class, string);
-
             }
             JiraKeyReference jiraIssueKeyReference = objectMapper.readValue(responseJson, JiraKeyReference.class);
             issue.setKey(jiraIssueKeyReference.getKey());

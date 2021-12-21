@@ -8,6 +8,7 @@ public enum Fields implements Field {
     REVISION(new CustomField(PropertyManager.getIntProperty("xray.test.execution.revision.field.id", 14272))),
     TEST_ENVIRONMENTS(new CustomField(PropertyManager.getIntProperty("xray.test.execution.test-environments.field.id", 15155))),
     TEST_PLAN(new CustomField(PropertyManager.getIntProperty("xray.test.execution.test-plan.field.id"))),
+    TESTS(new CustomField(PropertyManager.getIntProperty("xray.tests.field.id"))),
     LABELS(new NameField("labels")),
     SUMMARY(new NameField("summary")),
     DESCRIPTION(new NameField("description")),
