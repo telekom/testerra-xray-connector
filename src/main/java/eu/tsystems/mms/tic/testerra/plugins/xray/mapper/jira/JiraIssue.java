@@ -236,12 +236,12 @@ public class JiraIssue extends JiraKeyReference implements Loggable {
 
     @JsonIgnore
     public List<JiraAttachment> getAttachments() {
-        return getOrCreateEntityList("attachments", JiraAttachment::new);
+        return getOrCreateEntityList("attachment", JiraAttachment::new);
     }
 
     @JsonIgnore
     public void setAttachments(List<JiraAttachment> attachments) {
-        this.fields.put("attachments", attachments);
+        this.fields.put("attachment", attachments);
     }
 
     @JsonIgnore
