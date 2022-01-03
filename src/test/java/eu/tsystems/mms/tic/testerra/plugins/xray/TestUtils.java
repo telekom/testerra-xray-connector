@@ -22,7 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
@@ -40,7 +39,7 @@ public class TestUtils {
     public static Date getDateFromField(final JiraIssue issue, final String fieldName) throws ParseException {
         final Object foundFieldValue = issue.getFields().get(fieldName);
         if (foundFieldValue != null) {
-            return JiraUtils.dateFormat.parse(foundFieldValue.toString());
+            return JiraUtils.DATE_FORMAT.parse(foundFieldValue.toString());
         } else {
             return null;
         }

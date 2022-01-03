@@ -84,7 +84,7 @@ public class PostHocSyncStrategy extends AbstractSyncStrategy {
                 connector.doTransitions(testExecKey, XrayConfig.getInstance().getTransitionsOnCreated());
             } else {
                 /* existing execution */
-                connector.syncTestExecutionReturnResponse(testExecution);
+                connector.syncTestExecutionReturnKey(testExecution);
                 final JiraIssueUpdate onExistingExecutionUpdated = updates.updateOnExistingExecutionUpdated();
                 if (onExistingExecutionUpdated != null) {
                     connector.updateIssue(testExecKey, onExistingExecutionUpdated);

@@ -128,7 +128,7 @@ public class XrayTestExecutionImport {
             }
         }
 
-        private final Info testInfo = new Info();
+        private Info testInfo;
         private final String testKey;
         private Date start;
         private Date finish;
@@ -142,6 +142,10 @@ public class XrayTestExecutionImport {
 
         public Info getTestInfo() {
             return testInfo;
+        }
+
+        public void setTestInfo(Info testInfo) {
+            this.testInfo = testInfo;
         }
 
         public String getTestKey() {
@@ -217,7 +221,10 @@ public class XrayTestExecutionImport {
          * @todo Missing
          */
         this.info.testPlanKey = null;
-        this.info.testEnvironments = testExecutionIssue.getTestEnvironments();
+        List<String> testEnvironments = testExecutionIssue.getTestEnvironments();
+        if (testEnvironments.size() > 0) {
+            this.info.testEnvironments = testEnvironments;
+        }
     }
 
     public Info getInfo() {

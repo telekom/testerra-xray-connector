@@ -22,72 +22,46 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public final class XrayUtils extends JiraUtils {
 
     private static final String IMPORT_EXECUTION_PATH = "raven/1.0/import/execution";
     private static final String EXECUTION_RESULT_PATH = "raven/1.0/execution/result";
-    private static Logger logger = LoggerFactory.getLogger(XrayUtils.class);
 
     public XrayUtils(WebResource webResource) {
         super(webResource);
     }
 
-    public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecutionImport testExecution)
-            throws IOException, NotSyncableException {
-        final String response = syncTestExecReturnResponse(webResource, testExecution);
-        final JsonNode jsonNode = new ObjectMapper().readTree(response);
-        final JsonNode foundKey = jsonNode.findValue("key");
-        if (foundKey != null) {
-            return foundKey.asText();
-        } else {
-            throw new NotSyncableException("no key found in server response");
-        }
+    /**
+     * @deprecated Use {@link #createOrUpdateTestExecution(XrayTestExecutionImport)} instead
+     */
+    public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecutionImport testExecution) {
+        XrayUtils xrayUtils = new XrayUtils(webResource);
+        xrayUtils.createOrUpdateTestExecution(testExecution);
+        return testExecution.getTestExecutionKey();
     }
 
-    public static String syncTestExecReturnResponse(final WebResource webResource, final XrayTestExecutionImport testExecution)
-            throws JsonProcessingException {
-
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        final String string = objectMapper.writeValueAsString(testExecution);
+    public void createOrUpdateTestExecution(XrayTestExecutionImport testExecutionImport) {
         try {
-            return webResource.path(IMPORT_EXECUTION_PATH)
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .entity(string)
-                    .post(String.class);
-        } catch (final UniformInterfaceException e) {
-            logger.error(String.format("error POSTing request: %s", string), e);
-            throw new NotSyncableException(e);
-        }
-    }
-
-    public void createOrUpdateTestExecution(XrayTestExecutionImport testExecutionImport) throws JsonProcessingException {
-        JiraKeyReference ref = post(IMPORT_EXECUTION_PATH, getObjectMapper().writeValueAsString(testExecutionImport));
-        if (ref.hasKey()) {
+            JiraKeyReference ref = post(IMPORT_EXECUTION_PATH, testExecutionImport);
             testExecutionImport.setTestExecutionKey(ref.getKey());
+        } catch (IOException e) {
+            log().error("Unable to import TestExecution", e);
         }
     }
 
+    @Deprecated
     public static XrayTestExecutionImport createUpdateTestExecution(final String issueKey, final Iterable<String> testKeys) {
         final XrayInfo xrayInfo = new XrayInfo();
         xrayInfo.setKey(issueKey);

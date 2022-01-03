@@ -83,9 +83,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
-        webResource =
-                TestUtils.prepareWebResource(Paths.get(getClass().getResource("/xray-test-posthoc.properties").toURI()).getFileName().toString());
-
+        super.prepareWebResource();
         jiraUtils = new JiraUtils(webResource);
     }
 

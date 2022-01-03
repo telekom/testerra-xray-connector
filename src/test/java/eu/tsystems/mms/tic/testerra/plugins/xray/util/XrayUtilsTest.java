@@ -60,12 +60,12 @@ import static org.testng.Assert.assertTrue;
 
 public class XrayUtilsTest extends AbstractTest {
 
-    private WebResource webResource;
+    private XrayUtils xrayUtils;
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
-        webResource =
-                TestUtils.prepareWebResource(Paths.get(getClass().getResource("/xray-test-posthoc.properties").toURI()).getFileName().toString());
+        super.prepareWebResource();
+        xrayUtils = new XrayUtils(webResource);
     }
 
     @Test
@@ -83,7 +83,6 @@ public class XrayUtilsTest extends AbstractTest {
         issue.setRevision(revision);
         issue.setTestEnvironments(testEnvironments);
 
-        XrayUtils xrayUtils = new XrayUtils(webResource);
         XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(issue);
         xrayTestExecutionImport.setTestKeys(tests);
         xrayUtils.createOrUpdateTestExecution(xrayTestExecutionImport);

@@ -51,7 +51,6 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import static java.lang.String.format;
@@ -62,7 +61,7 @@ public class JiraUtils implements Loggable {
     private static final String ATTACHMENT_PATH = "api/2/attachment";
     private static final String ISSUE_PATH = "api/2/issue";
     private static final String SEARCH_PATH = "api/2/search";
-    public static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     private final WebResource webResource;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -155,27 +154,32 @@ public class JiraUtils implements Loggable {
         }
     }
 
-    public JiraKeyReference post(String apiPath, String body) {
-        String jsonResponse = webResource.path(apiPath)
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .post(String.class, body);
+    public JiraKeyReference post(String apiPath, Object entity) throws IOException {
+        return post(apiPath, objectMapper.writeValueAsString(entity));
+    }
+
+    public JiraKeyReference post(String apiPath, String body) throws IOException {
+        String jsonResponse = prepare(apiPath, body).post(String.class);
         return responseToKey(jsonResponse);
     }
 
-    public JiraKeyReference put(String apiPath, String body) {
-        String jsonResponse = webResource.path(apiPath)
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .put(String.class, body);
+    public JiraKeyReference put(String apiPath, Object entity) throws IOException {
+        return put(apiPath, objectMapper.writeValueAsString(entity));
+    }
+
+    public JiraKeyReference put(String apiPath, String body) throws IOException {
+        String jsonResponse = prepare(apiPath, body).put(String.class);
         return responseToKey(jsonResponse);
     }
 
-    private JiraKeyReference responseToKey(String jsonResponse) {
-        try {
-            return objectMapper.readValue(jsonResponse, JiraKeyReference.class);
-        } catch (IOException e) {
-            log().error("Unable to parse response to key reference", e);
-            return new JiraKeyReference();
-        }
+    private WebResource.Builder prepare(String apiPath, String body) {
+        return webResource.path(apiPath)
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .entity(body);
+    }
+
+    private JiraKeyReference responseToKey(String jsonResponse) throws IOException {
+        return objectMapper.readValue(jsonResponse, JiraKeyReference.class);
     }
 
     private void unwrapException(UniformInterfaceException e) throws IOException {
@@ -292,7 +296,7 @@ public class JiraUtils implements Loggable {
     }
 
     protected static DateFormat getDateFormat() {
-        return dateFormat;
+        return DATE_FORMAT;
     }
 
     protected WebResource getWebResource() {
