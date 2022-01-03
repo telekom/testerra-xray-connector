@@ -25,6 +25,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
 
 
+@Deprecated
 public class EmptyTestExecutionUpdates implements XrayTestExecutionUpdates {
 
     @Override

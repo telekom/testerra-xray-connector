@@ -31,9 +31,8 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.TestExecutionAttachment;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
@@ -284,22 +283,22 @@ public abstract class AbstractSyncStrategy implements Loggable {
         }
     }
 
-    protected XrayTestIssue createXrayTestIssue(String testKey, ITestResult result) {
-        final XrayTestIssue xrayTestIssue = new XrayTestIssue();
+    protected XrayTestExecutionImport.Test createXrayTestIssue(String testKey, ITestResult result) {
+        final XrayTestExecutionImport.Test xrayTestIssue = new XrayTestExecutionImport.Test();
         xrayTestIssue.setTestKey(testKey);
         xrayTestIssue.setStart(new Date(result.getStartMillis()));
 
         switch (result.getStatus()) {
             case ITestResult.FAILURE:
-                xrayTestIssue.setStatus(XrayTestStatus.FAIL);
+                xrayTestIssue.setStatus(XrayTestExecutionImport.Test.Status.FAIL);
                 break;
             case ITestResult.SUCCESS:
             case ITestResult.SUCCESS_PERCENTAGE_FAILURE:
-                xrayTestIssue.setStatus(XrayTestStatus.PASS);
+                xrayTestIssue.setStatus(XrayTestExecutionImport.Test.Status.PASS);
                 break;
             case ITestResult.SKIP:
                 xrayTestIssue.setStart(Calendar.getInstance().getTime());
-                xrayTestIssue.setStatus(XrayTestStatus.SKIPPED);
+                xrayTestIssue.setStatus(XrayTestExecutionImport.Test.Status.SKIPPED);
                 break;
             default:
                 log().error("test-ng result status {} cannot be processed", result.getStatus());

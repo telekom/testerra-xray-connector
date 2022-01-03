@@ -400,6 +400,10 @@ If all properties are set, call the following to build, deploy and release this 
 gradle publish closeAndReleaseRepository
 ````
 
+## References
+
+- Import Xray results: https://docs.getxray.app/display/XRAY/Import+Execution+Results
+
 ## Code of Conduct
 
 This project has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) in version 2.0 as our code of conduct. Please see the details in our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). All contributors must abide by the code of conduct.

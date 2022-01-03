@@ -29,12 +29,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.FreshXrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -54,7 +50,7 @@ public final class XrayUtils {
     private XrayUtils() {
     }
 
-    public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecution testExecution)
+    public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecutionImport testExecution)
             throws IOException, NotSyncableException {
         final String response = syncTestExecReturnResponse(webResource, testExecution);
         final JsonNode jsonNode = new ObjectMapper().readTree(response);
@@ -66,7 +62,7 @@ public final class XrayUtils {
         }
     }
 
-    public static String syncTestExecReturnResponse(final WebResource webResource, final XrayTestExecution testExecution)
+    public static String syncTestExecReturnResponse(final WebResource webResource, final XrayTestExecutionImport testExecution)
             throws JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -82,38 +78,38 @@ public final class XrayUtils {
         }
     }
 
-    public static UpdateXrayTestExecution createUpdateTestExecution(final String issueKey, final Iterable<String> testKeys) {
-        final UpdateXrayTestExecution execution = new UpdateXrayTestExecution(issueKey);
+    public static XrayTestExecutionImport createUpdateTestExecution(final String issueKey, final Iterable<String> testKeys) {
         final XrayInfo xrayInfo = new XrayInfo();
+        xrayInfo.setKey(issueKey);
         xrayInfo.setStartDate(new Date());
         xrayInfo.setFinishDate(new Date());
-        execution.setInfo(xrayInfo);
+        final XrayTestExecutionImport execution = new XrayTestExecutionImport(xrayInfo);
         execution.setTests(keysToXrayTestWithTodoStatus(testKeys));
         return execution;
     }
 
-    public static FreshXrayTestExecution createFreshTestExecution(XrayInfo xrayInfo, final Iterable<String> testKeys) {
-        final FreshXrayTestExecution execution = new FreshXrayTestExecution();
-        execution.setInfo(xrayInfo);
+    @Deprecated
+    public static XrayTestExecutionImport createFreshTestExecution(XrayInfo xrayInfo, final Iterable<String> testKeys) {
+        final XrayTestExecutionImport execution = new XrayTestExecutionImport(xrayInfo);
         execution.setTests(keysToXrayTestWithTodoStatus(testKeys));
         return execution;
     }
 
-    private static LinkedHashSet<XrayTestIssue> keysToXrayTestWithTodoStatus(final Iterable<String> testKeys) {
-        final LinkedHashSet<XrayTestIssue> xrayTestIssues = new LinkedHashSet<>();
+    private static LinkedHashSet<XrayTestExecutionImport.Test> keysToXrayTestWithTodoStatus(final Iterable<String> testKeys) {
+        final LinkedHashSet<XrayTestExecutionImport.Test> xrayTestIssues = new LinkedHashSet<>();
         for (final String testKey : testKeys) {
-            final XrayTestIssue xrayTestIssue = new XrayTestIssue();
+            final XrayTestExecutionImport.Test xrayTestIssue = new XrayTestExecutionImport.Test();
             xrayTestIssue.setTestKey(testKey);
-            xrayTestIssue.setStatus(XrayTestStatus.TODO);
+            xrayTestIssue.setStatus(XrayTestExecutionImport.Test.Status.TODO);
             xrayTestIssues.add(xrayTestIssue);
         }
         return xrayTestIssues;
     }
 
-    public static LinkedHashSet<XrayTestIssue> getTestsFromExecution(final WebResource webResource, final String issueKey) throws IOException {
+    public static LinkedHashSet<XrayTestExecutionImport.Test> getTestsFromExecution(final WebResource webResource, final String issueKey) throws IOException {
         final String result = webResource.path(EXECUTION_RESULT_PATH).queryParam("testExecKey", issueKey).get(String.class);
         final ObjectMapper objectMapper = new ObjectMapper();
-        final XrayTestIssue[] testIssues = objectMapper.readValue(result, XrayTestIssue[].class);
+        final XrayTestExecutionImport.Test[] testIssues = objectMapper.readValue(result, XrayTestExecutionImport.Test[].class);
         return Sets.newLinkedHashSet(Arrays.asList(testIssues));
     }
 

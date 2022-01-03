@@ -22,7 +22,16 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.RevisionContainsExact;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import java.util.Optional;
@@ -68,9 +77,25 @@ public interface XrayMapper {
         return Optional.empty();
     }
 
+    default Optional<JqlQuery> createXrayTestExecutionQuery(XrayTestExecutionIssue xrayTestExecutionIssue) {
+        final JqlQuery jqlQuery = JqlQuery.create()
+                .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
+                .addCondition(new IssueTypeEquals(xrayTestExecutionIssue.getIssueType()))
+                .addCondition(new SummaryContainsExact(xrayTestExecutionIssue.getSummary()))
+                .addCondition(new RevisionContainsExact(xrayTestExecutionIssue.getRevision()))
+                .build();
+        return Optional.of(jqlQuery);
+    }
+
     default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue) {
     }
 
-    default void updateXrayTest(XrayTestIssue xrayTestIssue) {
+    default void updateXrayTest(XrayTestExecutionImport.Test xrayTestIssue) {
+    }
+
+    default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
+//        if (xrayTestExecutionIssue.hasStatus(JiraStatus.NEW)) {
+//
+//        }
     }
 }

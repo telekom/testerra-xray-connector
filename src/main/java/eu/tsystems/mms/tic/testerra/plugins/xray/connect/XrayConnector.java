@@ -43,10 +43,8 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.ExplicitJiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.SimpleJiraIssueUpdate;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.FreshXrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecution;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
@@ -118,6 +116,7 @@ public class XrayConnector {
         return foundJiraIssues.stream().map(JiraIssue::getKey).collect(Collectors.toList());
     }
 
+    @Deprecated
     public Set<String> searchForExistingTestExecutions() throws IOException {
         final JqlQuery jqlQuery = JqlQuery.create()
                 .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
@@ -152,6 +151,7 @@ public class XrayConnector {
         }
     }
 
+    @Deprecated
     public synchronized String findOrCreateTestExecution(final Collection<String> testKeys, JiraIssueUpdate onCreate, JiraIssueUpdate onUpdate) throws
             IOException, NotSyncableException {
         final Set<String> foundTestExecutionKeys = searchForExistingTestExecutions();
@@ -170,16 +170,18 @@ public class XrayConnector {
         }
     }
 
+    @Deprecated
     private String prepareTestExecutionCreation(JiraIssueUpdate jiraIssueUpdate) throws IOException, NotSyncableException {
         return prepareTestExecutionCreation(null, jiraIssueUpdate);
     }
 
+    @Deprecated
     private String prepareTestExecutionCreation(final Iterable<String> testKeys, JiraIssueUpdate jiraIssueUpdate)
             throws IOException, NotSyncableException {
         //        final String testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayConfig.getProjectKey(), summary, description, revision);
         final String testExecKey;
         if (testKeys != null) {
-            final FreshXrayTestExecution freshTestExecution = XrayUtils.createFreshTestExecution(xrayInfo, testKeys);
+            final XrayTestExecutionImport freshTestExecution = XrayUtils.createFreshTestExecution(xrayInfo, testKeys);
             testExecKey = XrayUtils.syncTestExecutionReturnKey(webResource, freshTestExecution);
         } else {
             //            testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo.getProject(), xrayInfo.getSummary(), xrayInfo.getDescription(), xrayInfo.getRevision());
@@ -214,7 +216,7 @@ public class XrayConnector {
 
         if (testKeys != null) {
             /* set all tests to _todo status */
-            final UpdateXrayTestExecution testExecution = XrayUtils.createUpdateTestExecution(testExecKey, testKeys);
+            final XrayTestExecutionImport testExecution = XrayUtils.createUpdateTestExecution(testExecKey, testKeys);
             XrayUtils.syncTestExecutionReturnKey(webResource, testExecution);
         }
 
@@ -252,11 +254,11 @@ public class XrayConnector {
         }
     }
 
-    public String syncTestExecutionReturnKey(final XrayTestExecution testExecution) throws IOException {
+    public String syncTestExecutionReturnKey(final XrayTestExecutionImport testExecution) throws IOException {
         return XrayUtils.syncTestExecutionReturnKey(webResource, testExecution);
     }
 
-    public String syncTestExecutionReturnResponse(final XrayTestExecution testExecution) throws JsonProcessingException {
+    public String syncTestExecutionReturnResponse(final XrayTestExecutionImport testExecution) throws JsonProcessingException {
         return XrayUtils.syncTestExecReturnResponse(webResource, testExecution);
     }
 

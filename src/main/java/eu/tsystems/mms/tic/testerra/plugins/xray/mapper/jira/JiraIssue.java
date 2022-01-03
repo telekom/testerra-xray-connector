@@ -23,7 +23,6 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -40,7 +39,9 @@ import java.util.stream.Collectors;
 
 public class JiraIssue extends JiraKeyReference implements Loggable {
     private final Map<String, Object> fields;
-    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    //public static final String DATE_FORMAT="yyyy-MM-dd'T'HH:mm:ssXXX";
+    public static final String PATTERN_DATE_FORMAT ="yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private static final DateFormat dateFormat = new SimpleDateFormat(PATTERN_DATE_FORMAT);
 
     public JiraIssue() {
         this.fields = new HashMap<>();
@@ -187,6 +188,12 @@ public class JiraIssue extends JiraKeyReference implements Loggable {
     @JsonIgnore
     public JiraStatus getStatus() {
         return getOrCreateEntity("status", JiraStatus::new);
+    }
+
+    @JsonIgnore
+    public boolean hasStatus(JiraStatus status) {
+        JiraStatus myStatus = getStatus();
+        return (myStatus.hasName() && status.hasName() && myStatus.getName().equals(status.getName()));
     }
 
     @JsonIgnore

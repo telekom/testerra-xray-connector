@@ -127,8 +127,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
 
     @Override
     public XrayMapper getXrayMapper() {
-        /* no mapping */
-        return new EmptyMapper();
+        return null;
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.util.Set;
 /**
  * Created by maco on 01.12.2015.
  */
+@Deprecated
 public abstract class JiraIssueUpdate {
 
     public static SimpleJiraIssueUpdateBuilder createSimple() {

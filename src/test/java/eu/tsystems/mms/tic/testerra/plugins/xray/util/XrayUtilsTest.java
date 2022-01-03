@@ -22,7 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -33,13 +32,9 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.FreshXrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayEvidence;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.testng.Assert;
@@ -85,7 +80,7 @@ public class XrayUtilsTest extends AbstractTest {
 
         final XrayInfo xrayInfo = new XrayInfo(projectKey, summary, description, revision);
         xrayInfo.setLabels(testEnvironments);
-        final FreshXrayTestExecution freshTestExecution =
+        final XrayTestExecutionImport freshTestExecution =
                 XrayUtils.createFreshTestExecution(xrayInfo, Arrays.asList("SWFTE-1", "SWFTE-2", "SWFTE-3"));
         final String key = XrayUtils.syncTestExecutionReturnKey(webResource, freshTestExecution);
 
@@ -122,25 +117,25 @@ public class XrayUtilsTest extends AbstractTest {
         final String issueKey = GlobalTestData.getInstance().getKeyOfNewTestExecution();
         final String json = XrayUtils.exportTestExecutionAsJson(webResource, issueKey);
         final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.readValue(json, XrayTestIssue[].class);
+        objectMapper.readValue(json, XrayTestExecutionImport.Test[].class);
     }
 
     @Test
     public void testSyncTestExecution() throws Exception {
         final String testExecutionKey = "SWFTE-9";
-        final Set<XrayTestIssue> existingTests = XrayUtils.getTestsFromExecution(webResource, testExecutionKey);
+        final Set<XrayTestExecutionImport.Test> existingTests = XrayUtils.getTestsFromExecution(webResource, testExecutionKey);
 
         // statuses is used for clarity here
-        final XrayTestStatus randomStatuses = Arrays.asList(XrayTestStatus.values()).get(new Random().nextInt(XrayTestStatus.values().length));
+        final XrayTestExecutionImport.Test.Status randomStatuses = Arrays.asList(XrayTestExecutionImport.Test.Status.values()).get(new Random().nextInt(XrayTestExecutionImport.Test.Status.values().length));
 
-        for (final XrayTestIssue testIssue : existingTests) {
+        for (final XrayTestExecutionImport.Test testIssue : existingTests) {
             testIssue.setStatus(randomStatuses);
             final Date now = new Date();
             testIssue.setStart(now);
             testIssue.setFinish(now);
         }
 
-        final UpdateXrayTestExecution execution = new UpdateXrayTestExecution(testExecutionKey);
+        final XrayTestExecutionImport execution = new XrayTestExecutionImport(testExecutionKey);
         execution.setTests(existingTests);
         XrayUtils.syncTestExecutionReturnKey(webResource, execution);
         //TODO: check execution
@@ -149,12 +144,12 @@ public class XrayUtilsTest extends AbstractTest {
     @Test(enabled = false)
     public void testSyncTestExecutionWithEvidences() throws Exception {
         final String issueKey = "BLA-13209";
-        final UpdateXrayTestExecution execution = new UpdateXrayTestExecution(issueKey);
-        final Set<XrayTestIssue> existingTests = XrayUtils.getTestsFromExecution(webResource, issueKey);
-        final XrayTestStatus status = Arrays.asList(XrayTestStatus.values()).get(new Random().nextInt(XrayTestStatus.values().length));
+        final XrayTestExecutionImport execution = new XrayTestExecutionImport(issueKey);
+        final Set<XrayTestExecutionImport.Test> existingTests = XrayUtils.getTestsFromExecution(webResource, issueKey);
+        final XrayTestExecutionImport.Test.Status status = Arrays.asList(XrayTestExecutionImport.Test.Status.values()).get(new Random().nextInt(XrayTestExecutionImport.Test.Status.values().length));
 
-        XrayTestIssue testBLA13138 = null;
-        for (final XrayTestIssue testIssue : existingTests) {
+        XrayTestExecutionImport.Test testBLA13138 = null;
+        for (final XrayTestExecutionImport.Test testIssue : existingTests) {
             testIssue.setStatus(status);
             final Date now = new Date();
             testIssue.setStart(now);
@@ -165,18 +160,18 @@ public class XrayUtilsTest extends AbstractTest {
             }
         }
 
-        final XrayEvidence evidence = new XrayEvidence();
+        final XrayTestExecutionImport.Test.Evidence evidence = new XrayTestExecutionImport.Test.Evidence();
         evidence.setData("YmxhIGJsdWJiDQo=");
         evidence.setFilename("test.txt");
         evidence.setContentType(MediaType.TEXT_PLAIN_TYPE);
         final String html = "<html><head><title>First parse</title></head>"
                 + "<body><p>Bli Bla Blubb.</p></body></html>";
-        final XrayEvidence htmlEvidence = new XrayEvidence();
+        final XrayTestExecutionImport.Test.Evidence htmlEvidence = new XrayTestExecutionImport.Test.Evidence();
         htmlEvidence.setData("PGh0bWw+PGhlYWQ+PHRpdGxlPkZpcnN0IHBhcnNlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+QmxpIEJsYSBCbHViYi48L3A+PC9ib2R5PjwvaHRtbD4=");
         htmlEvidence.setFilename("test.html");
         htmlEvidence.setContentType(MediaType.TEXT_PLAIN_TYPE);
 
-        final XrayEvidence zipEvidence = new XrayEvidence();
+        final XrayTestExecutionImport.Test.Evidence zipEvidence = new XrayTestExecutionImport.Test.Evidence();
 
         final byte[] bytes = Files.readAllBytes(Paths.get(getClass().getResource("/archive.zip").toURI()));
         final String base64String = Base64.encodeBase64String(bytes);
@@ -189,7 +184,7 @@ public class XrayUtilsTest extends AbstractTest {
             //            final Set<XrayEvidence> evidences = testBLA13138.getEvidences();
             //            evidences.addAll(Arrays.asList(evidence, htmlEvidence, zipEvidence));
             //            testBLA13138.setEvidences(evidences);
-            final HashSet<XrayEvidence> xrayEvidences = new HashSet<>();
+            final HashSet<XrayTestExecutionImport.Test.Evidence> xrayEvidences = new HashSet<>();
             xrayEvidences.addAll(Arrays.asList(htmlEvidence, zipEvidence));
             testBLA13138.setEvidences(xrayEvidences);
         }
@@ -199,9 +194,9 @@ public class XrayUtilsTest extends AbstractTest {
 
         boolean textFileFound = false;
         boolean zipFileFound = false;
-        final Set<XrayTestIssue> testIssues = XrayUtils.getTestsFromExecution(webResource, issueKey);
-        for (final XrayTestIssue testIssue : testIssues) {
-            for (final XrayEvidence xrayEvidence : testIssue.getEvidences()) {
+        final Set<XrayTestExecutionImport.Test> testIssues = XrayUtils.getTestsFromExecution(webResource, issueKey);
+        for (final XrayTestExecutionImport.Test testIssue : testIssues) {
+            for (final XrayTestExecutionImport.Test.Evidence xrayEvidence : testIssue.getEvidences()) {
                 if (xrayEvidence.getFilename().equals("test.txt")) {
                     // TODO: check content of txt file
                     textFileFound = true;

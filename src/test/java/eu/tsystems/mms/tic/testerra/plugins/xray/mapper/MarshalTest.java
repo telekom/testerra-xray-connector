@@ -27,9 +27,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayEvidence;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -46,9 +45,9 @@ public class MarshalTest extends AbstractTest {
     @Test
     public void testMarshalTestToJson() throws JsonProcessingException {
 
-        final XrayTestIssue test = new XrayTestIssue();
+        final XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test();
         test.setTestKey("BLA-123");
-        test.setStatus(XrayTestStatus.PASS);
+        test.setStatus(XrayTestExecutionImport.Test.Status.PASS);
         final Calendar calStart = Calendar.getInstance();
         calStart.set(2015, Calendar.DECEMBER, 24, 19, 0, 0);
         test.setStart(calStart.getTime());
@@ -72,9 +71,9 @@ public class MarshalTest extends AbstractTest {
     @Test
     public void testMarshalTestToJsonWithEvidence() throws JsonProcessingException {
 
-        final XrayTestIssue test = new XrayTestIssue();
+        final XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test();
         test.setTestKey("BLA-123");
-        test.setStatus(XrayTestStatus.PASS);
+        test.setStatus(XrayTestExecutionImport.Test.Status.PASS);
         final Calendar calStart = Calendar.getInstance();
         calStart.set(2015, Calendar.DECEMBER, 24, 19, 0, 0);
         test.setStart(calStart.getTime());
@@ -82,11 +81,11 @@ public class MarshalTest extends AbstractTest {
         calFinish.set(2015, Calendar.DECEMBER, 24, 20, 0, 0);
         test.setFinish(calFinish.getTime());
 
-        final XrayEvidence evidence = new XrayEvidence();
+        final XrayTestExecutionImport.Test.Evidence evidence = new XrayTestExecutionImport.Test.Evidence();
         evidence.setData("YmxhIGJsdWJiDQo=");
         evidence.setFilename("test.txt");
         evidence.setContentType(MediaType.TEXT_PLAIN_TYPE);
-        final HashSet<XrayEvidence> evidences = new HashSet<>();
+        final HashSet<XrayTestExecutionImport.Test.Evidence> evidences = new HashSet<>();
         evidences.add(evidence);
         test.setEvidences(evidences);
 
@@ -107,7 +106,7 @@ public class MarshalTest extends AbstractTest {
     public void testUnmarshalExampleToObject() throws JAXBException, URISyntaxException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final URL url = getClass().getResource("/example.json").toURI().toURL();
-        objectMapper.readValue(url, XrayTestIssue[].class);
+        objectMapper.readValue(url, XrayTestExecutionImport.Test[].class);
     }
 
 }

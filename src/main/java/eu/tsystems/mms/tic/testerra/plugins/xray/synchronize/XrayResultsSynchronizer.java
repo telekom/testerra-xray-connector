@@ -22,7 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
-
 public interface XrayResultsSynchronizer {
 
     XrayTestExecutionInfo getExecutionInfo();

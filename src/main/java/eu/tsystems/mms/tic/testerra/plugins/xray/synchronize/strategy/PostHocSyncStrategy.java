@@ -25,10 +25,8 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy;
 import com.google.common.collect.Sets;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.FreshXrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecution;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
@@ -41,8 +39,8 @@ import org.testng.ITestResult;
 
 public class PostHocSyncStrategy extends AbstractSyncStrategy {
 
-    private XrayTestExecution testExecution;
-    private Set<XrayTestIssue> tests = Sets.newConcurrentHashSet();
+    private XrayTestExecutionImport testExecution;
+    private final Set<XrayTestExecutionImport.Test> tests = Sets.newConcurrentHashSet();
     private String testExecKey = null;
 
 
@@ -57,13 +55,11 @@ public class PostHocSyncStrategy extends AbstractSyncStrategy {
             if (foundTestExecutionKeys.size() == 1) {
                 /* one hit */
                 testExecKey = foundTestExecutionKeys.iterator().next();
-                testExecution = new UpdateXrayTestExecution(testExecKey);
+                testExecution = new XrayTestExecutionImport(testExecKey);
                 connector.updateStartTimeOfTestExecution(testExecKey);
             } else if (foundTestExecutionKeys.isEmpty()) {
                 /* no hit */
-                FreshXrayTestExecution freshExec = new FreshXrayTestExecution();
-                freshExec.setInfo(xrayInfo);
-                testExecution = freshExec;
+                testExecution = new XrayTestExecutionImport(xrayInfo);
             } else {
                 final String message = "must find at maximum one match for jql query";
                 ExecutionContextController.getCurrentMethodContext().addPriorityMessage("Synchronization to Xray failed: " + message);
@@ -131,7 +127,7 @@ public class PostHocSyncStrategy extends AbstractSyncStrategy {
         getTestKeysFromAnnotation(event).ifPresent(testKeys -> {
             log().info("Synchronize: " + String.join(", ", testKeys));
             for (final String testKey : testKeys) {
-                final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, result);
+                final XrayTestExecutionImport.Test xrayTestIssue = createXrayTestIssue(testKey, result);
                 tests.add(xrayTestIssue);
             }
         });

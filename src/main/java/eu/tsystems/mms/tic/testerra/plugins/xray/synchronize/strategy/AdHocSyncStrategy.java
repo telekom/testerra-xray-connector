@@ -26,9 +26,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Sets;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.ExistingXrayTestExecution;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionUpdates;
@@ -93,9 +92,9 @@ public class AdHocSyncStrategy extends AbstractSyncStrategy {
             for (final String testKey : testKeys) {
 
                 final ITestResult testResult = event.getTestResult();
-                final XrayTestIssue xrayTestIssue = createXrayTestIssue(testKey, testResult);
+                final XrayTestExecutionImport.Test xrayTestIssue = createXrayTestIssue(testKey, testResult);
 
-                final ExistingXrayTestExecution testExecution = new ExistingXrayTestExecution(testExecKey);
+                final XrayTestExecutionImport testExecution = new XrayTestExecutionImport(testExecKey);
                 testExecution.setTests(Sets.newHashSet(xrayTestIssue));
 
                 try {

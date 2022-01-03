@@ -26,7 +26,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @deprecated Use {@link XrayTestExecutionIssue}

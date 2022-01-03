@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,8 @@ public class XrayTestExecutionIssue extends XrayIssue {
 
     public XrayTestExecutionIssue() {
         this.setIssueType(IssueType.TestExecution.getIssueType());
+        this.setStartDate(new Date());
+        //this.setStatus(JiraStatus.NEW);
     }
 
     public XrayTestExecutionIssue(JiraIssue issue) {

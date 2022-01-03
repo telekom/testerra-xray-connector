@@ -218,7 +218,6 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
 
     @Test
     public void testCreateTestExecution() throws IOException, ParseException {
-        final String projectKey = "SWFTE";
         final String summary = RandomUtils.generateRandomString();
         final String description = RandomUtils.generateRandomString();
         final String revision = RandomUtils.generateRandomString();
@@ -252,6 +251,25 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
 
         /* set global property to use later */
         GlobalTestData.getInstance().setKeyOfNewTestExecution(key);
+    }
+
+    @Test
+    public void testCreateTestExecutionWithLinkedTests() throws IOException {
+        final String testToLink = "SWFTE-1";
+        XrayTestExecutionIssue testExecution = new XrayTestExecutionIssue();
+        testExecution.setSummary("Testerra Xray Connector TestExecution");
+        testExecution.getProject().setKey(projectKey);
+        testExecution.setDescription("Test execution");
+        testExecution.setTestKeys(Lists.newArrayList(testToLink));
+
+        jiraUtils.createOrUpdateIssue(testExecution);
+
+        assertNotNull(testExecution.getKey());
+        log().info("Created test execution: " + testExecution.getKey());
+
+        XrayTestExecutionIssue updatedIssue = jiraUtils.getIssue(testExecution.getKey(), XrayTestExecutionIssue::new);
+        assertEquals(updatedIssue.getKey(), testExecution.getKey());
+        assertEquals(testExecution.getTestKeys().get(0), testToLink);
     }
 
     @Test(groups = "issueStatus")

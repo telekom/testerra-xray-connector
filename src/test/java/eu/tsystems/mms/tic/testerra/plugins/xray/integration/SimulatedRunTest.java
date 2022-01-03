@@ -26,24 +26,19 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -61,19 +56,19 @@ import org.testng.annotations.Parameters;
 
 public abstract class SimulatedRunTest extends TesterraTest {
 
-    protected Map<String, XrayTestStatus> fullWithoutParametrized = ImmutableMap.of(
-            "SWFTE-4", XrayTestStatus.PASS,
-            "SWFTE-5", XrayTestStatus.FAIL,
-            "SWFTE-6", XrayTestStatus.SKIPPED
+    protected Map<String, XrayTestExecutionImport.Test.Status> fullWithoutParametrized = ImmutableMap.of(
+            "SWFTE-4", XrayTestExecutionImport.Test.Status.PASS,
+            "SWFTE-5", XrayTestExecutionImport.Test.Status.FAIL,
+            "SWFTE-6", XrayTestExecutionImport.Test.Status.SKIPPED
     );
     private WebResource webResource;
     private XrayConfig xrayConfig;
-    private Map<String, XrayTestStatus> expectedTestResultsFullSet = ImmutableMap.of(
-            "SWFTE-4", XrayTestStatus.PASS,
-            "SWFTE-5", XrayTestStatus.FAIL,
-            "SWFTE-6", XrayTestStatus.SKIPPED,
-            "SWFTE-319", XrayTestStatus.PASS,
-            "SWFTE-320", XrayTestStatus.FAIL
+    private Map<String, XrayTestExecutionImport.Test.Status> expectedTestResultsFullSet = ImmutableMap.of(
+            "SWFTE-4", XrayTestExecutionImport.Test.Status.PASS,
+            "SWFTE-5", XrayTestExecutionImport.Test.Status.FAIL,
+            "SWFTE-6", XrayTestExecutionImport.Test.Status.SKIPPED,
+            "SWFTE-319", XrayTestExecutionImport.Test.Status.PASS,
+            "SWFTE-320", XrayTestExecutionImport.Test.Status.FAIL
     );
 
     abstract String getExpectedSummary();
@@ -99,13 +94,18 @@ public abstract class SimulatedRunTest extends TesterraTest {
     }
 
     protected void setInvalidTestStatus(String testExecutionKey) throws IOException {
-        final UpdateXrayTestExecution execution = new UpdateXrayTestExecution(testExecutionKey);
-        final Set<XrayTestIssue> xrayTestIssues = new HashSet<>();
+        final XrayTestExecutionImport execution = new XrayTestExecutionImport(testExecutionKey);
+        final Set<XrayTestExecutionImport.Test> xrayTestIssues = new HashSet<>();
         final Calendar oneYearAgo = Calendar.getInstance();
         oneYearAgo.add(Calendar.YEAR, -1);
         Date invalidDate = new GregorianCalendar(1999, 12, 24).getTime();
         for (final String testKey : expectedTestResultsFullSet.keySet()) {
-            xrayTestIssues.add(new XrayTestIssue(testKey, XrayTestStatus.ABORTED, invalidDate, invalidDate, null));
+            XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test();
+            test.setTestKey(testKey);
+            test.setStatus(XrayTestExecutionImport.Test.Status.ABORTED);
+            test.setStart(invalidDate);
+            test.setFinish(invalidDate);
+            xrayTestIssues.add(test);
         }
         execution.setTests(xrayTestIssues);
         XrayUtils.syncTestExecutionReturnKey(webResource, execution);
@@ -116,7 +116,7 @@ public abstract class SimulatedRunTest extends TesterraTest {
         checkTestExecutionResult(testExecutionKey, expectedTestResultsFullSet, before);
     }
 
-    void checkTestExecutionResult(String testExecutionKey, Map<String, XrayTestStatus> expectedTestResults,
+    void checkTestExecutionResult(String testExecutionKey, Map<String, XrayTestExecutionImport.Test.Status> expectedTestResults,
                                   Calendar before) throws IOException, ParseException {
 
         /* get data to check */
@@ -127,7 +127,7 @@ public abstract class SimulatedRunTest extends TesterraTest {
                 xrayConfig.getTestExecutionFinishTimeFieldName()));
 
         XrayTestExecutionIssue jiraIssue = new XrayTestExecutionIssue(rawIssue);
-        final Set<XrayTestIssue> testIssues = XrayUtils.getTestsFromExecution(webResource, testExecutionKey);
+        final Set<XrayTestExecutionImport.Test> testIssues = XrayUtils.getTestsFromExecution(webResource, testExecutionKey);
 
         /* check string fields */
         final String foundSummary = jiraIssue.getSummary();
@@ -162,10 +162,10 @@ public abstract class SimulatedRunTest extends TesterraTest {
 
 
         /* check single tests */
-        for (final XrayTestIssue testIssue : testIssues) {
+        for (final XrayTestExecutionImport.Test testIssue : testIssues) {
             final String testKey = testIssue.getTestKey();
             if (expectedTestResults.containsKey(testKey)) {
-                final XrayTestStatus expectedTestStatus = expectedTestResults.get(testKey);
+                final XrayTestExecutionImport.Test.Status expectedTestStatus = expectedTestResults.get(testKey);
                 assertEquals(testIssue.getStatus(), expectedTestStatus,
                         String.format("test status of %s should be %s", testKey, expectedTestStatus));
 

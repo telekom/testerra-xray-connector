@@ -25,6 +25,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 import java.util.List;
 
 
+@Deprecated
 public interface XrayTestExecutionInfo {
 
     /**
