@@ -76,7 +76,6 @@ import static org.testng.Assert.assertTrue;
 
 public class JiraUtilsTest extends AbstractTest implements Loggable {
 
-    private WebResource webResource;
     private final String updateIssueKey = "SWFTE-802";
     private final String statusIssueKey = "SWFTE-809";
     private JiraUtils jiraUtils;
@@ -108,7 +107,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
     }
 
     @Test
-    public void test_updateIssueNew() throws IOException {
+    public void test_updateIssue_newApi() throws IOException {
         JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
         issueToUpdate.setSummary("Neues Ticket: " + RandomUtils.generateRandomString());
         List<String> labels = issueToUpdate.getLabels();

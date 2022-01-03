@@ -22,12 +22,14 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionResult;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -54,8 +56,13 @@ public final class XrayUtils extends JiraUtils {
 
     public void createOrUpdateTestExecution(XrayTestExecutionImport testExecutionImport) {
         try {
-            JiraKeyReference ref = post(IMPORT_EXECUTION_PATH, testExecutionImport);
-            testExecutionImport.setTestExecutionKey(ref.getKey());
+            String jsonResponse = post(IMPORT_EXECUTION_PATH, testExecutionImport);
+            XrayTestExecutionResult xrayTestExecutionResult = getObjectMapper().readValue(jsonResponse, XrayTestExecutionResult.class);
+            testExecutionImport.setTestExecutionKey(xrayTestExecutionResult.getTestExecIssue().getKey());
+//            JsonNode jsonNode = getObjectMapper().readTree(jsonResponse);
+//            if (jsonNode.has("testExecKey")) {
+//                testExecutionImport.setTestExecutionKey(jsonNode.get("testExecKey").asText());
+//            }
         } catch (IOException e) {
             log().error("Unable to import TestExecution", e);
         }

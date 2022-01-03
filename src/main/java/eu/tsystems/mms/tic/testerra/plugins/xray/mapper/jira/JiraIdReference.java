@@ -5,9 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public class JiraIdReference {
     private String id;
+    private String self;
 
     public JiraIdReference(Map<String, Object> map) {
         this((String)map.getOrDefault("id", null));
+        this.self = (String)map.getOrDefault("self", null);
     }
 
     public JiraIdReference() {
@@ -27,5 +29,8 @@ public class JiraIdReference {
 
     public boolean hasId() {
         return StringUtils.isNotBlank(this.id);
+    }
+    public String getSelf() {
+        return self;
     }
 }

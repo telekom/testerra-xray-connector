@@ -6,6 +6,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.MediaTypeSerializer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -215,7 +216,7 @@ public class XrayTestExecutionImport {
         this.info.version = testExecutionIssue.getVersions().stream().findFirst().map(JiraNameReference::getName).orElse(null);
         this.info.revision = testExecutionIssue.getRevision();
         this.info.user = testExecutionIssue.getAssignee().getName();
-        this.info.startDate = testExecutionIssue.getStartDate();
+//        this.info.startDate = testExecutionIssue.getStartDate();
         this.info.finishDate = testExecutionIssue.getFinishDate();
         /**
          * @todo Missing
@@ -239,8 +240,29 @@ public class XrayTestExecutionImport {
         this.tests = tests;
     }
 
-    public void setTestKeys(Set<String> testKeys) {
-        this.tests = testKeys.stream().map(Test::new).collect(Collectors.toSet());
+    public void addTests(Set<Test> tests) {
+        if (this.tests == null) {
+            this.tests = new HashSet<>();
+        }
+        this.tests.addAll(tests);
+    }
+
+    public void setTestKeys(Set<String> testKeys, Test.Status status) {
+        if (this.tests != null) {
+            this.tests.clear();
+        }
+        this.addTestKeys(testKeys, status);
+    }
+
+    public void addTestKeys(Set<String> testKeys, Test.Status status) {
+        if (this.tests == null) {
+            this.tests = new HashSet<>();
+        }
+        this.tests.addAll(testKeys.stream()
+                .map(Test::new)
+                .peek(test -> test.setStatus(status))
+                .collect(Collectors.toSet())
+        );
     }
 
     public Set<Test> getTests() {

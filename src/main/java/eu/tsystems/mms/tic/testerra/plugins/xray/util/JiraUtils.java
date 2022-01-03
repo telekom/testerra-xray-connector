@@ -133,18 +133,20 @@ public class JiraUtils implements Loggable {
     public void createOrUpdateIssue(JiraIssue issue) throws IOException {
         final String string = objectMapper.writeValueAsString(issue);
         try {
-            JiraKeyReference jiraIssueKeyReference;
+            String jsonResponse;
             if (issue.hasKey()) {
-                jiraIssueKeyReference = put(String.format("%s/%s", ISSUE_PATH, issue.getKey()), string);
+                jsonResponse = put(String.format("%s/%s", ISSUE_PATH, issue.getKey()), string);
             } else {
-                jiraIssueKeyReference = post(ISSUE_PATH, string);
+                jsonResponse = post(ISSUE_PATH, string);
             }
 
-            if (jiraIssueKeyReference.hasKey()) {
-                issue.setKey(jiraIssueKeyReference.getKey());
+            JiraKeyReference jiraKeyReference = objectMapper.readValue(jsonResponse, JiraKeyReference.class);
+
+            if (jiraKeyReference.hasKey()) {
+                issue.setKey(jiraKeyReference.getKey());
             }
-            if (jiraIssueKeyReference.hasId()) {
-                issue.setId(jiraIssueKeyReference.getId());
+            if (jiraKeyReference.hasId()) {
+                issue.setId(jiraKeyReference.getId());
             }
 
         } catch (UniformInterfaceException e) {
@@ -154,32 +156,26 @@ public class JiraUtils implements Loggable {
         }
     }
 
-    public JiraKeyReference post(String apiPath, Object entity) throws IOException {
+    public String post(String apiPath, Object entity) throws IOException {
         return post(apiPath, objectMapper.writeValueAsString(entity));
     }
 
-    public JiraKeyReference post(String apiPath, String body) throws IOException {
-        String jsonResponse = prepare(apiPath, body).post(String.class);
-        return responseToKey(jsonResponse);
+    public String post(String apiPath, String body) {
+        return prepare(apiPath, body).post(String.class);
     }
 
-    public JiraKeyReference put(String apiPath, Object entity) throws IOException {
+    public String put(String apiPath, Object entity) throws IOException {
         return put(apiPath, objectMapper.writeValueAsString(entity));
     }
 
-    public JiraKeyReference put(String apiPath, String body) throws IOException {
-        String jsonResponse = prepare(apiPath, body).put(String.class);
-        return responseToKey(jsonResponse);
+    public String put(String apiPath, String body) throws IOException {
+        return prepare(apiPath, body).put(String.class);
     }
 
     private WebResource.Builder prepare(String apiPath, String body) {
         return webResource.path(apiPath)
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .entity(body);
-    }
-
-    private JiraKeyReference responseToKey(String jsonResponse) throws IOException {
-        return objectMapper.readValue(jsonResponse, JiraKeyReference.class);
     }
 
     private void unwrapException(UniformInterfaceException e) throws IOException {

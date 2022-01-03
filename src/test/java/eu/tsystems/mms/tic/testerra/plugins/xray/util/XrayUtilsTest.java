@@ -22,21 +22,18 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.GlobalTestData;
-import eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils;
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.testng.Assert;
@@ -58,7 +55,7 @@ import java.util.Set;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class XrayUtilsTest extends AbstractTest {
+public class XrayUtilsTest extends AbstractTest implements Loggable {
 
     private XrayUtils xrayUtils;
 
@@ -69,7 +66,7 @@ public class XrayUtilsTest extends AbstractTest {
     }
 
     @Test
-    public void testCreateTestExecution_NewApi() throws JsonProcessingException {
+    public void test_createTestExecution_NewApi() {
         XrayTestExecutionIssue issue = new XrayTestExecutionIssue();
         issue.getProject().setKey(projectKey);
         final List<String> testEnvironments = ImmutableList.of("NewApi", "XrayTestExecutionIssue");
@@ -84,8 +81,10 @@ public class XrayUtilsTest extends AbstractTest {
         issue.setTestEnvironments(testEnvironments);
 
         XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(issue);
-        xrayTestExecutionImport.setTestKeys(tests);
+        xrayTestExecutionImport.setTestKeys(tests, XrayTestExecutionImport.Test.Status.TODO);
         xrayUtils.createOrUpdateTestExecution(xrayTestExecutionImport);
+
+        log().info("Created TestExecution: " + xrayTestExecutionImport.getTestExecutionKey());
     }
 
     @Test
