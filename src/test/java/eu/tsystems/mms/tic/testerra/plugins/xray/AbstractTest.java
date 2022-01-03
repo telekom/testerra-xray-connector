@@ -22,14 +22,20 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray;
 
+import com.sun.jersey.api.client.WebResource;
+import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.util.Objects;
+import org.testng.annotations.BeforeTest;
 
-/**
- * Date: 01.07.2020
- * Time: 06:26
- *
- * @author Eric Kubenka
- */
 public class AbstractTest extends TesterraTest {
+    protected final String projectKey = PropertyManager.getProperty("xray.project.key");
+    protected WebResource webResource;
 
+    @BeforeTest
+    public void prepareWebResource() throws URISyntaxException {
+        webResource = TestUtils.prepareWebResource(Paths.get(Objects.requireNonNull(getClass().getResource("/xray-test-posthoc.properties")).toURI()).getFileName().toString());
+    }
 }

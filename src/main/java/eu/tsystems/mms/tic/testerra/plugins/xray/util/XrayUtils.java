@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
@@ -41,13 +42,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public final class XrayUtils {
+public final class XrayUtils extends JiraUtils {
 
     private static final String IMPORT_EXECUTION_PATH = "raven/1.0/import/execution";
     private static final String EXECUTION_RESULT_PATH = "raven/1.0/execution/result";
     private static Logger logger = LoggerFactory.getLogger(XrayUtils.class);
 
-    private XrayUtils() {
+    public XrayUtils(WebResource webResource) {
+        super(webResource);
     }
 
     public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecutionImport testExecution)
@@ -64,6 +66,7 @@ public final class XrayUtils {
 
     public static String syncTestExecReturnResponse(final WebResource webResource, final XrayTestExecutionImport testExecution)
             throws JsonProcessingException {
+
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         final String string = objectMapper.writeValueAsString(testExecution);
@@ -75,6 +78,13 @@ public final class XrayUtils {
         } catch (final UniformInterfaceException e) {
             logger.error(String.format("error POSTing request: %s", string), e);
             throw new NotSyncableException(e);
+        }
+    }
+
+    public void createOrUpdateTestExecution(XrayTestExecutionImport testExecutionImport) throws JsonProcessingException {
+        JiraKeyReference ref = post(IMPORT_EXECUTION_PATH, getObjectMapper().writeValueAsString(testExecutionImport));
+        if (ref.hasKey()) {
+            testExecutionImport.setTestExecutionKey(ref.getKey());
         }
     }
 
@@ -98,8 +108,7 @@ public final class XrayUtils {
     private static LinkedHashSet<XrayTestExecutionImport.Test> keysToXrayTestWithTodoStatus(final Iterable<String> testKeys) {
         final LinkedHashSet<XrayTestExecutionImport.Test> xrayTestIssues = new LinkedHashSet<>();
         for (final String testKey : testKeys) {
-            final XrayTestExecutionImport.Test xrayTestIssue = new XrayTestExecutionImport.Test();
-            xrayTestIssue.setTestKey(testKey);
+            final XrayTestExecutionImport.Test xrayTestIssue = new XrayTestExecutionImport.Test(testKey);
             xrayTestIssue.setStatus(XrayTestExecutionImport.Test.Status.TODO);
             xrayTestIssues.add(xrayTestIssue);
         }

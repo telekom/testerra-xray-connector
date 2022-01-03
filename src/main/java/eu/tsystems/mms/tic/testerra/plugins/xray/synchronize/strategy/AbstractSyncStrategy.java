@@ -284,8 +284,7 @@ public abstract class AbstractSyncStrategy implements Loggable {
     }
 
     protected XrayTestExecutionImport.Test createXrayTestIssue(String testKey, ITestResult result) {
-        final XrayTestExecutionImport.Test xrayTestIssue = new XrayTestExecutionImport.Test();
-        xrayTestIssue.setTestKey(testKey);
+        final XrayTestExecutionImport.Test xrayTestIssue = new XrayTestExecutionImport.Test(testKey);
         xrayTestIssue.setStart(new Date(result.getStartMillis()));
 
         switch (result.getStatus()) {

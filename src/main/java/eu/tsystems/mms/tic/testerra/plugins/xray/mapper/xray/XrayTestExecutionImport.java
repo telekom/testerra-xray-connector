@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.MediaTypeSerializer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ws.rs.core.MediaType;
 
 public class XrayTestExecutionImport {
@@ -129,12 +129,16 @@ public class XrayTestExecutionImport {
         }
 
         private final Info testInfo = new Info();
-        private String testKey;
+        private final String testKey;
         private Date start;
         private Date finish;
         private String comment;
         private Set<Evidence> evidences;
         private Status status;
+
+        public Test(String testKey) {
+            this.testKey = testKey;
+        }
 
         public Info getTestInfo() {
             return testInfo;
@@ -142,10 +146,6 @@ public class XrayTestExecutionImport {
 
         public String getTestKey() {
             return testKey;
-        }
-
-        public void setTestKey(String testKey) {
-            this.testKey = testKey;
         }
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JiraIssue.PATTERN_DATE_FORMAT, timezone = "CET")
@@ -192,7 +192,7 @@ public class XrayTestExecutionImport {
     }
 
     private final Info info = new Info();
-    private final String testExecutionKey;
+    private String testExecutionKey;
     private Set<Test> tests;
 
     public XrayTestExecutionImport() {
@@ -224,8 +224,16 @@ public class XrayTestExecutionImport {
         return info;
     }
 
+    public void setTestExecutionKey(String testExecutionKey) {
+        this.testExecutionKey = testExecutionKey;
+    }
+
     public void setTests(Set<Test> tests) {
         this.tests = tests;
+    }
+
+    public void setTestKeys(Set<String> testKeys) {
+        this.tests = testKeys.stream().map(Test::new).collect(Collectors.toSet());
     }
 
     public Set<Test> getTests() {

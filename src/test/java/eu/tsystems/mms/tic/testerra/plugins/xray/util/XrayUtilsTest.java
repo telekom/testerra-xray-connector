@@ -22,9 +22,11 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.GlobalTestData;
@@ -59,7 +61,6 @@ import static org.testng.Assert.assertTrue;
 public class XrayUtilsTest extends AbstractTest {
 
     private WebResource webResource;
-    private XrayConfig xrayConfig;
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
@@ -68,11 +69,31 @@ public class XrayUtilsTest extends AbstractTest {
     }
 
     @Test
+    public void testCreateTestExecution_NewApi() throws JsonProcessingException {
+        XrayTestExecutionIssue issue = new XrayTestExecutionIssue();
+        issue.getProject().setKey(projectKey);
+        final List<String> testEnvironments = ImmutableList.of("NewApi", "XrayTestExecutionIssue");
+        final String summary = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
+        final String description = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
+        final String revision = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
+        Set<String> tests = Sets.newHashSet("SWFTE-1", "SWFTE-2", "SWFTE-3");
+
+        issue.setDescription(description);
+        issue.setSummary(summary);
+        issue.setRevision(revision);
+        issue.setTestEnvironments(testEnvironments);
+
+        XrayUtils xrayUtils = new XrayUtils(webResource);
+        XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(issue);
+        xrayTestExecutionImport.setTestKeys(tests);
+        xrayUtils.createOrUpdateTestExecution(xrayTestExecutionImport);
+    }
+
+    @Test
     public void testCreateTestExecution() throws Exception {
         final Calendar calAgo = Calendar.getInstance();
         calAgo.add(Calendar.MINUTE, -2);
 
-        final String projectKey = "SWFTE";
         final String summary = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
         final String description = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
         final String revision = RandomUtils.generateRandomString() + "äöüßÄÖÜ";

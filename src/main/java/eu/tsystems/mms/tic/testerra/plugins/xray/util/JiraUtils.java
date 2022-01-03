@@ -57,7 +57,7 @@ import org.apache.commons.lang3.StringUtils;
 import static java.lang.String.format;
 
 
-public final class JiraUtils implements Loggable {
+public class JiraUtils implements Loggable {
 
     private static final String ATTACHMENT_PATH = "api/2/attachment";
     private static final String ISSUE_PATH = "api/2/issue";
@@ -133,28 +133,48 @@ public final class JiraUtils implements Loggable {
 
     public void createOrUpdateIssue(JiraIssue issue) throws IOException {
         final String string = objectMapper.writeValueAsString(issue);
-        String resourcePath;
         try {
-            String responseJson;
+            JiraKeyReference jiraIssueKeyReference;
             if (issue.hasKey()) {
-                resourcePath = String.format("%s/%s", ISSUE_PATH, issue.getKey());
-                responseJson = webResource.path(resourcePath)
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .put(String.class, string);
+                jiraIssueKeyReference = put(String.format("%s/%s", ISSUE_PATH, issue.getKey()), string);
             } else {
-                resourcePath = ISSUE_PATH;
-                responseJson = webResource.path(resourcePath)
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .post(String.class, string);
+                jiraIssueKeyReference = post(ISSUE_PATH, string);
             }
-            JiraKeyReference jiraIssueKeyReference = objectMapper.readValue(responseJson, JiraKeyReference.class);
-            issue.setKey(jiraIssueKeyReference.getKey());
-            issue.setId(jiraIssueKeyReference.getId());
+
+            if (jiraIssueKeyReference.hasKey()) {
+                issue.setKey(jiraIssueKeyReference.getKey());
+            }
+            if (jiraIssueKeyReference.hasId()) {
+                issue.setId(jiraIssueKeyReference.getId());
+            }
 
         } catch (UniformInterfaceException e) {
             if (e.getResponse().getStatus() != 204) {
                 unwrapException(e);
             }
+        }
+    }
+
+    public JiraKeyReference post(String apiPath, String body) {
+        String jsonResponse = webResource.path(apiPath)
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .post(String.class, body);
+        return responseToKey(jsonResponse);
+    }
+
+    public JiraKeyReference put(String apiPath, String body) {
+        String jsonResponse = webResource.path(apiPath)
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .put(String.class, body);
+        return responseToKey(jsonResponse);
+    }
+
+    private JiraKeyReference responseToKey(String jsonResponse) {
+        try {
+            return objectMapper.readValue(jsonResponse, JiraKeyReference.class);
+        } catch (IOException e) {
+            log().error("Unable to parse response to key reference", e);
+            return new JiraKeyReference();
         }
     }
 
@@ -269,5 +289,17 @@ public final class JiraUtils implements Loggable {
         JiraUtils jiraUtils = new JiraUtils(webResource);
         jiraUtils.createOrUpdateIssue(xrayInfo);
         return xrayInfo.getKey();
+    }
+
+    protected static DateFormat getDateFormat() {
+        return dateFormat;
+    }
+
+    protected WebResource getWebResource() {
+        return webResource;
+    }
+
+    protected ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 }

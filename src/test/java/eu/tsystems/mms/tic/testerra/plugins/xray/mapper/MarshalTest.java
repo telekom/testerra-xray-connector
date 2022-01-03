@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -45,8 +44,7 @@ public class MarshalTest extends AbstractTest {
     @Test
     public void testMarshalTestToJson() throws JsonProcessingException {
 
-        final XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test();
-        test.setTestKey("BLA-123");
+        final XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test("BLA-123");
         test.setStatus(XrayTestExecutionImport.Test.Status.PASS);
         final Calendar calStart = Calendar.getInstance();
         calStart.set(2015, Calendar.DECEMBER, 24, 19, 0, 0);
@@ -71,8 +69,7 @@ public class MarshalTest extends AbstractTest {
     @Test
     public void testMarshalTestToJsonWithEvidence() throws JsonProcessingException {
 
-        final XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test();
-        test.setTestKey("BLA-123");
+        final XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test("BLA-123");
         test.setStatus(XrayTestExecutionImport.Test.Status.PASS);
         final Calendar calStart = Calendar.getInstance();
         calStart.set(2015, Calendar.DECEMBER, 24, 19, 0, 0);

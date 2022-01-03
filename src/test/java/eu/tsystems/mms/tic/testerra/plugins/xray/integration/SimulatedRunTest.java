@@ -100,8 +100,7 @@ public abstract class SimulatedRunTest extends TesterraTest {
         oneYearAgo.add(Calendar.YEAR, -1);
         Date invalidDate = new GregorianCalendar(1999, 12, 24).getTime();
         for (final String testKey : expectedTestResultsFullSet.keySet()) {
-            XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test();
-            test.setTestKey(testKey);
+            XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test(testKey);
             test.setStatus(XrayTestExecutionImport.Test.Status.ABORTED);
             test.setStart(invalidDate);
             test.setFinish(invalidDate);

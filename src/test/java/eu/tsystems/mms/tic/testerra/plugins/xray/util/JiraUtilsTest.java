@@ -80,7 +80,6 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
     private final String updateIssueKey = "SWFTE-802";
     private final String statusIssueKey = "SWFTE-809";
     private JiraUtils jiraUtils;
-    private final String projectKey = PropertyManager.getProperty("xray.project.key");
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
@@ -253,24 +252,24 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         GlobalTestData.getInstance().setKeyOfNewTestExecution(key);
     }
 
-    @Test
-    public void testCreateTestExecutionWithLinkedTests() throws IOException {
-        final String testToLink = "SWFTE-1";
-        XrayTestExecutionIssue testExecution = new XrayTestExecutionIssue();
-        testExecution.setSummary("Testerra Xray Connector TestExecution");
-        testExecution.getProject().setKey(projectKey);
-        testExecution.setDescription("Test execution");
-        testExecution.setTestKeys(Lists.newArrayList(testToLink));
-
-        jiraUtils.createOrUpdateIssue(testExecution);
-
-        assertNotNull(testExecution.getKey());
-        log().info("Created test execution: " + testExecution.getKey());
-
-        XrayTestExecutionIssue updatedIssue = jiraUtils.getIssue(testExecution.getKey(), XrayTestExecutionIssue::new);
-        assertEquals(updatedIssue.getKey(), testExecution.getKey());
-        assertEquals(testExecution.getTestKeys().get(0), testToLink);
-    }
+//    @Test
+//    public void testCreateTestExecutionWithLinkedTests() throws IOException {
+//        final String testToLink = "SWFTE-1";
+//        XrayTestExecutionIssue testExecution = new XrayTestExecutionIssue();
+//        testExecution.setSummary("Testerra Xray Connector TestExecution");
+//        testExecution.getProject().setKey(projectKey);
+//        testExecution.setDescription("Test execution");
+//        testExecution.setTestKeys(Lists.newArrayList(testToLink));
+//
+//        jiraUtils.createOrUpdateIssue(testExecution);
+//
+//        assertNotNull(testExecution.getKey());
+//        log().info("Created test execution: " + testExecution.getKey());
+//
+//        XrayTestExecutionIssue updatedIssue = jiraUtils.getIssue(testExecution.getKey(), XrayTestExecutionIssue::new);
+//        assertEquals(updatedIssue.getKey(), testExecution.getKey());
+//        assertEquals(testExecution.getTestKeys().get(0), testToLink);
+//    }
 
     @Test(groups = "issueStatus")
     public void testGetIssueStatus() throws IOException {
