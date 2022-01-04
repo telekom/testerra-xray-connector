@@ -61,7 +61,6 @@ public class JiraUtils implements Loggable {
     private static final String ATTACHMENT_PATH = "api/2/attachment";
     private static final String ISSUE_PATH = "api/2/issue";
     private static final String SEARCH_PATH = "api/2/search";
-    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     private final WebResource webResource;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -289,10 +288,6 @@ public class JiraUtils implements Loggable {
         JiraUtils jiraUtils = new JiraUtils(webResource);
         jiraUtils.createOrUpdateIssue(xrayInfo);
         return xrayInfo.getKey();
-    }
-
-    protected static DateFormat getDateFormat() {
-        return DATE_FORMAT;
     }
 
     protected WebResource getWebResource() {

@@ -30,7 +30,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.connect.RESTClientFactory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.GetRequestOnlyFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.LoggingFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -39,7 +38,7 @@ public class TestUtils {
     public static Date getDateFromField(final JiraIssue issue, final String fieldName) throws ParseException {
         final Object foundFieldValue = issue.getFields().get(fieldName);
         if (foundFieldValue != null) {
-            return JiraUtils.DATE_FORMAT.parse(foundFieldValue.toString());
+            return JiraIssue.DATE_FORMAT.parse(foundFieldValue.toString());
         } else {
             return null;
         }

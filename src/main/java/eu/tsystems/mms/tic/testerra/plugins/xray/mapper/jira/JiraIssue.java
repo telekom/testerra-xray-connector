@@ -39,9 +39,8 @@ import java.util.stream.Collectors;
 
 public class JiraIssue extends JiraKeyReference implements Loggable {
     private final Map<String, Object> fields;
-    //public static final String DATE_FORMAT="yyyy-MM-dd'T'HH:mm:ssXXX";
     public static final String PATTERN_DATE_FORMAT ="yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-    private static final DateFormat dateFormat = new SimpleDateFormat(PATTERN_DATE_FORMAT);
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat(PATTERN_DATE_FORMAT);
 
     public JiraIssue() {
         this.fields = new HashMap<>();
@@ -69,7 +68,7 @@ public class JiraIssue extends JiraKeyReference implements Loggable {
 
     protected Date dateFromString(String dateString) {
         try {
-            return dateFormat.parse(dateString);
+            return DATE_FORMAT.parse(dateString);
         } catch (ParseException e) {
             log().warn(String.format("Unable to parse date string: %s", dateString), e);
             return null;
@@ -77,7 +76,7 @@ public class JiraIssue extends JiraKeyReference implements Loggable {
     }
 
     protected String dateToString(Date date) {
-        return dateFormat.format(date);
+        return DATE_FORMAT.format(date);
     }
 
 //    @Deprecated

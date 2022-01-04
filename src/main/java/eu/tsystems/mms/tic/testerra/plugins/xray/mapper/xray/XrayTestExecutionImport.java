@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.MediaTypeSerializer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import java.util.Date;
 import java.util.HashSet;
@@ -13,6 +14,11 @@ import java.util.stream.Collectors;
 import javax.ws.rs.core.MediaType;
 
 public class XrayTestExecutionImport {
+
+    /**
+     * This date pattern differs from {@link JiraIssue#PATTERN_DATE_FORMAT}
+     */
+    private static final String PATTERN_DATE_FORMAT ="yyyy-MM-dd'T'HH:mm:ssXXX";
 
     public static abstract class AbstractInfo {
         private String project;
@@ -44,6 +50,14 @@ public class XrayTestExecutionImport {
         }
     }
 
+    public static class Result {
+        private JiraKeyReference testExecIssue;
+
+        public JiraKeyReference getTestExecIssue() {
+            return testExecIssue;
+        }
+    }
+
     public static class Info extends AbstractInfo {
         private String version;
         private String revision;
@@ -65,12 +79,12 @@ public class XrayTestExecutionImport {
             return user;
         }
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JiraIssue.PATTERN_DATE_FORMAT, timezone = "CET")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = PATTERN_DATE_FORMAT, timezone = "CET")
         public Date getStartDate() {
             return startDate;
         }
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JiraIssue.PATTERN_DATE_FORMAT, timezone = "CET")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = PATTERN_DATE_FORMAT, timezone = "CET")
         public Date getFinishDate() {
             return finishDate;
         }
@@ -130,12 +144,15 @@ public class XrayTestExecutionImport {
         }
 
         private Info testInfo;
-        private final String testKey;
+        private String testKey;
         private Date start;
         private Date finish;
         private String comment;
         private Set<Evidence> evidences;
         private Status status;
+
+        public Test() {
+        }
 
         public Test(String testKey) {
             this.testKey = testKey;
@@ -153,7 +170,7 @@ public class XrayTestExecutionImport {
             return testKey;
         }
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JiraIssue.PATTERN_DATE_FORMAT, timezone = "CET")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = PATTERN_DATE_FORMAT, timezone = "CET")
         public Date getStart() {
             return start;
         }
@@ -162,7 +179,7 @@ public class XrayTestExecutionImport {
             this.start = start;
         }
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JiraIssue.PATTERN_DATE_FORMAT, timezone = "CET")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = PATTERN_DATE_FORMAT, timezone = "CET")
         public Date getFinish() {
             return finish;
         }
@@ -201,7 +218,6 @@ public class XrayTestExecutionImport {
     private Set<Test> tests;
 
     public XrayTestExecutionImport() {
-        this.testExecutionKey = null;
     }
 
     public XrayTestExecutionImport(String testExecutionKey) {
@@ -216,7 +232,7 @@ public class XrayTestExecutionImport {
         this.info.version = testExecutionIssue.getVersions().stream().findFirst().map(JiraNameReference::getName).orElse(null);
         this.info.revision = testExecutionIssue.getRevision();
         this.info.user = testExecutionIssue.getAssignee().getName();
-//        this.info.startDate = testExecutionIssue.getStartDate();
+        this.info.startDate = testExecutionIssue.getStartDate();
         this.info.finishDate = testExecutionIssue.getFinishDate();
         /**
          * @todo Missing

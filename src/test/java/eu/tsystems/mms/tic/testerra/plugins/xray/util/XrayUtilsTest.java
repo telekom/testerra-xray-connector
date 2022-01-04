@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.GlobalTestData;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
@@ -35,6 +34,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIm
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
+import java.io.IOException;
 import org.apache.commons.codec.binary.Base64;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
@@ -58,6 +58,10 @@ import static org.testng.Assert.assertTrue;
 public class XrayUtilsTest extends AbstractTest implements Loggable {
 
     private XrayUtils xrayUtils;
+    private final String existingTestExecutionKey = "SWFTE-9";
+    private final Set<String> existingTestKeys = Sets.newHashSet("SWFTE-1", "SWFTE-2", "SWFTE-3");
+    private static String createdTestExecutionKey_newApi;
+    private static String createdTestExecutionKey;
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
@@ -66,14 +70,13 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
     }
 
     @Test
-    public void test_createTestExecution_NewApi() {
+    public void test_createTestExecution_newApi() throws IOException {
         XrayTestExecutionIssue issue = new XrayTestExecutionIssue();
         issue.getProject().setKey(projectKey);
         final List<String> testEnvironments = ImmutableList.of("NewApi", "XrayTestExecutionIssue");
         final String summary = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
         final String description = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
         final String revision = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
-        Set<String> tests = Sets.newHashSet("SWFTE-1", "SWFTE-2", "SWFTE-3");
 
         issue.setDescription(description);
         issue.setSummary(summary);
@@ -81,10 +84,45 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         issue.setTestEnvironments(testEnvironments);
 
         XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(issue);
-        xrayTestExecutionImport.setTestKeys(tests, XrayTestExecutionImport.Test.Status.TODO);
-        xrayUtils.createOrUpdateTestExecution(xrayTestExecutionImport);
+        xrayTestExecutionImport.setTestKeys(existingTestKeys, XrayTestExecutionImport.Test.Status.TODO);
+        xrayUtils.importTestExecution(xrayTestExecutionImport);
 
-        log().info("Created TestExecution: " + xrayTestExecutionImport.getTestExecutionKey());
+        createdTestExecutionKey_newApi = xrayTestExecutionImport.getTestExecutionKey();
+        log().info("Created TestExecution: " + createdTestExecutionKey_newApi);
+
+        issue = xrayUtils.getIssue(xrayTestExecutionImport.getTestExecutionKey(), XrayTestExecutionIssue::new);
+        Assert.assertEquals(issue.getDescription(), description);
+        Assert.assertEquals(issue.getSummary(), summary);
+        Assert.assertEquals(issue.getRevision(), revision);
+        Assert.assertTrue(issue.getTestEnvironments().containsAll(testEnvironments));
+
+        final Calendar calAgo = Calendar.getInstance();
+        calAgo.add(Calendar.MINUTE, -2);
+        final Date startDate = issue.getStartDate();
+        assertNotNull(startDate);
+        final Calendar calInFuture = Calendar.getInstance();
+        calInFuture.add(Calendar.MINUTE, 2);
+        assertTrue(startDate.before(calInFuture.getTime()), String.format("start time %s is before %s", startDate, calInFuture.getTime()));
+        assertTrue(startDate.after(calAgo.getTime()), String.format("start time %s is after %s", startDate, calAgo.getTime()));
+
+        XrayTestExecutionImport.Test[] tests = xrayUtils.getTestsByTestExecutionKey(xrayTestExecutionImport.getTestExecutionKey());
+        existingTestKeys.forEach(testKey -> {
+            Assert.assertTrue(Arrays.stream(tests).anyMatch(test -> test.getTestKey().equals(testKey)));
+        });
+    }
+
+    @Test(dependsOnMethods = "test_createTestExecution_newApi")
+    public void test_extendTestExecutionByExistingTest() throws IOException {
+        Assert.assertNotNull(createdTestExecutionKey_newApi);
+        final String issueToAdd = "SWFTE-4";
+        XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(createdTestExecutionKey_newApi);
+        xrayTestExecutionImport.addTestKeys(Sets.newHashSet(issueToAdd), XrayTestExecutionImport.Test.Status.TODO);
+        xrayUtils.importTestExecution(xrayTestExecutionImport);
+        XrayTestExecutionImport.Test[] tests = xrayUtils.getTestsByTestExecutionKey(xrayTestExecutionImport.getTestExecutionKey());
+        Assert.assertTrue(Arrays.stream(tests).anyMatch(test -> test.getTestKey().equals(issueToAdd)));
+        existingTestKeys.forEach(testKey -> {
+            Assert.assertTrue(Arrays.stream(tests).anyMatch(test -> test.getTestKey().equals(testKey)));
+        });
     }
 
     @Test
@@ -112,6 +150,8 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         );
 
         XrayTestExecutionIssue issue = new XrayTestExecutionIssue(rawIssue);
+        createdTestExecutionKey = issue.getKey();
+        log().info("Created test execution: " + createdTestExecutionKey);
         Assert.assertEquals(issue.getKey(), key);
         Assert.assertEquals(issue.getProject().getName(), "Spielwiese Framework-Tests");
         Assert.assertEquals(issue.getSummary(), summary);
@@ -126,23 +166,19 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         calInFuture.add(Calendar.MINUTE, 2);
         assertTrue(startDate.before(calInFuture.getTime()), String.format("start time %s is before %s", startDate, calInFuture.getTime()));
         assertTrue(startDate.after(calAgo.getTime()), String.format("start time %s is after %s", startDate, calAgo.getTime()));
-
-        /** set global property to use later */
-        GlobalTestData.getInstance().setKeyOfNewTestExecution(key);
     }
 
     @Test(dependsOnMethods = "testCreateTestExecution")
     public void testExportTestExecutionAsJson() throws Exception {
-        final String issueKey = GlobalTestData.getInstance().getKeyOfNewTestExecution();
-        final String json = XrayUtils.exportTestExecutionAsJson(webResource, issueKey);
+        Assert.assertNotNull(createdTestExecutionKey);
+        final String json = XrayUtils.exportTestExecutionAsJson(webResource, createdTestExecutionKey);
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.readValue(json, XrayTestExecutionImport.Test[].class);
     }
 
     @Test
     public void testSyncTestExecution() throws Exception {
-        final String testExecutionKey = "SWFTE-9";
-        final Set<XrayTestExecutionImport.Test> existingTests = XrayUtils.getTestsFromExecution(webResource, testExecutionKey);
+        final Set<XrayTestExecutionImport.Test> existingTests = XrayUtils.getTestsFromExecution(webResource, existingTestExecutionKey);
 
         // statuses is used for clarity here
         final XrayTestExecutionImport.Test.Status randomStatuses = Arrays.asList(XrayTestExecutionImport.Test.Status.values()).get(new Random().nextInt(XrayTestExecutionImport.Test.Status.values().length));
@@ -154,7 +190,7 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
             testIssue.setFinish(now);
         }
 
-        final XrayTestExecutionImport execution = new XrayTestExecutionImport(testExecutionKey);
+        final XrayTestExecutionImport execution = new XrayTestExecutionImport(existingTestExecutionKey);
         execution.setTests(existingTests);
         XrayUtils.syncTestExecutionReturnKey(webResource, execution);
         //TODO: check execution

@@ -22,14 +22,10 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.WebResource;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionResult;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -46,26 +42,18 @@ public final class XrayUtils extends JiraUtils {
     }
 
     /**
-     * @deprecated Use {@link #createOrUpdateTestExecution(XrayTestExecutionImport)} instead
+     * @deprecated Use {@link #importTestExecution(XrayTestExecutionImport)} instead
      */
-    public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecutionImport testExecution) {
+    public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecutionImport testExecution) throws IOException {
         XrayUtils xrayUtils = new XrayUtils(webResource);
-        xrayUtils.createOrUpdateTestExecution(testExecution);
+        xrayUtils.importTestExecution(testExecution);
         return testExecution.getTestExecutionKey();
     }
 
-    public void createOrUpdateTestExecution(XrayTestExecutionImport testExecutionImport) {
-        try {
-            String jsonResponse = post(IMPORT_EXECUTION_PATH, testExecutionImport);
-            XrayTestExecutionResult xrayTestExecutionResult = getObjectMapper().readValue(jsonResponse, XrayTestExecutionResult.class);
-            testExecutionImport.setTestExecutionKey(xrayTestExecutionResult.getTestExecIssue().getKey());
-//            JsonNode jsonNode = getObjectMapper().readTree(jsonResponse);
-//            if (jsonNode.has("testExecKey")) {
-//                testExecutionImport.setTestExecutionKey(jsonNode.get("testExecKey").asText());
-//            }
-        } catch (IOException e) {
-            log().error("Unable to import TestExecution", e);
-        }
+    public void importTestExecution(XrayTestExecutionImport testExecutionImport) throws IOException {
+        String jsonResponse = post(IMPORT_EXECUTION_PATH, testExecutionImport);
+        XrayTestExecutionImport.Result xrayTestExecutionResult = getObjectMapper().readValue(jsonResponse, XrayTestExecutionImport.Result.class);
+        testExecutionImport.setTestExecutionKey(xrayTestExecutionResult.getTestExecIssue().getKey());
     }
 
     @Deprecated
@@ -96,11 +84,21 @@ public final class XrayUtils extends JiraUtils {
         return xrayTestIssues;
     }
 
+    /**
+     * @deprecated Use {@link #getTestsByTestExecutionKey(String)} instead
+     */
     public static LinkedHashSet<XrayTestExecutionImport.Test> getTestsFromExecution(final WebResource webResource, final String issueKey) throws IOException {
-        final String result = webResource.path(EXECUTION_RESULT_PATH).queryParam("testExecKey", issueKey).get(String.class);
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final XrayTestExecutionImport.Test[] testIssues = objectMapper.readValue(result, XrayTestExecutionImport.Test[].class);
+        XrayUtils xrayUtils = new XrayUtils(webResource);
+        final XrayTestExecutionImport.Test[] testIssues = xrayUtils.getTestsByTestExecutionKey(issueKey);
         return Sets.newLinkedHashSet(Arrays.asList(testIssues));
+    }
+
+    public XrayTestExecutionImport.Test[] getTestsByTestExecutionKey(String issueKey) throws IOException {
+        String jsonResponse = getWebResource()
+                .path(EXECUTION_RESULT_PATH)
+                .queryParam("testExecKey", issueKey)
+                .get(String.class);
+        return getObjectMapper().readValue(jsonResponse, XrayTestExecutionImport.Test[].class);
     }
 
     public static String exportTestExecutionAsJson(final WebResource webResource, final String issueKey) {

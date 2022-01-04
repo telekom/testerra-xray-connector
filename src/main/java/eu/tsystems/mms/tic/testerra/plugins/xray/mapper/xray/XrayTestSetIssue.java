@@ -45,11 +45,11 @@ public class XrayTestSetIssue extends XrayIssue {
 
     @JsonIgnore
     public List<String> getTestKeys() {
-        return getOrCreateStringList(Fields.TESTS.getFieldName());
+        return getOrCreateStringList(Fields.TEST_SET_TESTS.getFieldName());
     }
 
     public void setTestKeys(List<String> testKeys) {
-        this.getFields().put(Fields.TESTS.getFieldName(), testKeys);
+        this.getFields().put(Fields.TEST_SET_TESTS.getFieldName(), testKeys);
     }
 
 }

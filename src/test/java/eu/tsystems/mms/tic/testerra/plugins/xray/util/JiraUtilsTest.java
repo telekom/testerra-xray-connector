@@ -27,10 +27,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.GlobalTestData;
-import eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTests;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
@@ -48,10 +45,8 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLa
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
-import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
-import java.util.ArrayList;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
@@ -60,7 +55,6 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -211,62 +205,6 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         Assert.assertTrue(foundLabels.contains("Test-Automatisierung"));
         Assert.assertTrue(!foundLabels.contains("Aufräumaktion"));
     }
-
-    @Test
-    public void testCreateTestExecution() throws IOException, ParseException {
-        final String summary = RandomUtils.generateRandomString();
-        final String description = RandomUtils.generateRandomString();
-        final String revision = RandomUtils.generateRandomString();
-        final List<String> testEnvironments = ImmutableList.of("Android", "Samsung");
-
-        final XrayInfo xrayInfo = new XrayInfo(projectKey, summary, description, testEnvironments, revision, "1.0.2", "fnu-jira-testerra");
-        final String key = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo);
-
-        final JiraIssue rawIssue = JiraUtils.getIssue(webResource, key,
-                Lists.newArrayList("project", "summary", "description",
-                        Fields.REVISION.getFieldName(),
-                        Fields.TEST_EXECUTION_START_DATE.getFieldName(),
-                        Fields.TEST_ENVIRONMENTS.getFieldName()
-                )
-        );
-        XrayTestExecutionIssue issue = new XrayTestExecutionIssue(rawIssue);
-        assertEquals(issue.getKey(), key);
-        assertEquals(issue.getProject().getName(), "Spielwiese Framework-Tests");
-        assertEquals(issue.getSummary(), summary);
-        assertEquals(issue.getDescription(), description);
-        assertEquals(issue.getRevision(), revision);
-        issue.getTestEnvironments()
-                .forEach(x -> assertTrue(testEnvironments.contains(x)));
-
-        final Date startDate = issue.getStartDate();
-        assertNotNull(issue.getStartDate());
-        final Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, -1);
-        assertTrue(startDate.before(Calendar.getInstance().getTime()));
-        assertTrue(startDate.after(calendar.getTime()), String.format("finish time: %s, calendar time: %s", startDate, calendar.getTime()));
-
-        /* set global property to use later */
-        GlobalTestData.getInstance().setKeyOfNewTestExecution(key);
-    }
-
-//    @Test
-//    public void testCreateTestExecutionWithLinkedTests() throws IOException {
-//        final String testToLink = "SWFTE-1";
-//        XrayTestExecutionIssue testExecution = new XrayTestExecutionIssue();
-//        testExecution.setSummary("Testerra Xray Connector TestExecution");
-//        testExecution.getProject().setKey(projectKey);
-//        testExecution.setDescription("Test execution");
-//        testExecution.setTestKeys(Lists.newArrayList(testToLink));
-//
-//        jiraUtils.createOrUpdateIssue(testExecution);
-//
-//        assertNotNull(testExecution.getKey());
-//        log().info("Created test execution: " + testExecution.getKey());
-//
-//        XrayTestExecutionIssue updatedIssue = jiraUtils.getIssue(testExecution.getKey(), XrayTestExecutionIssue::new);
-//        assertEquals(updatedIssue.getKey(), testExecution.getKey());
-//        assertEquals(testExecution.getTestKeys().get(0), testToLink);
-//    }
 
     @Test(groups = "issueStatus")
     public void testGetIssueStatus() throws IOException {

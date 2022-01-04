@@ -3,12 +3,13 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 
 public enum Fields implements Field {
-    TEST_EXECUTION_START_DATE(new CustomField(PropertyManager.getIntProperty("xray.test.execution.start.time.field.id", 14270))),
-    TEST_EXECUTION_FINISH_DATE(new CustomField(PropertyManager.getIntProperty("xray.test.execution.finish.time.field.id", 14271))),
-    REVISION(new CustomField(PropertyManager.getIntProperty("xray.test.execution.revision.field.id", 14272))),
-    TEST_ENVIRONMENTS(new CustomField(PropertyManager.getIntProperty("xray.test.execution.test-environments.field.id", 15155))),
-    TEST_PLAN(new CustomField(PropertyManager.getIntProperty("xray.test.execution.test-plan.field.id"))),
-    TESTS(new CustomField(PropertyManager.getIntProperty("xray.tests.field.id"))),
+    TEST_EXECUTION_START_DATE(new PropertyField("xray.test.execution.start.time.field.id")),
+    TEST_EXECUTION_FINISH_DATE(new PropertyField("xray.test.execution.finish.time.field.id")),
+    REVISION(new PropertyField("xray.test.execution.revision.field.id")),
+    TEST_ENVIRONMENTS(new PropertyField("xray.test.execution.test-environments.field.id")),
+    TEST_PLAN(new PropertyField("xray.test.execution.test-plan.field.id")),
+    TEST_SET_TESTS(new PropertyField("xray.test-set.tests.field.id")),
+    TEST_EXECUTION_TESTS(new PropertyField("xray.test-execution.tests.field.id")),
     LABELS(new NameField("labels")),
     SUMMARY(new NameField("summary")),
     DESCRIPTION(new NameField("description")),

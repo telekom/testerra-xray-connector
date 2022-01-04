@@ -232,7 +232,7 @@ public class XrayConnector {
 
     public void updateStartTimeOfTestExecution(final String testExecKey) {
         final SimpleJiraIssueUpdate update = new SimpleJiraIssueUpdate();
-        final String timeString = JiraUtils.DATE_FORMAT.format(new Date());
+        final String timeString = JiraIssue.DATE_FORMAT.format(new Date());
         final ObjectNode node = new ObjectMapper().createObjectNode().put(xrayConfig.getTestExecutionStartTimeFieldName(), timeString);
         update.setFields(node);
         try {
@@ -244,7 +244,7 @@ public class XrayConnector {
 
     public void updateFinishTimeOfTestExecution(final String testExecKey) {
         final SimpleJiraIssueUpdate update = new SimpleJiraIssueUpdate();
-        final String timeString = JiraUtils.DATE_FORMAT.format(new Date());
+        final String timeString = JiraIssue.DATE_FORMAT.format(new Date());
         final ObjectNode node = new ObjectMapper().createObjectNode().put(xrayConfig.getTestExecutionFinishTimeFieldName(), timeString);
         update.setFields(node);
         try {
