@@ -10,7 +10,11 @@ public class PropertyField implements Field {
     }
 
     private int getFieldId() {
-        return PropertyManager.getIntProperty(property);
+        int intProperty = PropertyManager.getIntProperty(property);
+        if (intProperty == -1) {
+            throw new RuntimeException(String.format("Property %s is not defined", property));
+        }
+        return intProperty;
     }
 
     @Override

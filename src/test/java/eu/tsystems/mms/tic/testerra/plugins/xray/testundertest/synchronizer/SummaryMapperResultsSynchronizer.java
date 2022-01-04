@@ -20,18 +20,14 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper;
+package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
-import org.testng.ITestClass;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.DefaultSummaryMapper;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 
-public class ClassAffineMapper extends ResultMapper {
-
-    @Override
-    public JqlQuery classToXrayTestSet(ITestClass testNgClass) {
-        return JqlQuery.create()
-                .addCondition(new SummaryContainsExact("TSA - all Tests under Test"))
-                .build();
+public class SummaryMapperResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+    public XrayMapper getXrayMapper() {
+        return new DefaultSummaryMapper();
     }
 }

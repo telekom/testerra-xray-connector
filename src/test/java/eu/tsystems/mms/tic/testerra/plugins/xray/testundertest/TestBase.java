@@ -25,19 +25,24 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest;
 import static eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider.DataDrivenType;
 
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider;
+import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
 import eu.tsystems.mms.tic.testframework.utils.TimerUtils;
+import java.net.URISyntaxException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
-public abstract class TestBase {
+public abstract class TestBase extends TesterraTest {
 
     private static final int SLEEP_TIME = 100;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
 
     @Test
     public void passes() {

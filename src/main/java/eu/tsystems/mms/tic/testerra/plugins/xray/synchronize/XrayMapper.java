@@ -22,19 +22,19 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.RevisionContainsExact;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
+import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import java.util.Optional;
 import org.testng.ITestClass;
 import org.testng.ITestResult;
-
 
 public interface XrayMapper {
 
@@ -46,14 +46,14 @@ public interface XrayMapper {
      *
      * @param testNgResult the test result
      * @return JqlQuery that is able to match a single Xray-Test or null
-     * @deprecated Use {@link #createXrayTestQuery(ITestResult)}
+     * @deprecated Use {@link #createXrayTestQuery(MethodContext)}
      */
     default JqlQuery resultToXrayTest(ITestResult testNgResult) {
-        return createXrayTestQuery(testNgResult).orElse(null);
+        return null;
     }
 
-    default Optional<JqlQuery> createXrayTestQuery(ITestResult testNgResult) {
-        return Optional.empty();
+    default Optional<JqlQuery> createXrayTestQuery(MethodContext methodContext) {
+        return methodContext.getTestNgResult().map(this::resultToXrayTest);
     }
 
     /**
@@ -64,19 +64,22 @@ public interface XrayMapper {
      *
      * @param testNgClass test class
      * @return JqlQuery that is able to match a single Xray-TestSet or null
-     * @deprecated Use {@link #createXrayTestSetQuery(ITestClass)} instead
+     * @deprecated Use {@link #createXrayTestSetQuery(ClassContext)} instead
      */
     default JqlQuery classToXrayTestSet(ITestClass testNgClass) {
-        return createXrayTestSetQuery(testNgClass).orElse(null);
+        return null;
     }
 
-    default Optional<JqlQuery> createXrayTestSetQuery(ITestClass testNgClass) {
-        return Optional.empty();
+    default Optional<JqlQuery> createXrayTestSetQuery(ClassContext classContext) {
+        return classContext.readMethodContexts()
+                .findFirst()
+                .flatMap(MethodContext::getTestNgResult)
+                .map(testResult -> classToXrayTestSet(testResult.getMethod().getTestClass()));
     }
 
     default Optional<JqlQuery> createXrayTestExecutionQuery(XrayTestExecutionIssue xrayTestExecutionIssue) {
         final JqlQuery jqlQuery = JqlQuery.create()
-                .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
+                .addCondition(new ProjectEquals(xrayTestExecutionIssue.getProject().getKey()))
                 .addCondition(new IssueTypeEquals(xrayTestExecutionIssue.getIssueType()))
                 .addCondition(new SummaryContainsExact(xrayTestExecutionIssue.getSummary()))
                 .addCondition(new RevisionContainsExact(xrayTestExecutionIssue.getRevision()))
@@ -84,15 +87,16 @@ public interface XrayMapper {
         return Optional.of(jqlQuery);
     }
 
-    default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue) {
+    default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
     }
 
-    default void updateXrayTest(XrayTestExecutionImport.Test xrayTestIssue) {
+    default void updateXrayTest(JiraIssue xrayTestIssue, MethodContext methodContext) {
     }
 
+    /**
+     * Updates the test execution before creating or updating.
+     * @param xrayTestExecutionIssue
+     */
     default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
-//        if (xrayTestExecutionIssue.hasStatus(JiraStatus.NEW)) {
-//
-//        }
     }
 }

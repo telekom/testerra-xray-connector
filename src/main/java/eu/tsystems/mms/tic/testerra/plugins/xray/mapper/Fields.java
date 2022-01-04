@@ -1,7 +1,5 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper;
 
-import eu.tsystems.mms.tic.testframework.common.PropertyManager;
-
 public enum Fields implements Field {
     TEST_EXECUTION_START_DATE(new PropertyField("xray.test.execution.start.time.field.id")),
     TEST_EXECUTION_FINISH_DATE(new PropertyField("xray.test.execution.finish.time.field.id")),

@@ -29,4 +29,7 @@ public interface XrayResultsSynchronizer {
     XrayMapper getXrayMapper();
 
     XrayTestExecutionUpdates getExecutionUpdates();
+
+    void initialize();
+    void shutdown();
 }

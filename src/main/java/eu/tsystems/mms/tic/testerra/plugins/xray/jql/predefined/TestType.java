@@ -24,7 +24,10 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
 
 
 public enum TestType {
-    Manual("Manual"), AutomatedGeneric("Automated[Generic]"), AutomatedCucumber("Automated[Cucumber]");
+    Manual("Manual"),
+    AutomatedGeneric("Automated[Generic]"),
+    AutomatedCucumber("Automated[Cucumber]"),
+    ;
 
     private final String jqlString;
 

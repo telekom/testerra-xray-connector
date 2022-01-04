@@ -25,7 +25,6 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.connect;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
@@ -35,18 +34,14 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestTypeEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
-import org.apache.commons.lang3.SerializationUtils;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
@@ -147,25 +142,6 @@ public class XrayConnectorTest extends AbstractTest {
         assertTrue(startTime.before(now), String.format("start time: '%s' is before now: '%s'", startTime, now));
         assertTrue(finishTime.after(oneMinuteAgo), String.format("finish time: '%s' is after one minute ago: '%s'", finishTime, oneMinuteAgo));
         assertTrue(finishTime.before(now), String.format("finish time: '%s' is before now: '%s'", finishTime, now));
-    }
-
-    @Test(dependsOnMethods = "testFindOrCreateTestExecutionExisting")
-    public void testUpdateFinishTimeOfTestExecution() throws NotSyncableException, IOException, ParseException {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, -1);
-        final Date oneMinuteAgo = calendar.getTime();
-
-        final String issueKey = "SWFTE-9";
-        final XrayConnector xrayConnector = new XrayConnector(xrayInfo);
-        xrayConnector.updateFinishTimeOfTestExecution(issueKey);
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
-        final JiraIssue issue = JiraUtils.getIssue(webResource, issueKey, Arrays.asList(xrayConfig.getTestExecutionFinishTimeFieldName()));
-
-        final Date finishTime =
-                eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.getDateFromField(issue, xrayConfig.getTestExecutionFinishTimeFieldName());
-
-        assertTrue(finishTime.before(Calendar.getInstance().getTime()));
-        assertTrue(finishTime.after(oneMinuteAgo), String.format("finish time: %s, one miute ago: %s", finishTime, oneMinuteAgo));
     }
 
     //

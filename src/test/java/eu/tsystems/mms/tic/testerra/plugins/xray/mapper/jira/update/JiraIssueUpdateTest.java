@@ -28,6 +28,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLa
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+@Deprecated
 public class JiraIssueUpdateTest {
 
     @Test

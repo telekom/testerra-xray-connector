@@ -23,20 +23,19 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import java.util.Optional;
-import org.testng.ITestClass;
-import org.testng.ITestResult;
-
 
 public class EmptyMapper implements XrayMapper {
 
     @Override
-    public Optional<JqlQuery> createXrayTestQuery(ITestResult testNgResult) {
+    public Optional<JqlQuery> createXrayTestQuery(MethodContext methodContext) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<JqlQuery> createXrayTestSetQuery(ITestClass testNgClass) {
+    public Optional<JqlQuery> createXrayTestSetQuery(ClassContext classContext) {
         return Optional.empty();
     }
 }

@@ -42,7 +42,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsE
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.ExplicitJiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.SimpleJiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
@@ -54,7 +53,6 @@ import eu.tsystems.mms.tic.testframework.utils.ProxyUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -128,27 +126,9 @@ public class XrayConnector {
         return foundIssues.stream().map(JiraIssue::getKey).collect(Collectors.toSet());
     }
 
+    @Deprecated
     public synchronized String findOrCreateTestExecution(final Collection<String> testKeys) throws IOException, NotSyncableException {
         return findOrCreateTestExecution(testKeys, null, null);
-    }
-
-    //TODO: create method without need for test cases
-    public synchronized String findOrCreateTestExecution(JiraIssueUpdate onCreate, JiraIssueUpdate onUpdate)
-            throws IOException, NotSyncableException {
-        final Set<String> foundTestExecutionKeys = searchForExistingTestExecutions();
-
-        if (foundTestExecutionKeys.size() == 1) {
-            /* one hit */
-            final String testExecKey = foundTestExecutionKeys.iterator().next();
-            return prepareTestExecutionUpdate(testExecKey, onUpdate);
-
-        } else if (foundTestExecutionKeys.isEmpty()) {
-            /* no hit */
-            return prepareTestExecutionCreation(onCreate);
-
-        } else {
-            throw new NotSyncableException("must find at maximum one match for jql query");
-        }
     }
 
     @Deprecated
@@ -228,34 +208,6 @@ public class XrayConnector {
             updateIssue(testExecKey, jiraUpdate);
         }
         return testExecKey;
-    }
-
-    public void updateStartTimeOfTestExecution(final String testExecKey) {
-        final SimpleJiraIssueUpdate update = new SimpleJiraIssueUpdate();
-        final String timeString = JiraIssue.DATE_FORMAT.format(new Date());
-        final ObjectNode node = new ObjectMapper().createObjectNode().put(xrayConfig.getTestExecutionStartTimeFieldName(), timeString);
-        update.setFields(node);
-        try {
-            JiraUtils.updateIssue(webResource, testExecKey, update);
-        } catch (final JsonProcessingException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    public void updateFinishTimeOfTestExecution(final String testExecKey) {
-        final SimpleJiraIssueUpdate update = new SimpleJiraIssueUpdate();
-        final String timeString = JiraIssue.DATE_FORMAT.format(new Date());
-        final ObjectNode node = new ObjectMapper().createObjectNode().put(xrayConfig.getTestExecutionFinishTimeFieldName(), timeString);
-        update.setFields(node);
-        try {
-            JiraUtils.updateIssue(webResource, testExecKey, update);
-        } catch (final JsonProcessingException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    public String syncTestExecutionReturnKey(final XrayTestExecutionImport testExecution) throws IOException {
-        return XrayUtils.syncTestExecutionReturnKey(webResource, testExecution);
     }
 
     public void doTransitions(final String testExecutionKey, final Collection<String> transitionNames) {

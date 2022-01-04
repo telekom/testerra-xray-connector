@@ -24,11 +24,14 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
+import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
 import org.testng.ITestClass;
 import org.testng.ITestResult;
 
 public class ResultMapper implements XrayMapper {
+    private static final String TEST_SET_SUMMARY = "TSA - all Tests under Test";
     //    @Override
     //    public JqlQuery methodToXrayTest(ITestNGMethod testNgMethod) {
     //        return JqlQuery.create()
@@ -55,7 +58,12 @@ public class ResultMapper implements XrayMapper {
     @Override
     public JqlQuery classToXrayTestSet(ITestClass testNgClass) {
         return JqlQuery.create()
-                .addCondition(new SummaryContainsExact("TSA - all Tests under Test"))
+                .addCondition(new SummaryContainsExact(TEST_SET_SUMMARY))
                 .build();
+    }
+
+    @Override
+    public void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+        xrayTestSetIssue.setSummary(TEST_SET_SUMMARY);
     }
 }

@@ -20,18 +20,27 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
+package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper.ResultMapper;
+import java.io.InputStream;
 
 
-// erk: does not inherit AbstractXrayResultsSynchronizer to avoid calling of sync logic twice
-public class ProperMethodReferenceSynchronizer {
+public final class JiraAttachmentImport {
 
-    // copied this method to SimulatedTestRunXrayResultsSynchronizer
-    public XrayMapper getXrayMapper() {
-        return new ResultMapper();
+    private final InputStream inputStream;
+    private final String fileName;
+
+    public JiraAttachmentImport(final InputStream inputStream, final String fileName) {
+        this.inputStream = inputStream;
+        this.fileName = fileName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public InputStream getInputStream() {
+        return inputStream;
     }
 
 }

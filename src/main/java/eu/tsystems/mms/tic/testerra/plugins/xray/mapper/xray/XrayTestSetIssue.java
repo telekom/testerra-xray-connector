@@ -28,6 +28,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class XrayTestSetIssue extends XrayIssue {
 
@@ -52,4 +53,11 @@ public class XrayTestSetIssue extends XrayIssue {
         this.getFields().put(Fields.TEST_SET_TESTS.getFieldName(), testKeys);
     }
 
+    public void addTestKeys(Set<String> testKeys) {
+        getTestKeys().addAll(testKeys);
+    }
+
+    public void addTestKey(String testKey) {
+        getTestKeys().add(testKey);
+    }
 }

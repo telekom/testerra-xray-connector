@@ -22,63 +22,97 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.UniformInterfaceException;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
+import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AbstractSyncStrategy;
-import eu.tsystems.mms.tic.testframework.connectors.util.AbstractCommonSynchronizer;
-import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
+import eu.tsystems.mms.tic.testframework.events.TestStatusUpdateEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.testng.ITestNGMethod;
+import org.testng.ITestResult;
 
 
-public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSynchronizer implements XrayResultsSynchronizer, Loggable {
-
+public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSynchronizer, Loggable, TestStatusUpdateEvent.Listener {
+    private static final String VENDOR_PREFIX="Testerra Xray connector";
     protected final XrayConfig xrayConfig = XrayConfig.getInstance();
     private boolean isSyncInitialized = false;
-    private AbstractSyncStrategy syncStrategy;
+    private XrayTestExecutionIssue testExecutionIssue;
+    private XrayMapper xrayMapper;
+    private final XrayConnector connector = new XrayConnector(new XrayInfo());
+    private final XrayUtils xrayUtils = new XrayUtils(connector.getWebResource());
+    private final HashMap<String, XrayTestSetIssue> testSetCacheByClassName = new HashMap<>();
+    private final HashMap<String, JiraIssue> testCacheByMethodName = new HashMap<>();
+    private final HashMap<String, JiraIssue> testCacheByKey = new HashMap<>();
+    private final ConcurrentLinkedQueue<XrayTestExecutionImport.Test> testSyncQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
 
     public void initialize() {
 
         if (xrayConfig.isSyncEnabled()) {
             try {
-                final String project = XrayConfig.getInstance().getProjectKey();
+                XrayTestExecutionIssue testExecutionIssue = new XrayTestExecutionIssue();
+                testExecutionIssue.getProject().setKey(xrayConfig.getProjectKey());
+
+                Optional<String> optionalSummary;
+                Optional<String> optionalDescription;
+                Optional<String> optionalRevision;
+
                 final XrayTestExecutionInfo executionInfo = getExecutionInfo();
-                if (executionInfo == null) {
-                    throw new RuntimeException("No " + XrayTestExecutionInfo.class.getSimpleName() + " provided");
+                if (executionInfo != null) {
+                    optionalSummary = Optional.ofNullable(executionInfo.getSummary());
+                    optionalDescription = Optional.ofNullable(executionInfo.getDescription());
+                    optionalRevision = Optional.ofNullable(executionInfo.getRevision());
+                    testExecutionIssue.getAssignee().setName(executionInfo.getAssignee());
+                    testExecutionIssue.setVersions(Collections.singletonList(new JiraNameReference(executionInfo.getFixVersion())));
+                    testExecutionIssue.setTestEnvironments(executionInfo.getTestEnvironments());
+                } else {
+                    optionalSummary = Optional.empty();
+                    optionalDescription = Optional.empty();
+                    optionalRevision = Optional.empty();
                 }
-                final Optional<String> summary = Optional.ofNullable(executionInfo.getSummary());
-                summary.ifPresent(this::validateSummary);
-                final Optional<String> description = Optional.ofNullable(executionInfo.getDescription());
-                description.ifPresent(this::validateDescription);
-                final Optional<String> revision = Optional.ofNullable(executionInfo.getRevision());
-                revision.ifPresent(this::validateRevision);
 
-                final XrayInfo xrayInfo = new XrayInfo(project, summary.orElse(""), description.orElse(""), revision.orElse(""));
-                xrayInfo.setUser(executionInfo.getAssignee());
-                xrayInfo.setVersion(executionInfo.getFixVersion());
-                xrayInfo.setLabels(executionInfo.getTestEnvironments());
+                this.xrayMapper = Optional.ofNullable(getXrayMapper()).orElse(new EmptyMapper());
 
-                Optional<XrayMapper> xrayMapper = Optional.ofNullable(getXrayMapper());
-                Optional<XrayTestExecutionUpdates> executionUpdates = Optional.ofNullable(getExecutionUpdates());
+                testExecutionIssue.setSummary(optionalSummary.orElse(String.format("%s automated TestExecution", VENDOR_PREFIX)));
+                testExecutionIssue.setDescription(optionalDescription.orElse(String.format("This is an automated import of a TestExecution generated by the %s", VENDOR_PREFIX)));
+                testExecutionIssue.setRevision(optionalRevision.orElse(new Date().toString()));
+                xrayMapper.updateXrayTestExecution(testExecutionIssue);
 
-                syncStrategy = xrayConfig.getSyncStrategyClass()
-                        .getDeclaredConstructor(new Class<?>[]{XrayInfo.class, XrayMapper.class, XrayTestExecutionUpdates.class})
-                        .newInstance(xrayInfo, xrayMapper.orElse(new EmptyMapper()), executionUpdates.orElse(new EmptyTestExecutionUpdates()));
-                syncStrategy.onStart();
+                Optional<XrayTestExecutionIssue> optionalExistingTestExecution = xrayMapper.createXrayTestExecutionQuery(testExecutionIssue)
+                        .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
+
+                if (optionalExistingTestExecution.isPresent()) {
+                    testExecutionIssue = optionalExistingTestExecution.get();
+                    xrayMapper.updateXrayTestExecution(testExecutionIssue);
+                }
+                this.testExecutionIssue = testExecutionIssue;
                 isSyncInitialized = true;
-            } catch (UniformInterfaceException e) {
-                try {
-                    handleException(e);
-                } catch (Exception other) {
-                    disableSyncWithWarning(e);
-                }
             } catch (final Exception e) {
                 disableSyncWithWarning(e);
             }
@@ -86,43 +120,44 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
     }
 
     public void shutdown() {
-        if (isSyncInitialized) {
+        this.flushSyncQueue();
+    }
+
+    private synchronized void flushSyncQueue() {
+
+        if (!isSyncInitialized) {
+            return;
+        }
+
+        testSetSyncQueue.forEach(xrayTestSetIssue -> {
             try {
-                syncStrategy.onFinish();
-            } catch (UniformInterfaceException e) {
-                try {
-                    handleException(e);
-                } catch (Exception other) {
-                    disableSyncWithWarning(e);
-                }
-            } catch (final Exception e) {
-                disableSyncWithWarning(e);
+                xrayUtils.createOrUpdateIssue(xrayTestSetIssue);
+            } catch (IOException e) {
+                log().error("Unable to update TestSet", e);
             }
+            testSetSyncQueue.remove(xrayTestSetIssue);
+        });
+
+        XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(this.testExecutionIssue);
+        testSyncQueue.forEach(test -> {
+            xrayTestExecutionImport.addTest(test);
+            testSyncQueue.remove(test);
+        });
+
+        if (this.getExecutionUpdates() != null) {
+            log().warn(String.format("getExecutionUpdates() is ignored. Please use updateXrayTestExecution(%s) instead", XrayTestExecutionIssue.class.getSimpleName()));
+        }
+
+        try {
+            xrayUtils.importTestExecution(xrayTestExecutionImport);
+        } catch (IOException e) {
+            log().error("Unable to update TestExecution", e);
         }
     }
 
     @Override
-    protected void pOnTestSuccess(MethodEndEvent event) {
-        if (isSyncInitialized) {
-            syncStrategy.onTestSuccess(event);
-            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
-        }
-    }
-
-    @Override
-    protected void pOnTestFailure(MethodEndEvent event) {
-        if (isSyncInitialized) {
-            syncStrategy.onTestFailure(event);
-            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
-        }
-    }
-
-    @Override
-    protected void pOnTestSkip(MethodEndEvent event) {
-        if (isSyncInitialized) {
-            syncStrategy.onTestSkip(event);
-            event.getMethodContext().addPriorityMessage("Synchronization to Xray successful.");
-        }
+    public XrayTestExecutionInfo getExecutionInfo() {
+        return null;
     }
 
     @Override
@@ -132,40 +167,7 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
 
     @Override
     public XrayTestExecutionUpdates getExecutionUpdates() {
-        /* no updates */
-        return new EmptyTestExecutionUpdates();
-    }
-
-    protected void validateSummary(final String summary) throws NotSyncableException {
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
-        if (!summary.matches(xrayConfig.getValidationRegexSummary())) {
-            throw new NotSyncableException(String.format("summary %s does not conform regex %s",
-                    summary, xrayConfig.getValidationRegexSummary()));
-        }
-    }
-
-    protected void validateRevision(final String revision) throws NotSyncableException {
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
-        if (!revision.matches(xrayConfig.getValidationRegexRevision())) {
-            throw new NotSyncableException(String.format("revision %s does not conform regex %s",
-                    revision, xrayConfig.getValidationRegexRevision()));
-        }
-    }
-
-    protected void validateDescription(final String description) throws NotSyncableException {
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
-        if (!description.matches(xrayConfig.getValidationRegexDescription())) {
-            throw new NotSyncableException(String.format("description %s does not conform regex %s",
-                    description, xrayConfig.getValidationRegexDescription()));
-        }
-    }
-
-    protected void addTestExecutionAttachment(final InputStream is, final String fileName) {
-        syncStrategy.addTestExecutionAttachment(is, fileName);
-    }
-
-    protected void addTestExecutionComment(final String comment) {
-        syncStrategy.addTestExecutionComment(comment);
+        return null;
     }
 
     private void reportError(String message, Exception e) {
@@ -178,34 +180,158 @@ public abstract class AbstractXrayResultsSynchronizer extends AbstractCommonSync
         reportError("An unexpected exception occurred. Syncing is aborted.", e);
     }
 
-    private void handleException(UniformInterfaceException e) throws IOException {
-        ClientResponse response = e.getResponse();
-        Map<String, Object> responseMap = new ObjectMapper().readValue(response.getEntityInputStream(), Map.class);
-        isSyncInitialized = false;
-        reportError(formatErrorMessages(responseMap).toString(), e);
-    }
-
-    private StringBuilder formatErrorMessages(Map<String, Object> responseMap) throws ClassCastException {
-        StringBuilder sb = new StringBuilder();
-
-        ArrayList<String> errorMessages = null;
-        if (responseMap.containsKey("errorMessages")) {
-            errorMessages = (ArrayList<String>) responseMap.get("errorMessages");
-            sb.append(String.join("\n", errorMessages));
+    @Override
+    public void onTestStatusUpdate(TestStatusUpdateEvent event) {
+        Optional<ITestResult> testNgResult = event.getMethodContext().getTestNgResult();
+        if (!testNgResult.isPresent()) {
+            return;
         }
 
-        Object errors = responseMap.get("errors");
-        if (errors != null) {
-            if (errorMessages != null && errorMessages.size() > 0) {
-                sb.append(": \n");
+        ITestResult testResult = testNgResult.get();
+        MethodContext methodContext = event.getMethodContext();
+
+        Set<JiraIssue> testIssues = getTestIssues(testResult.getMethod());
+        if (testIssues.isEmpty()) {
+
+            final String cacheKey = testResult.getMethod().getQualifiedName();
+
+            if (!testCacheByMethodName.containsKey(cacheKey)) {
+                Optional<JqlQuery> xrayTestQuery = xrayMapper.createXrayTestQuery(methodContext);
+                if (xrayTestQuery.isPresent()) {
+                    Optional<JiraIssue> optionalExistingTestIssue = xrayUtils.searchIssues(xrayTestQuery.get()).findFirst();
+                    if (optionalExistingTestIssue.isPresent()) {
+                        testCacheByMethodName.put(cacheKey, optionalExistingTestIssue.get());
+                    } else {
+                        JiraIssue testIssue = new JiraIssue();
+                        testIssue.getProject().setKey(xrayConfig.getProjectKey());
+                        testIssue.setSummary(testResult.getMethod().getQualifiedName());
+                        testIssue.setDescription(String.format("%s generated Test by method %s", VENDOR_PREFIX, testResult.getMethod().getQualifiedName()));
+                        testCacheByMethodName.put(cacheKey, testIssue);
+                    }
+                }
             }
 
-            Map<String, Object> errorsMap = (Map<String, Object>)errors;
-            errorsMap.forEach((s, o) -> {
-                sb.append(s).append(": ").append(o);
-            });
+            if (testCacheByMethodName.containsKey(cacheKey)) {
+                testIssues.add(testCacheByMethodName.get(cacheKey));
+            }
         }
 
-        return sb;
+
+        getTestSetIssue(methodContext.getClassContext()).ifPresent(xrayTestSetIssue -> {
+            xrayMapper.updateXrayTestSet(xrayTestSetIssue, methodContext.getClassContext());
+
+            List<String> testSetTestKeys = xrayTestSetIssue.getTestKeys();
+            List<String> newTestKeys = testIssues.stream()
+                    .map(JiraKeyReference::getKey)
+                    .filter(testKey -> !testSetTestKeys.contains(testKey))
+                    .collect(Collectors.toList());
+
+            if (newTestKeys.size() > 0) {
+                testSetTestKeys.addAll(newTestKeys);
+                testSetSyncQueue.add(xrayTestSetIssue);
+            }
+        });
+
+
+        testIssues.stream()
+                .peek(issue -> xrayMapper.updateXrayTest(issue, methodContext))
+                .map(XrayTestExecutionImport.Test::new)
+                .peek(test -> updateTestImport(test, testResult))
+                .forEach(testSyncQueue::add);
+    }
+
+    private void updateTestImport(XrayTestExecutionImport.Test test, ITestResult result) {
+        test.setStart(new Date(result.getStartMillis()));
+
+        switch (result.getStatus()) {
+            case ITestResult.FAILURE:
+                test.setStatus(XrayTestExecutionImport.Test.Status.FAIL);
+                break;
+            case ITestResult.SUCCESS:
+            case ITestResult.SUCCESS_PERCENTAGE_FAILURE:
+                test.setStatus(XrayTestExecutionImport.Test.Status.PASS);
+                break;
+            case ITestResult.SKIP:
+                test.setStart(Calendar.getInstance().getTime());
+                test.setStatus(XrayTestExecutionImport.Test.Status.SKIPPED);
+                break;
+            default:
+                log().error("TestNg result status {} cannot be processed", result.getStatus());
+        }
+
+        test.setFinish(new Date(result.getEndMillis()));
+    }
+
+    private Set<JiraIssue> getTestIssues(ITestNGMethod testNGMethod) {
+        final Method method = testNGMethod.getConstructorOrMethod().getMethod();
+        if (!method.isAnnotationPresent(XrayTest.class)) {
+            return new HashSet<>();
+        }
+
+        // Test set key is present
+        String[] testKeys = method.getAnnotation(XrayTest.class).key();
+
+        // Load all unloaded test issues
+        Arrays.stream(testKeys)
+                .filter(StringUtils::isNotBlank)
+                .filter(testKey -> !testCacheByKey.containsKey(testKey))
+                .map(testKey -> {
+                    try {
+                        return xrayUtils.getIssue(testKey);
+                    } catch (IOException e) {
+                        log().error(String.format("Unable to query Test by key: %s", testKey), e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .forEach(issue -> testCacheByKey.put(issue.getKey(), issue));
+
+        return Arrays.stream(testKeys)
+                .filter(testCacheByKey::containsKey)
+                .map(testCacheByKey::get)
+                .collect(Collectors.toSet());
+    }
+
+    private Optional<XrayTestSetIssue> getTestSetIssue(ClassContext classContext) {
+        Class<?> clazz = classContext.getTestClass();
+
+        if (!clazz.isAnnotationPresent(XrayTestSet.class)) {
+            return Optional.empty();
+        }
+
+        String cacheKey = clazz.getCanonicalName();
+        if (this.testSetCacheByClassName.containsKey(cacheKey)) {
+            // Cache could be null
+            return Optional.ofNullable(this.testSetCacheByClassName.get(cacheKey));
+        }
+
+        XrayTestSetIssue xrayTestSetIssue = null;
+
+        // Test set key is present
+        String testSetKey = clazz.getAnnotation(XrayTestSet.class).key();
+        if (StringUtils.isNotBlank(testSetKey)) {
+            try {
+                xrayTestSetIssue = xrayUtils.getIssue(testSetKey, XrayTestSetIssue::new);
+            } catch (IOException e) {
+                log().error(String.format("Unable to query TestSet by key: %s", testSetKey), e);
+            }
+        } else {
+            Optional<JqlQuery> xrayTestSetQuery = xrayMapper.createXrayTestSetQuery(classContext);
+            if (xrayTestSetQuery.isPresent()) {
+                Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(xrayTestSetQuery.get(), XrayTestSetIssue::new).findFirst();
+                if (optionalExistingTestSetIssue.isPresent()) {
+                    xrayTestSetIssue = optionalExistingTestSetIssue.get();
+                } else {
+                    xrayTestSetIssue = new XrayTestSetIssue();
+                    xrayTestSetIssue.getProject().setKey(xrayConfig.getProjectKey());
+                    xrayTestSetIssue.setSummary(clazz.getSimpleName());
+                    xrayTestSetIssue.setDescription(String.format("%s generated TestSet by class %s", VENDOR_PREFIX, clazz.getCanonicalName()));
+                }
+            }
+        }
+
+        // cache could be null
+        this.testSetCacheByClassName.put(cacheKey, xrayTestSetIssue);
+        return Optional.ofNullable(xrayTestSetIssue);
     }
 }

@@ -22,16 +22,18 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.hook;
 
+import com.google.common.eventbus.EventBus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestAnnotationConverter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.DefaultReport;
-import eu.tsystems.mms.tic.testframework.report.Report;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -46,12 +48,25 @@ import org.reflections.util.ConfigurationBuilder;
  * @author Eric Kubenka
  */
 public class XrayConnectorHook implements ModuleHook, Loggable {
+    private XrayResultsSynchronizer xrayResultsSynchronizer;
+    private static XrayConnectorHook instance;
 
-    private static final List<AbstractXrayResultsSynchronizer> XRAY_LISTENER = new LinkedList<>();
+    public XrayConnectorHook() {
+        instance = this;
+    }
+
+    public static XrayConnectorHook getInstance() {
+        return instance;
+    }
+
+    public void setXrayResultsSynchronizer(XrayResultsSynchronizer xrayResultsSynchronizer) {
+        this.xrayResultsSynchronizer = xrayResultsSynchronizer;
+    }
 
     @Override
     public void init() {
-
+        EventBus eventBus = TesterraListener.getEventBus();
+        eventBus.register(this);
         this.initListener();
         DefaultReport report = (DefaultReport) TesterraListener.getReport();
         report.registerAnnotationConverter(XrayTest.class, new XrayTestAnnotationConverter());
@@ -63,9 +78,11 @@ public class XrayConnectorHook implements ModuleHook, Loggable {
         DefaultReport report = (DefaultReport) TesterraListener.getReport();
         report.unregisterAnnotationConverter(XrayTest.class);
 
-        for (final AbstractXrayResultsSynchronizer xraySynchronizer : XRAY_LISTENER) {
-            xraySynchronizer.shutdown();
-            TesterraListener.getEventBus().unregister(xraySynchronizer);
+        EventBus eventBus = TesterraListener.getEventBus();
+        eventBus.unregister(this);
+        if (this.xrayResultsSynchronizer != null) {
+            this.xrayResultsSynchronizer.shutdown();
+            eventBus.unregister(xrayResultsSynchronizer);
         }
     }
 
@@ -75,22 +92,34 @@ public class XrayConnectorHook implements ModuleHook, Loggable {
         configurationBuilder.addClassLoader(Thread.currentThread().getContextClassLoader());
         configurationBuilder.setUrls(ClasspathHelper.forJavaClassPath());
         final Reflections reflections = new Reflections(configurationBuilder);
-        final Set<Class<? extends AbstractXrayResultsSynchronizer>> hooks = reflections.getSubTypesOf(AbstractXrayResultsSynchronizer.class);
+        final Set<Class<? extends XrayResultsSynchronizer>> synchronizers = reflections.getSubTypesOf(XrayResultsSynchronizer.class);
 
-        if (hooks.isEmpty()) {
-            log().warn("No " + AbstractXrayResultsSynchronizer.class.getSimpleName() + " found");
-        }
+        if (synchronizers.isEmpty()) {
+            log().warn("No " + XrayResultsSynchronizer.class.getSimpleName() + " found");
+        } else {
 
-        hooks.forEach(aClass -> {
-            try {
-                final AbstractXrayResultsSynchronizer xrayListener = aClass.getConstructor().newInstance();
-                log().debug("Calling xray result listener " + aClass.getSimpleName() + "...");
-                xrayListener.initialize();
-                TesterraListener.getEventBus().register(xrayListener);
-                XRAY_LISTENER.add(xrayListener);
-            } catch (Exception e) {
-                log().error("Could not load Xray result listener", e);
+            if (this.xrayResultsSynchronizer == null) {
+                this.xrayResultsSynchronizer = synchronizers.stream()
+                        .filter(aClass -> aClass != AbstractXrayResultsSynchronizer.class)
+                        .map(aClass -> {
+                            try {
+                                return xrayResultsSynchronizer = aClass.getConstructor().newInstance();
+                            } catch (Exception e) {
+                                log().error("Could not load Xray result listener", e);
+                                return null;
+                            }
+                        })
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(null);
             }
-        });
+
+            if (this.xrayResultsSynchronizer != null) {
+                xrayResultsSynchronizer.initialize();
+
+                EventBus eventBus = TesterraListener.getEventBus();
+                eventBus.register(xrayResultsSynchronizer);
+            }
+        }
     }
 }

@@ -33,6 +33,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraFieldsSearchResult;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIdReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
@@ -48,9 +49,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import static java.lang.String.format;
@@ -186,11 +192,19 @@ public class JiraUtils implements Loggable {
      * @param webResource
      * @param jqlQuery
      * @return returns a Jira Issue containing no fields
+     * @deprecated Use {@link #searchIssues(JqlQuery)} instead
      */
     public static Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery) {
         return searchIssues(webResource, jqlQuery, Lists.newArrayList("\"\""));
     }
 
+    /**
+     * @deprecated Use {@link #searchIssues(JqlQuery)} instead
+     * @param webResource
+     * @param jqlQuery
+     * @param fields
+     * @return
+     */
     public static Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery,
                                               final Collection<String> fields) {
         JiraUtils jiraUtils = new JiraUtils(webResource);
@@ -203,10 +217,19 @@ public class JiraUtils implements Loggable {
         try {
             jiraIssueSearchResult = jiraUtils.objectMapper.readValue(result, JiraIssuesSearchResult.class);
         } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+            return new HashSet<>();
         }
         return jiraIssueSearchResult.getIssues();
     }
+
+    public Stream<JiraIssue> searchIssues(JqlQuery jqlQuery) {
+        return searchIssues(getWebResource(), jqlQuery.createJql()).stream();
+    }
+
+    public <T extends JiraIdReference> Stream<T> searchIssues(JqlQuery jqlQuery, Function<JiraIssue, T> issueSupplier) {
+        return searchIssues(jqlQuery).map(issueSupplier);
+    }
+
 
     public static Set<JiraTransition> getTransitions(final WebResource webResource,
                                                      final String issueKey) throws IOException {

@@ -25,11 +25,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.config;
 import com.google.common.collect.ImmutableList;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AdHocSyncStrategy;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.PostHocSyncStrategy;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.strategy.AbstractSyncStrategy;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
-import eu.tsystems.mms.tic.testframework.exceptions.SetupException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,7 +43,6 @@ public class XrayConfig {
     private final String previousResultsFilename;
     private final String projectKey;
     private final String username;
-    private final Class<? extends AbstractSyncStrategy> syncStrategyClass;
     private final String validationRegexDescription;
     private final String validationRegexRevision;
     private final String validationRegexSummary;
@@ -80,17 +75,6 @@ public class XrayConfig {
             logger.error(e.getMessage());
         }
         restServiceUri = uri;
-
-        switch (PropertyManager.getProperty("xray.sync.strategy", "adhoc")) {
-            case "posthoc":
-                syncStrategyClass = PostHocSyncStrategy.class;
-                break;
-            case "adhoc":
-                syncStrategyClass = AdHocSyncStrategy.class;
-                break;
-            default:
-                throw new SetupException("unknown strategy given");
-        }
         webResourceFilterLoggingEnabled = PropertyManager.getBooleanProperty("xray.webresource.filter.logging.enabled", false);
         webResourceFilterGetRequestsOnlyEnabled = PropertyManager.getBooleanProperty("xray.webresource.filter.getrequestsonly.enabled", false);
         fakeTestExecutionKey = PropertyManager.getProperty("xray.webresource.filter.getrequestsonly.fake.response.key", "FAKE-666666");
@@ -182,10 +166,6 @@ public class XrayConfig {
         } else {
             return ImmutableList.copyOf(new ArrayList<String>());
         }
-    }
-
-    public Class<? extends AbstractSyncStrategy> getSyncStrategyClass() {
-        return syncStrategyClass;
     }
 
     public String getPreviousResultsFilename() {

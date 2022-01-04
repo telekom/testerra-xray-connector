@@ -21,13 +21,9 @@ public class XrayTestExecutionImport {
     private static final String PATTERN_DATE_FORMAT ="yyyy-MM-dd'T'HH:mm:ssXXX";
 
     public static abstract class AbstractInfo {
-        private String project;
+
         private String summary;
         private String description;
-
-        public String getProject() {
-            return project;
-        }
 
         public String getSummary() {
             return summary;
@@ -35,10 +31,6 @@ public class XrayTestExecutionImport {
 
         public String getDescription() {
             return description;
-        }
-
-        public void setProject(String project) {
-            this.project = project;
         }
 
         public void setSummary(String summary) {
@@ -59,6 +51,7 @@ public class XrayTestExecutionImport {
     }
 
     public static class Info extends AbstractInfo {
+        private String project;
         private String version;
         private String revision;
         private String user;
@@ -96,6 +89,14 @@ public class XrayTestExecutionImport {
         public List<String> getTestEnvironments() {
             return testEnvironments;
         }
+
+        public String getProject() {
+            return project;
+        }
+
+        public void setProject(String project) {
+            this.project = project;
+        }
     }
 
     public static class Test {
@@ -109,7 +110,8 @@ public class XrayTestExecutionImport {
             ABORTED
         }
         public static class Info extends AbstractInfo {
-
+            private String projectKey;
+            private List<String> labels;
         }
 
         public static class Evidence {
@@ -152,6 +154,14 @@ public class XrayTestExecutionImport {
         private Status status;
 
         public Test() {
+        }
+
+        public Test(JiraIssue issue) {
+            this.testKey = issue.getKey();
+            this.testInfo = new Info();
+            this.testInfo.setDescription(issue.getDescription());
+            this.testInfo.setSummary(issue.getSummary());
+            this.testInfo.labels = issue.getLabels();
         }
 
         public Test(String testKey) {
@@ -215,10 +225,7 @@ public class XrayTestExecutionImport {
 
     private final Info info = new Info();
     private String testExecutionKey;
-    private Set<Test> tests;
-
-    public XrayTestExecutionImport() {
-    }
+    private final Set<Test> tests = new HashSet<>();;
 
     public XrayTestExecutionImport(String testExecutionKey) {
         this.testExecutionKey = testExecutionKey;
@@ -253,13 +260,11 @@ public class XrayTestExecutionImport {
     }
 
     public void setTests(Set<Test> tests) {
-        this.tests = tests;
+        this.tests.clear();
+        this.addTests(tests);
     }
 
     public void addTests(Set<Test> tests) {
-        if (this.tests == null) {
-            this.tests = new HashSet<>();
-        }
         this.tests.addAll(tests);
     }
 
@@ -271,14 +276,15 @@ public class XrayTestExecutionImport {
     }
 
     public void addTestKeys(Set<String> testKeys, Test.Status status) {
-        if (this.tests == null) {
-            this.tests = new HashSet<>();
-        }
         this.tests.addAll(testKeys.stream()
                 .map(Test::new)
                 .peek(test -> test.setStatus(status))
                 .collect(Collectors.toSet())
         );
+    }
+
+    public void addTest(Test test) {
+        this.tests.add(test);
     }
 
     public Set<Test> getTests() {
