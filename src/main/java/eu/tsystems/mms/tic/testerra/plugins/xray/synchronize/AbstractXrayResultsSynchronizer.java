@@ -30,7 +30,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
@@ -357,10 +356,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     }
 
     private Set<XrayTestIssue> getTestIssues(Method realMethod) {
-        // Test set key is present
         String[] testKeys = realMethod.getAnnotation(XrayTest.class).key();
 
-        // Load all unloaded test issues
         return Arrays.stream(testKeys)
                 .filter(StringUtils::isNotBlank)
                 .map(XrayTestIssue::new)
