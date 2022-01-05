@@ -4,23 +4,23 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 public class JiraIdReference {
-    private String id;
+    private Object id;
     private String self;
 
     public JiraIdReference(Map<String, Object> map) {
-        this((String)map.getOrDefault("id", null));
+        this(map.getOrDefault("id", null));
         this.self = (String)map.getOrDefault("self", null);
     }
 
     public JiraIdReference() {
     }
 
-    public JiraIdReference(String id) {
+    public JiraIdReference(Object id) {
         this.id = id;
     }
 
     public String getId() {
-        return id;
+        return id.toString();
     }
 
     public void setId(String id) {
@@ -28,7 +28,7 @@ public class JiraIdReference {
     }
 
     public boolean hasId() {
-        return StringUtils.isNotBlank(this.id);
+        return StringUtils.isNotBlank(this.id.toString());
     }
     public String getSelf() {
         return self;

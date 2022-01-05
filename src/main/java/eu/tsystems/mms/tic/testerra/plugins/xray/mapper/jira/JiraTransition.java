@@ -28,16 +28,19 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 @JsonRootName(value = "transition")
 public class JiraTransition {
 
-    private int id;
+    private String id;
     private String name;
     private JiraStatus to;
 
-    public int getId() {
-        return id;
+    public JiraTransition() {
     }
 
-    public void setId(final int id) {
+    public JiraTransition(String id) {
         this.id = id;
+    }
+
+    public String getId() {
+        return this.id;
     }
 
     public String getName() {

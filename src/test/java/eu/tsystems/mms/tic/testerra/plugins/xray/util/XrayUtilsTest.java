@@ -24,12 +24,8 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
@@ -60,7 +56,6 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
     private XrayUtils xrayUtils;
     private final String existingTestExecutionKey = "SWFTE-9";
     private final Set<String> existingTestKeys = Sets.newHashSet("SWFTE-1", "SWFTE-2", "SWFTE-3");
-    private static String createdTestExecutionKey_newApi;
     private static String createdTestExecutionKey;
 
     @BeforeTest
@@ -87,8 +82,8 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         xrayTestExecutionImport.setTestKeys(existingTestKeys, XrayTestExecutionImport.Test.Status.TODO);
         xrayUtils.importTestExecution(xrayTestExecutionImport);
 
-        createdTestExecutionKey_newApi = xrayTestExecutionImport.getTestExecutionKey();
-        log().info("Created TestExecution: " + createdTestExecutionKey_newApi);
+        createdTestExecutionKey = xrayTestExecutionImport.getTestExecutionKey();
+        log().info("Created TestExecution: " + createdTestExecutionKey);
 
         issue = xrayUtils.getIssue(xrayTestExecutionImport.getTestExecutionKey(), XrayTestExecutionIssue::new);
         Assert.assertEquals(issue.getDescription(), description);
@@ -113,9 +108,9 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
 
     @Test(dependsOnMethods = "test_createTestExecution_newApi")
     public void test_extendTestExecutionByExistingTest() throws IOException {
-        Assert.assertNotNull(createdTestExecutionKey_newApi);
+        Assert.assertNotNull(createdTestExecutionKey);
         final String issueToAdd = "SWFTE-4";
-        XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(createdTestExecutionKey_newApi);
+        XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(createdTestExecutionKey);
         xrayTestExecutionImport.addTestKeys(Sets.newHashSet(issueToAdd), XrayTestExecutionImport.Test.Status.TODO);
         xrayUtils.importTestExecution(xrayTestExecutionImport);
         XrayTestExecutionImport.Test[] tests = xrayUtils.getTestsByTestExecutionKey(xrayTestExecutionImport.getTestExecutionKey());
@@ -125,75 +120,12 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         });
     }
 
-    @Test
-    public void testCreateTestExecution() throws Exception {
-        final Calendar calAgo = Calendar.getInstance();
-        calAgo.add(Calendar.MINUTE, -2);
-
-        final String summary = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
-        final String description = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
-        final String revision = RandomUtils.generateRandomString() + "äöüßÄÖÜ";
-        final List<String> testEnvironments = ImmutableList.of("Android", "Samsung");
-
-        final XrayInfo xrayInfo = new XrayInfo(projectKey, summary, description, revision);
-        xrayInfo.setLabels(testEnvironments);
-        final XrayTestExecutionImport freshTestExecution =
-                XrayUtils.createFreshTestExecution(xrayInfo, Arrays.asList("SWFTE-1", "SWFTE-2", "SWFTE-3"));
-        final String key = XrayUtils.syncTestExecutionReturnKey(webResource, freshTestExecution);
-
-        final JiraIssue rawIssue = JiraUtils.getIssue(webResource, key,
-                Lists.newArrayList("project", "summary", "description",
-                        Fields.REVISION.getFieldName(),
-                        Fields.TEST_EXECUTION_START_DATE.getFieldName(),
-                        Fields.TEST_ENVIRONMENTS.getFieldName()
-                )
-        );
-
-        XrayTestExecutionIssue issue = new XrayTestExecutionIssue(rawIssue);
-        createdTestExecutionKey = issue.getKey();
-        log().info("Created test execution: " + createdTestExecutionKey);
-        Assert.assertEquals(issue.getKey(), key);
-        Assert.assertEquals(issue.getProject().getName(), "Spielwiese Framework-Tests");
-        Assert.assertEquals(issue.getSummary(), summary);
-        Assert.assertEquals(issue.getDescription(), description);
-        Assert.assertEquals(issue.getRevision(), revision);
-        issue.getTestEnvironments()
-                .forEach(x -> assertTrue(testEnvironments.contains(x)));
-
-        final Date startDate = issue.getStartDate();
-        assertNotNull(startDate);
-        final Calendar calInFuture = Calendar.getInstance();
-        calInFuture.add(Calendar.MINUTE, 2);
-        assertTrue(startDate.before(calInFuture.getTime()), String.format("start time %s is before %s", startDate, calInFuture.getTime()));
-        assertTrue(startDate.after(calAgo.getTime()), String.format("start time %s is after %s", startDate, calAgo.getTime()));
-    }
-
-    @Test(dependsOnMethods = "testCreateTestExecution")
+    @Test(dependsOnMethods = "test_createTestExecution_newApi")
     public void testExportTestExecutionAsJson() throws Exception {
         Assert.assertNotNull(createdTestExecutionKey);
         final String json = XrayUtils.exportTestExecutionAsJson(webResource, createdTestExecutionKey);
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.readValue(json, XrayTestExecutionImport.Test[].class);
-    }
-
-    @Test
-    public void testSyncTestExecution() throws Exception {
-        final Set<XrayTestExecutionImport.Test> existingTests = XrayUtils.getTestsFromExecution(webResource, existingTestExecutionKey);
-
-        // statuses is used for clarity here
-        final XrayTestExecutionImport.Test.Status randomStatuses = Arrays.asList(XrayTestExecutionImport.Test.Status.values()).get(new Random().nextInt(XrayTestExecutionImport.Test.Status.values().length));
-
-        for (final XrayTestExecutionImport.Test testIssue : existingTests) {
-            testIssue.setStatus(randomStatuses);
-            final Date now = new Date();
-            testIssue.setStart(now);
-            testIssue.setFinish(now);
-        }
-
-        final XrayTestExecutionImport execution = new XrayTestExecutionImport(existingTestExecutionKey);
-        execution.setTests(existingTests);
-        XrayUtils.syncTestExecutionReturnKey(webResource, execution);
-        //TODO: check execution
     }
 
     @Test(enabled = false)

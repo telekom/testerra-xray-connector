@@ -33,7 +33,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
@@ -66,7 +65,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private boolean isSyncInitialized = false;
     private XrayTestExecutionIssue testExecutionIssue;
     private XrayMapper xrayMapper;
-    private final XrayConnector connector = new XrayConnector(new XrayInfo());
+    private final XrayConnector connector = new XrayConnector();
     private final XrayUtils xrayUtils = new XrayUtils(connector.getWebResource());
     private final HashMap<String, XrayTestSetIssue> testSetCacheByClassName = new HashMap<>();
     private final HashMap<String, JiraIssue> testCacheByMethodName = new HashMap<>();

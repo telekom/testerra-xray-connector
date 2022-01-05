@@ -94,8 +94,7 @@ public interface XrayMapper {
     }
 
     /**
-     * Updates the test execution before creating or updating.
-     * @param xrayTestExecutionIssue
+     * Updates the test execution before creating or updating
      */
     default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
     }

@@ -25,18 +25,38 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 import java.util.Map;
 
 public class JiraStatus extends JiraNameReference {
-
-    private static final String STATUS_LABEL_NEW = "NEW";
-    public static final JiraStatus NEW = new JiraStatus(STATUS_LABEL_NEW);
+    private JiraStatusCategory statusCategory;
+    private String description;
 
     public JiraStatus(Map<String, Object> map) {
         super(map);
+        this.description = (String)map.getOrDefault("description", null);
+        if (map.containsKey("statusCategory")) {
+            this.statusCategory = new JiraStatusCategory((Map<String, Object>)map.get("statusCategory"));
+        }
     }
+
     public JiraStatus() {
         super();
     }
 
     public JiraStatus(String name) {
         super(name);
+    }
+
+    public JiraStatusCategory getStatusCategory() {
+        return statusCategory;
+    }
+
+    public void setStatusCategory(JiraStatusCategory statusCategory) {
+        this.statusCategory = statusCategory;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

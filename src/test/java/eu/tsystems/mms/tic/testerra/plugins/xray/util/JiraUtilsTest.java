@@ -22,9 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
@@ -33,20 +30,18 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTest
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestTypeEquals;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraString;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraVerb;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.SimpleJiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLabels;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
+import java.util.Optional;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
@@ -55,10 +50,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,7 +93,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
     }
 
     @Test
-    public void test_updateIssue_newApi() throws IOException {
+    public void test_updateIssue() throws IOException {
         JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
         issueToUpdate.setSummary("Neues Ticket: " + RandomUtils.generateRandomString());
         List<String> labels = issueToUpdate.getLabels();
@@ -149,21 +141,6 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
     }
 
     @Test
-    public void testUpdateIssue() throws IOException {
-        final SimpleJiraIssueUpdate jiraIssueUpdate = new SimpleJiraIssueUpdate();
-        final String randomizedDescription = RandomUtils.generateRandomString();
-
-        final ObjectNode objectNode = new ObjectMapper().createObjectNode();
-        objectNode.put("description", randomizedDescription);
-
-        jiraIssueUpdate.setFields(objectNode);
-        JiraUtils.updateIssue(webResource, updateIssueKey, jiraIssueUpdate);
-        final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("description"));
-        assertEquals(issue.getKey(), updateIssueKey);
-        assertEquals(issue.getDescription(), randomizedDescription);
-    }
-
-    @Test
     public void testUpdateIssueWithPredefsRemoveAllLabels() throws IOException {
         String[] labelsToSet = new String[]{};
         final JiraIssueUpdate update = JiraIssueUpdate.create()
@@ -206,6 +183,14 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         Assert.assertTrue(!foundLabels.contains("Aufräumaktion"));
     }
 
+    @Test(enabled = false)
+    public void test_performTransition_newApi() throws IOException {
+        Set<JiraTransition> transitions = jiraUtils.getAvailableTransitions(statusIssueKey);
+        Optional<JiraTransition> transitionByStatusCategory = jiraUtils.getTransitionByStatusCategory(transitions, JiraStatusCategory.DONE);
+        Assert.assertTrue(transitionByStatusCategory.isPresent(), String.format("Transition to %s is not available", JiraStatusCategory.DONE.getKey()));
+        jiraUtils.performTransition(statusIssueKey, transitionByStatusCategory.get());
+    }
+
     @Test(groups = "issueStatus")
     public void testGetIssueStatus() throws IOException {
         final JiraStatus issueStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
@@ -213,7 +198,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
     }
 
     @Test(dependsOnMethods = "testGetIssueStatus")
-    public void testGetTransistions() throws IOException {
+    public void testGetTransitions() throws IOException {
         final Set<JiraTransition> transitions = JiraUtils.getTransitions(webResource, statusIssueKey);
         final HashSet<String> expectedTransitionNames = Sets.newHashSet("Arbeit beginnen", "Information anfordern");
         final HashSet<String> foundTransitionNames = new HashSet<>();
@@ -228,11 +213,12 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
 
     @Test(dependsOnMethods = "testGetTransistions")
     public void testChangeIssueStatus() throws IOException {
-        final JiraStatus originalStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
+        JiraStatus newStatus;
+        JiraStatus originalStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
         Assert.assertEquals(originalStatus.getName(), "Erneut geöffnet");
 
         JiraUtils.doTransitionByName(webResource, statusIssueKey, "Arbeit beginnen");
-        JiraStatus newStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
+        newStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
         assertEquals(newStatus.getName(), "In Arbeit");
 
         JiraUtils.doTransitionByName(webResource, statusIssueKey, "Arbeit beenden");

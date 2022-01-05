@@ -34,12 +34,12 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraFieldsSearchResult;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIdReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssuesSearchResult;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransitionsSearchResult;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
@@ -49,13 +49,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import static java.lang.String.format;
-
 
 public class JiraUtils implements Loggable {
 
@@ -74,10 +74,6 @@ public class JiraUtils implements Loggable {
 
     /**
      * @deprecated Use {@link #getIssue(String)} instead
-     * @param webResource
-     * @param issueKey
-     * @return
-     * @throws IOException
      */
     public static JiraIssue getIssue(final WebResource webResource, final String issueKey) throws IOException {
         return new JiraUtils(webResource).getIssue(issueKey);
@@ -132,15 +128,16 @@ public class JiraUtils implements Loggable {
 
     public void createOrUpdateIssue(JiraIssue issue) throws IOException {
         final String string = objectMapper.writeValueAsString(issue);
-        try {
-            String jsonResponse;
-            if (issue.hasKey()) {
-                jsonResponse = put(String.format("%s/%s", ISSUE_PATH, issue.getKey()), string);
-            } else {
-                jsonResponse = post(ISSUE_PATH, string);
-            }
 
-            JiraKeyReference jiraKeyReference = objectMapper.readValue(jsonResponse, JiraKeyReference.class);
+        Optional<String> post;
+        if (issue.hasKey()) {
+            post = put(String.format("%s/%s", ISSUE_PATH, issue.getKey()), string);
+        } else {
+            post = post(ISSUE_PATH, string);
+        }
+
+        if (post.isPresent()) {
+            JiraKeyReference jiraKeyReference = objectMapper.readValue(post.get(), JiraKeyReference.class);
 
             if (jiraKeyReference.hasKey()) {
                 issue.setKey(jiraKeyReference.getKey());
@@ -148,28 +145,37 @@ public class JiraUtils implements Loggable {
             if (jiraKeyReference.hasId()) {
                 issue.setId(jiraKeyReference.getId());
             }
+        }
+    }
 
+    public Optional<String> post(String apiPath, Object entity) throws IOException {
+        return post(apiPath, objectMapper.writeValueAsString(entity));
+    }
+
+    public Optional<String> post(String apiPath, String body) throws IOException {
+        try {
+            return Optional.ofNullable(prepare(apiPath, body).post(String.class));
         } catch (UniformInterfaceException e) {
             if (e.getResponse().getStatus() != 204) {
                 unwrapException(e);
             }
         }
+        return Optional.empty();
     }
 
-    public String post(String apiPath, Object entity) throws IOException {
-        return post(apiPath, objectMapper.writeValueAsString(entity));
-    }
-
-    public String post(String apiPath, String body) {
-        return prepare(apiPath, body).post(String.class);
-    }
-
-    public String put(String apiPath, Object entity) throws IOException {
+    public Optional<String> put(String apiPath, Object entity) throws IOException {
         return put(apiPath, objectMapper.writeValueAsString(entity));
     }
 
-    public String put(String apiPath, String body) throws IOException {
-        return prepare(apiPath, body).put(String.class);
+    public Optional<String> put(String apiPath, String body) throws IOException {
+        try {
+            return Optional.ofNullable(prepare(apiPath, body).put(String.class));
+        } catch (UniformInterfaceException e) {
+            if (e.getResponse().getStatus() != 204) {
+                unwrapException(e);
+            }
+        }
+        return Optional.empty();
     }
 
     private WebResource.Builder prepare(String apiPath, String body) {
@@ -226,44 +232,75 @@ public class JiraUtils implements Loggable {
     }
 
 
+    /**
+     * @deprecated Use {@link #getAvailableTransitions(String)} instead
+     */
     public static Set<JiraTransition> getTransitions(final WebResource webResource,
                                                      final String issueKey) throws IOException {
-        final String result = webResource.path(format("%s/%s/transitions", ISSUE_PATH, issueKey)).get(String.class);
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final JiraTransitionsSearchResult transitionsSearchResult = objectMapper.readValue(result, JiraTransitionsSearchResult.class);
-        return transitionsSearchResult.getTransitions();
+        JiraUtils jiraUtils = new JiraUtils(webResource);
+        return jiraUtils.getAvailableTransitions(issueKey);
     }
 
+    public Set<JiraTransition> getAvailableTransitions(String issueKey) throws IOException {
+        final String result = webResource.path(format("%s/%s/transitions", ISSUE_PATH, issueKey)).get(String.class);
+        JiraTransitionsSearchResult jiraTransitionsSearchResult = objectMapper.readValue(result, JiraTransitionsSearchResult.class);
+        return jiraTransitionsSearchResult.getTransitions();
+    }
+
+    /**
+     * @deprecated Use {@link #performTransition(String, JiraTransition)} instead
+     */
     public static void doTransitionById(final WebResource webResource, final String issueKey,
                                         final int transitionId) throws IOException {
-        final JiraTransition transition = new JiraTransition();
-        transition.setId(transitionId);
-
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
-        final String string = objectMapper.writeValueAsString(transition);
-        webResource.path(format("%s/%s/transitions", ISSUE_PATH, issueKey))
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .post(string);
+        JiraUtils jiraUtils = new JiraUtils(webResource);
+        jiraUtils.performTransition(issueKey, new JiraTransition(Integer.toString(transitionId)));
     }
 
+    public void performTransition(String issueKey, JiraTransition jiraTransition) throws IOException {
+        ObjectMapper objectMapper = this.objectMapper.copy();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
+        post(format("%s/%s/transitions", ISSUE_PATH, issueKey), objectMapper.writeValueAsString(jiraTransition));
+    }
+
+    public Optional<JiraTransition> getTransitionByStatusCategory(Set<JiraTransition> jiraTransitions, JiraStatusCategory statusCategory) {
+        return jiraTransitions.stream()
+                .filter(jiraTransition -> {
+                    JiraStatus to = jiraTransition.getTo();
+                    if (to != null) {
+                        JiraStatusCategory sc = to.getStatusCategory();
+                        if (sc != null) {
+                            if (sc.hasKey()) {
+                                return sc.getKey().equals(statusCategory.getKey());
+                            }
+                        }
+                    }
+                    return false;
+                })
+                .findFirst();
+    }
+
+    /**
+     * @deprecated Use {@link #performTransition(String, JiraTransition)} instead
+     */
     public static void doTransitionByName(final WebResource webResource, final String issueKey,
                                           final String transitionName) throws IOException {
         final Set<JiraTransition> transitions = getTransitions(webResource, issueKey);
         for (final JiraTransition transition : transitions) {
             if (transition.getName().equals(transitionName)) {
-                doTransitionById(webResource, issueKey, transition.getId());
+                doTransitionById(webResource, issueKey, Integer.parseInt(transition.getId()));
                 return;
             }
         }
+        throw new RuntimeException(String.format("Transition not available: %s", transitionName));
     }
 
-    @Deprecated
+    /**
+     * @deprecated Use {@link #getIssue(String)} instead
+     */
     public static JiraStatus getIssueStatus(final WebResource webResource, final String issueKey) throws IOException {
-        final String result = webResource.path(format("%s/%s", ISSUE_PATH, issueKey)).queryParam("fields", "status").get(String.class);
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final JiraFieldsSearchResult jiraFieldsSearchResult = objectMapper.readValue(result, JiraFieldsSearchResult.class);
-        return jiraFieldsSearchResult.getFields().getStatus();
+        JiraUtils jiraUtils = new JiraUtils(webResource);
+        JiraIssue issue = jiraUtils.getIssue(issueKey);
+        return issue.getStatus();
     }
 
     public static void uploadJsonAttachment(final WebResource webResource, final String issueKey, final String content,

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 
 
 public final class XrayUtils extends JiraUtils {
@@ -51,9 +52,11 @@ public final class XrayUtils extends JiraUtils {
     }
 
     public void importTestExecution(XrayTestExecutionImport testExecutionImport) throws IOException {
-        String jsonResponse = post(IMPORT_EXECUTION_PATH, testExecutionImport);
-        XrayTestExecutionImport.Result xrayTestExecutionResult = getObjectMapper().readValue(jsonResponse, XrayTestExecutionImport.Result.class);
-        testExecutionImport.setTestExecutionKey(xrayTestExecutionResult.getTestExecIssue().getKey());
+        Optional<String> post = post(IMPORT_EXECUTION_PATH, testExecutionImport);
+        if (post.isPresent()) {
+            XrayTestExecutionImport.Result xrayTestExecutionResult = getObjectMapper().readValue(post.get(), XrayTestExecutionImport.Result.class);
+            testExecutionImport.setTestExecutionKey(xrayTestExecutionResult.getTestExecIssue().getKey());
+        }
     }
 
     @Deprecated
