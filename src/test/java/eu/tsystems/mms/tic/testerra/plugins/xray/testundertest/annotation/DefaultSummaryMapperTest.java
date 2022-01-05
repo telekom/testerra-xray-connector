@@ -24,15 +24,26 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
+import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
+import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.TestBase;
-import eu.tsystems.mms.tic.testframework.common.PropertyManager;
+import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.SummaryMapperResultsSynchronizer;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @XrayTestSet
 public class DefaultSummaryMapperTest extends TestBase {
 
     static {
-        PropertyManager.loadProperties("defaultsummarymapper.properties");
+        XrayConfig.init("defaultsummarymapper.properties");
+        Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
+        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SummaryMapperResultsSynchronizer());
+    }
+
+    @BeforeClass
+    public void beforeClass() {
+
     }
 
     @Override

@@ -102,6 +102,7 @@ public class XrayConnector {
 
     }
 
+    @Deprecated
     public List<String> findTestKeys(final String testSetKey, final JqlQuery methodReferenceQuery) {
         final JqlQuery baseQuery = JqlQuery.create()
                 .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
@@ -151,11 +152,6 @@ public class XrayConnector {
     }
 
     @Deprecated
-    private String prepareTestExecutionCreation(JiraIssueUpdate jiraIssueUpdate) throws IOException, NotSyncableException {
-        return prepareTestExecutionCreation(null, jiraIssueUpdate);
-    }
-
-    @Deprecated
     private String prepareTestExecutionCreation(final Iterable<String> testKeys, JiraIssueUpdate jiraIssueUpdate)
             throws IOException, NotSyncableException {
         //        final String testExecKey = JiraUtils.createTestExecutionGeneric(webResource, xrayConfig.getProjectKey(), summary, description, revision);
@@ -177,10 +173,6 @@ public class XrayConnector {
             updateIssue(testExecKey, jiraIssueUpdate);
         }
         return testExecKey;
-    }
-
-    private String prepareTestExecutionUpdate(final String testExecKey, JiraIssueUpdate jiraUpdate) throws IOException {
-        return prepareTestExecutionUpdate(null, testExecKey, jiraUpdate);
     }
 
     private String prepareTestExecutionUpdate(final Collection<String> testKeys, final String testExecKey, JiraIssueUpdate jiraUpdate) throws
@@ -241,10 +233,12 @@ public class XrayConnector {
         JiraUtils.updateIssue(webResource, testExecutionKey, update);
     }
 
+    @Deprecated
     public List<String> findTestSetKeys(final JqlQuery classReferenceQuery) {
         return findTestSets(classReferenceQuery).map(JiraIssue::getKey).collect(Collectors.toList());
     }
 
+    @Deprecated
     public Stream<XrayTestSetIssue> findTestSets(final JqlQuery classReferenceQuery) {
         final JqlQuery baseQuery = JqlQuery.create()
                 .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
@@ -256,6 +250,7 @@ public class XrayConnector {
                 .map(XrayTestSetIssue::new);
     }
 
+    @Deprecated
     public void updateIssue(String testExecutionKey, JiraIssueUpdate jiraIssueUpdate) throws JsonProcessingException {
         JiraUtils.updateIssue(webResource, testExecutionKey, jiraIssueUpdate);
     }

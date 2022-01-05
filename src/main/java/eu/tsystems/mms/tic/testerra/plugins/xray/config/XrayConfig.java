@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class XrayConfig {
 
     protected static final Logger logger = LoggerFactory.getLogger(XrayConfig.class);
-    private static String propFileName = "xray.properties";
+    private static final String DEFAULT_PROPERTIES_FILE = "xray.properties";
     private static XrayConfig instance;
     private final String previousResultsFilename;
     private final String projectKey;
@@ -58,9 +58,11 @@ public class XrayConfig {
 
     private String fakeTestExecutionKey;
 
-    private XrayConfig() {
-        PropertyManager.loadProperties(propFileName);
+    static {
+        PropertyManager.loadProperties(DEFAULT_PROPERTIES_FILE);
+    }
 
+    private XrayConfig() {
         projectKey = PropertyManager.getProperty("xray.project.key");
         username = PropertyManager.getProperty("xray.user");
         password = PropertyManager.getProperty("xray.password");
@@ -95,13 +97,15 @@ public class XrayConfig {
     }
 
     public static synchronized void init(String propFileName) {
-        logger.info("reading configuration from file: {}", propFileName);
-        if (instance != null) {
-            throw new IllegalStateException("property file was already read, init before first call to getInstance()");
-        }
-        XrayConfig.propFileName = propFileName;
+        reset();
+        PropertyManager.loadProperties(propFileName);
+        getInstance();
     }
 
+
+    /**
+     * @deprecated Use {@link #init(String)} instead
+     */
     public static synchronized void reset() {
         instance = null;
     }

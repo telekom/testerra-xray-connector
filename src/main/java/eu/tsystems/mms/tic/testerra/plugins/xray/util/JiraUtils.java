@@ -47,15 +47,10 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIs
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
@@ -263,6 +258,7 @@ public class JiraUtils implements Loggable {
         }
     }
 
+    @Deprecated
     public static JiraStatus getIssueStatus(final WebResource webResource, final String issueKey) throws IOException {
         final String result = webResource.path(format("%s/%s", ISSUE_PATH, issueKey)).queryParam("fields", "status").get(String.class);
         final ObjectMapper objectMapper = new ObjectMapper();

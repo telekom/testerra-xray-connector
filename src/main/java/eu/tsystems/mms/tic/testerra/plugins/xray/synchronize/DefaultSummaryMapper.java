@@ -2,6 +2,8 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
@@ -20,6 +22,7 @@ public class DefaultSummaryMapper implements XrayMapper {
         return Optional.of(
                 JqlQuery.create()
                         .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
+                        .addCondition(new IssueTypeEquals(IssueType.Test))
                         .addCondition(new SummaryContainsExact(methodContext.getName()))
                         .build()
         );
@@ -30,6 +33,7 @@ public class DefaultSummaryMapper implements XrayMapper {
         return Optional.of(
                 JqlQuery.create()
                         .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
+                        .addCondition(new IssueTypeEquals(IssueType.TestSet))
                         .addCondition(new SummaryContainsExact(classContext.getTestClassContext().map(TestClassContext::name).orElse(classContext.getName())))
                         .build()
         );

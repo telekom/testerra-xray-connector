@@ -22,11 +22,14 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
@@ -37,6 +40,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import eu.tsystems.mms.tic.testframework.events.TestStatusUpdateEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import java.io.IOException;
@@ -46,20 +50,17 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 
 
 public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSynchronizer, Loggable, TestStatusUpdateEvent.Listener {
-    private static final String VENDOR_PREFIX="Testerra Xray connector";
+    private static final String VENDOR_PREFIX = "Testerra Xray connector";
     protected final XrayConfig xrayConfig = XrayConfig.getInstance();
     private boolean isSyncInitialized = false;
     private XrayTestExecutionIssue testExecutionIssue;
@@ -68,7 +69,6 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private final XrayUtils xrayUtils = new XrayUtils(connector.getWebResource());
     private final HashMap<String, XrayTestSetIssue> testSetCacheByClassName = new HashMap<>();
     private final HashMap<String, JiraIssue> testCacheByMethodName = new HashMap<>();
-    private final HashMap<String, JiraIssue> testCacheByKey = new HashMap<>();
     private final ConcurrentLinkedQueue<XrayTestExecutionImport.Test> testSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
 
@@ -112,15 +112,32 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                     xrayMapper.updateXrayTestExecution(testExecutionIssue);
                 }
                 this.testExecutionIssue = testExecutionIssue;
-                isSyncInitialized = true;
+                registerSync();
             } catch (final Exception e) {
                 disableSyncWithWarning(e);
             }
         }
     }
 
+    private void registerSync() {
+        EventBus eventBus = TesterraListener.getEventBus();
+        eventBus.register(this);
+
+        isSyncInitialized = true;
+    }
+
+    private void unregisterSync() {
+        if (isSyncInitialized) {
+            EventBus eventBus = TesterraListener.getEventBus();
+            eventBus.unregister(this);
+
+            isSyncInitialized = false;
+        }
+    }
+
     public void shutdown() {
         this.flushSyncQueue();
+        unregisterSync();
     }
 
     private synchronized void flushSyncQueue() {
@@ -129,11 +146,14 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             return;
         }
 
+        final int numTestSetsToSync = testSetSyncQueue.size();
+        final int numTestsToSync = testSyncQueue.size();
+
         testSetSyncQueue.forEach(xrayTestSetIssue -> {
             try {
                 xrayUtils.createOrUpdateIssue(xrayTestSetIssue);
             } catch (IOException e) {
-                log().error("Unable to update TestSet", e);
+                log().error(String.format("Unable to update %s", IssueType.TestSet), e);
             }
             testSetSyncQueue.remove(xrayTestSetIssue);
         });
@@ -150,8 +170,15 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
         try {
             xrayUtils.importTestExecution(xrayTestExecutionImport);
+            log().info(String.format("Synchronized %s with %d %s and %d %s",
+                    IssueType.TestExecution,
+                    numTestSetsToSync,
+                    IssueType.TestSet,
+                    numTestsToSync,
+                    IssueType.Test
+            ));
         } catch (IOException e) {
-            log().error("Unable to update TestExecution", e);
+            log().error(String.format("Unable to synchronize %s", IssueType.TestExecution), e);
         }
     }
 
@@ -170,29 +197,28 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         return null;
     }
 
-    private void reportError(String message, Exception e) {
-        //ReportInfo.getDashboardInfo().addInfo(1, message + e.getMessage());
-        log().error(message, e);
-    }
-
     private void disableSyncWithWarning(Exception e) {
-        isSyncInitialized = false;
-        reportError("An unexpected exception occurred. Syncing is aborted.", e);
+        unregisterSync();
+        log().error("An unexpected exception occurred. Syncing is aborted.", e);
     }
 
     @Override
+    @Subscribe
     public void onTestStatusUpdate(TestStatusUpdateEvent event) {
-        Optional<ITestResult> testNgResult = event.getMethodContext().getTestNgResult();
+        final MethodContext methodContext = event.getMethodContext();
+        Optional<ITestResult> testNgResult = methodContext.getTestNgResult();
         if (!testNgResult.isPresent()) {
             return;
         }
 
-        ITestResult testResult = testNgResult.get();
-        MethodContext methodContext = event.getMethodContext();
+        final ITestResult testResult = testNgResult.get();
+        final Method realMethod = testResult.getMethod().getConstructorOrMethod().getMethod();
+        if (!realMethod.isAnnotationPresent(XrayTest.class)) {
+            return;
+        }
 
-        Set<JiraIssue> testIssues = getTestIssues(testResult.getMethod());
+        Set<JiraIssue> testIssues = getTestIssues(realMethod);
         if (testIssues.isEmpty()) {
-
             final String cacheKey = testResult.getMethod().getQualifiedName();
 
             if (!testCacheByMethodName.containsKey(cacheKey)) {
@@ -218,6 +244,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
 
         getTestSetIssue(methodContext.getClassContext()).ifPresent(xrayTestSetIssue -> {
+            // Update test set by mapper
             xrayMapper.updateXrayTestSet(xrayTestSetIssue, methodContext.getClassContext());
 
             List<String> testSetTestKeys = xrayTestSetIssue.getTestKeys();
@@ -226,17 +253,25 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                     .filter(testKey -> !testSetTestKeys.contains(testKey))
                     .collect(Collectors.toList());
 
+            // Add new tests to testset
             if (newTestKeys.size() > 0) {
                 testSetTestKeys.addAll(newTestKeys);
-                testSetSyncQueue.add(xrayTestSetIssue);
+                if (!testSetSyncQueue.contains(xrayTestSetIssue)) {
+                    testSetSyncQueue.add(xrayTestSetIssue);
+                }
             }
         });
 
-
+        /*
+         * Update test by mapper,
+         * convert to import entity
+         * and add to sync queue
+         */
         testIssues.stream()
                 .peek(issue -> xrayMapper.updateXrayTest(issue, methodContext))
                 .map(XrayTestExecutionImport.Test::new)
                 .peek(test -> updateTestImport(test, testResult))
+                .filter(test -> !testSyncQueue.contains(test))
                 .forEach(testSyncQueue::add);
     }
 
@@ -262,33 +297,14 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         test.setFinish(new Date(result.getEndMillis()));
     }
 
-    private Set<JiraIssue> getTestIssues(ITestNGMethod testNGMethod) {
-        final Method method = testNGMethod.getConstructorOrMethod().getMethod();
-        if (!method.isAnnotationPresent(XrayTest.class)) {
-            return new HashSet<>();
-        }
-
+    private Set<JiraIssue> getTestIssues(Method realMethod) {
         // Test set key is present
-        String[] testKeys = method.getAnnotation(XrayTest.class).key();
+        String[] testKeys = realMethod.getAnnotation(XrayTest.class).key();
 
         // Load all unloaded test issues
-        Arrays.stream(testKeys)
-                .filter(StringUtils::isNotBlank)
-                .filter(testKey -> !testCacheByKey.containsKey(testKey))
-                .map(testKey -> {
-                    try {
-                        return xrayUtils.getIssue(testKey);
-                    } catch (IOException e) {
-                        log().error(String.format("Unable to query Test by key: %s", testKey), e);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .forEach(issue -> testCacheByKey.put(issue.getKey(), issue));
-
         return Arrays.stream(testKeys)
-                .filter(testCacheByKey::containsKey)
-                .map(testCacheByKey::get)
+                .filter(StringUtils::isNotBlank)
+                .map(JiraIssue::new)
                 .collect(Collectors.toSet());
     }
 
@@ -313,7 +329,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             try {
                 xrayTestSetIssue = xrayUtils.getIssue(testSetKey, XrayTestSetIssue::new);
             } catch (IOException e) {
-                log().error(String.format("Unable to query TestSet by key: %s", testSetKey), e);
+                log().error(String.format("Unable to query %s by key: %s", IssueType.TestSet, testSetKey), e);
             }
         } else {
             Optional<JqlQuery> xrayTestSetQuery = xrayMapper.createXrayTestSetQuery(classContext);
@@ -325,7 +341,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                     xrayTestSetIssue = new XrayTestSetIssue();
                     xrayTestSetIssue.getProject().setKey(xrayConfig.getProjectKey());
                     xrayTestSetIssue.setSummary(clazz.getSimpleName());
-                    xrayTestSetIssue.setDescription(String.format("%s generated TestSet by class %s", VENDOR_PREFIX, clazz.getCanonicalName()));
+                    xrayTestSetIssue.setDescription(String.format("%s generated %s by class %s", VENDOR_PREFIX, IssueType.TestSet, clazz.getCanonicalName()));
                 }
             }
         }
