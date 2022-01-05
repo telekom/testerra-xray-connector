@@ -7,6 +7,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testframework.annotations.TestClassContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
@@ -40,7 +41,7 @@ public class DefaultSummaryMapper implements XrayMapper {
     }
 
     @Override
-    public void updateXrayTest(JiraIssue xrayTestIssue, MethodContext methodContext) {
+    public void updateXrayTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
         xrayTestIssue.setSummary(methodContext.getName());
     }
 

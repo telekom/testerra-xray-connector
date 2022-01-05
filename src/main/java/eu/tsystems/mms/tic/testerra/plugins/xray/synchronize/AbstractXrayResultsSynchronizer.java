@@ -35,6 +35,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import eu.tsystems.mms.tic.testframework.events.TestStatusUpdateEvent;
@@ -71,7 +72,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private XrayMapper xrayMapper;
     private XrayUtils xrayUtils;
     private final HashMap<String, XrayTestSetIssue> testSetCacheByClassName = new HashMap<>();
-    private final HashMap<String, JiraIssue> testCacheByMethodName = new HashMap<>();
+    private final HashMap<String, XrayTestIssue> testCacheByMethodName = new HashMap<>();
     private final ConcurrentLinkedQueue<XrayTestExecutionImport.Test> testSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
     private final int SYNC_FREQUENCY_TESTS = 10;
@@ -246,18 +247,18 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         final XrayUtils xrayUtils = getXrayUtils();
         final XrayConfig xrayConfig = getXrayConfig();
 
-        Set<JiraIssue> testIssues = getTestIssues(realMethod);
+        Set<XrayTestIssue> testIssues = getTestIssues(realMethod);
         if (testIssues.isEmpty()) {
             final String cacheKey = testResult.getMethod().getQualifiedName();
 
             if (!testCacheByMethodName.containsKey(cacheKey)) {
                 Optional<JqlQuery> xrayTestQuery = xrayMapper.createXrayTestQuery(methodContext);
                 if (xrayTestQuery.isPresent()) {
-                    Optional<JiraIssue> optionalExistingTestIssue = xrayUtils.searchIssues(xrayTestQuery.get()).findFirst();
+                    Optional<XrayTestIssue> optionalExistingTestIssue = xrayUtils.searchIssues(xrayTestQuery.get(), XrayTestIssue::new).findFirst();
                     if (optionalExistingTestIssue.isPresent()) {
                         testCacheByMethodName.put(cacheKey, optionalExistingTestIssue.get());
                     } else {
-                        JiraIssue testIssue = new JiraIssue();
+                        XrayTestIssue testIssue = new XrayTestIssue();
                         testIssue.getProject().setKey(xrayConfig.getProjectKey());
                         testIssue.setSummary(testResult.getMethod().getQualifiedName());
                         testIssue.setDescription(String.format("%s generated %s by method %s", VENDOR_PREFIX, IssueType.Test, testResult.getMethod().getQualifiedName()));
@@ -355,14 +356,14 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         }
     }
 
-    private Set<JiraIssue> getTestIssues(Method realMethod) {
+    private Set<XrayTestIssue> getTestIssues(Method realMethod) {
         // Test set key is present
         String[] testKeys = realMethod.getAnnotation(XrayTest.class).key();
 
         // Load all unloaded test issues
         return Arrays.stream(testKeys)
                 .filter(StringUtils::isNotBlank)
-                .map(JiraIssue::new)
+                .map(XrayTestIssue::new)
                 .collect(Collectors.toSet());
     }
 

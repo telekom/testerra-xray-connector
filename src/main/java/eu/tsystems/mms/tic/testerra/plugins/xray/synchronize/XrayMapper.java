@@ -30,6 +30,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsE
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
@@ -107,6 +108,6 @@ public interface XrayMapper {
     /**
      * Gets called every time a test will be synchronized.
      */
-    default void updateXrayTest(JiraIssue xrayTestIssue, MethodContext methodContext) {
+    default void updateXrayTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
     }
 }

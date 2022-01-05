@@ -112,13 +112,9 @@ xray.webresource.filter.getrequestsonly.enabled=false
 xray.webresource.filter.getrequestsonly.fake.response.key=EXAMPLE-1
 ````
 
-With this property file included and filled up with your user account and credentials you should be able to synchronize your test
-results with the adhoc-strategy.
-
 ### Retrieve custom field IDs
 
-The Jira Xray fields are implemented as custom fields and they may differ with every Jira installation. Thats why you must setup
-them manually.
+The Jira Xray fields are implemented as custom fields and they may differ with every Jira installation. Therefore. you must set up them manually.
 
 You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.
 
@@ -212,8 +208,10 @@ public class GenericMapper implements XrayMapper {
 }
 ```
 
-In this case the Xray connector will search Jira issues for an issue of type `TestSet` with matching summary `My Tests`
+In this case the Xray connector will search Jira issues for an issue of type `TestSet` with matching summary `My Tests`.
 Then the connector will run a search for all associated test methods for this test set to find an issue of type `Test` and a summary equal the test method name.
+
+When the provided `Optional` for tests and test sets are empty, the synchronizer will not start an attempt to create them. 
 
 ### Update entities
 
@@ -221,14 +219,17 @@ The `XrayMapper` also provides callbacks for updating entities.
 
 ```java
 public class GenericMapper implements XrayMapper {
+    
     default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
         xrayTestExecutionIssue.getTestEnvironments().add("Test");
         xrayTestExecutionIssue.getFixVersions().add(new JiraNameReference("1.0"))
     }
+    
     default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
         xrayTestSetIssue.getLabels().add("TestAutomation");
     }
-    default void updateXrayTest(JiraIssue xrayTestIssue, MethodContext methodContext) {
+    
+    default void updateXrayTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
         xrayTestIssue.getLabels().add("TestAutomation");
     }
 }

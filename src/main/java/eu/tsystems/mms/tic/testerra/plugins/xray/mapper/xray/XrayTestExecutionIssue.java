@@ -1,6 +1,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
@@ -53,5 +54,20 @@ public class XrayTestExecutionIssue extends XrayIssue {
     @JsonIgnore
     public void setFinishDate(Date date) {
         this.getFields().put(Fields.TEST_EXECUTION_FINISH_DATE.getFieldName(), this.dateToString(date));
+    }
+
+    @JsonIgnore
+    public String getRevision() {
+        return (String)this.getFields().getOrDefault(Fields.REVISION.getFieldName(), null);
+    }
+
+    @JsonIgnore
+    public void setRevision(String revision) {
+        final XrayConfig xrayConfig = XrayConfig.getInstance();
+        if (!revision.matches(xrayConfig.getValidationRegexRevision())) {
+            throw new RuntimeException(String.format("revision %s does not conform regex %s",
+                    revision, xrayConfig.getValidationRegexRevision()));
+        }
+        this.getFields().put(Fields.REVISION.getFieldName(), revision);
     }
 }

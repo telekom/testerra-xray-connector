@@ -29,21 +29,6 @@ public class XrayIssue extends JiraIssue {
         this.getFields().put(Fields.FIX_VERSIONS.getFieldName(), versions);
     }
 
-    @JsonIgnore
-    public String getRevision() {
-        return (String)this.getFields().getOrDefault(Fields.REVISION.getFieldName(), null);
-    }
-
-    @JsonIgnore
-    public void setRevision(String revision) {
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
-        if (!revision.matches(xrayConfig.getValidationRegexRevision())) {
-            throw new RuntimeException(String.format("revision %s does not conform regex %s",
-                    revision, xrayConfig.getValidationRegexRevision()));
-        }
-        this.getFields().put(Fields.REVISION.getFieldName(), revision);
-    }
-
     @Override
     public void setSummary(String summary) {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
