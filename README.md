@@ -74,7 +74,6 @@ The easiest way is to create a file `xray.properties` in `src/test/resources` di
 # Enable synchronization and define strategy
 xray.sync.enabled=true
 xray.sync.skipped=true
-xray.sync.strategy=adhoc
 
 # Connection details (mandatory)
 xray.rest.service.uri=https://jira.example.com/rest
@@ -87,13 +86,13 @@ xray.token=jiratoken
 xray.user=jira-sync-user
 xray.password=password
 
-
 # Jira field IDs (mandatory)
 xray.test.execution.start.time.field.id=
 xray.test.execution.finish.time.field.id=
 xray.test.execution.revision.field.id=
 xray.test.execution.test-environments.field.id=
 xray.test.execution.test-plan.field.id=
+xray.test-set.tests.field.id=
 
 # Validations to avoid unintended operations
 xray.validation.revision.regexp=.*
@@ -119,92 +118,18 @@ results with the adhoc-strategy.
 ### Retrieve custom field IDs
 
 The Jira Xray fields are implemented as custom fields and they may differ with every Jira installation. Thats why you must setup
-them.
+them manually.
 
 You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.
 
 ![](doc/Jira-Field-Ids.jpg)
 
-### Synchronization strategies
-
-#### Adhoc
-
-When property `xray.sync.strategy` is set to `adhoc` your test results will be synchronized directly after a test method finished.  
-This will ensure, that you can track the current progress of your test execution in real-time in Jira.
-
-Please note that uploads and attachments for test execution will be uploaded after the execution finished.
-
-#### Posthoc
-
-When property `xray.sync.strategy` is set to `posthoc` your test results will be synchronized after the *complete* test execution
-ends.  
-The Xray connector will store every test result internally and then progress a bulk-upload of all test results.
-
 ### Implement interfaces
 
-For full control at runtime the Xray connector provide interfaces, that you have to implement before getting started.  
-This approach let you configure nearly everything that can be configured - at run time!
-
-The easiest way is, to start with this example.  
-This implementation will provide static `XrayTestExecutionInfo`, but in practice you should determine these values at runtime.
-
-With this configuration, the Xray connector will lookup for a Jira issue with the following matching properties:
-
-- Type: `Test Execution`
-- Summary (title)
-- Revision
-
-If a test execution could be found, it will be reused and updated, otherwise a new one will be created.
-If you provide `null` values, the connector will ignore these fields.
+Before synchronisation can take place, you need to create a subclass of `AbstractXrayResultsSynchronizer`.
 
 ```java
 public class XrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
-
-    @Override
-    public XrayTestExecutionInfo getExecutionInfo() {
-        return new XrayTestExecutionInfo() {
-
-            @Override
-            public String getSummary() {
-                return "My Test Execution";
-            }
-
-            @Override
-            public String getDescription() {
-                return "Automated test run";
-            }
-
-            @Override
-            public String getRevision() {
-                return "1.0-RC1";
-            }
-
-            @Override
-            public String getAssignee() {
-                return null;
-            }
-
-            @Override
-            public String getFixVersion() {
-                return null;
-            }
-
-            @Override
-            public List<String> getTestEnvironments() {
-                return null;
-            }
-        };
-    }
-
-//    @Override
-//    public XrayMapper getXrayMapper() {
-//        return null;
-//    }
-
-//    @Override
-//    public XrayTestExecutionUpdates getExecutionUpdates() {
-//        return null;
-//    }
 }
 ```
 
@@ -218,7 +143,7 @@ Basically there are two ways of mapping, both of them are instructed and control
 To create a one-to-one mapping between your test methods and your Jira issues of type `Test` you just have to set up the `XrayTest`
 annotation on your method.
 
-````java
+```java
 public class MethodsAnnotatedTest extends TesterraTest {
 
     @Test
@@ -227,128 +152,89 @@ public class MethodsAnnotatedTest extends TesterraTest {
         Assert.assertTrue(true);
     }
 }
-````
+```
 
 #### Test class mapping
 
 Instead of annotating each method by itself, you can annotate just the test class with the `XrayTestSet` annotation  
-and the Xray connector will do the rest for you by searching Jira issues itself with the provided query on your implementation
-of `XrayMapper.methodToXrayTestQuery`.
+and the Xray connector will do the rest for you by searching Jira issues.
 
-For example, you can provide the following simple mapper, that will just grab the test method name and search Jira issues by
-matching summary.
-
-````java
+```java
 
 @XrayTestSet(key = "EXAMPLE-5")
 public class AnnotatedClassTest extends TesterraTest {
-    //...
 }
-````
+```
 
-````java
-public class TestMethodNameMapper implements XrayMapper {
+#### Other mapping implementations
 
-    @Override
-    public JqlQuery resultToXrayTest(ITestResult testNgResult) {
-        final Object[] parameters = testNgResult.getParameters();
-        if (parameters.length > 0) {
-            final String summary = String.format("%s with %s", testNgResult.getMethod().getMethodName(), parameters[0]);
-            return JqlQuery.create()
-                    .addCondition(new SummaryContainsExact(summary))
-                    .build();
-        } else {
-            return JqlQuery.create()
-                    .addCondition(new SummaryContainsExact(testNgResult.getMethod().getMethodName()))
-                    .build();
-        }
+The `DefaultSummaryMapper` maps test methods to Jira Tests and classes to Jira test sets by their name, even when keys are present in the annotation. You enable that feature by passing the mapper in your `XrayResultsSynchronizer`.
+
+```java
+public class XrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+    public XrayMapper getXrayMapper() {
+        return new DefaultSummaryMapper();
     }
-
-    @Override
-    public JqlQuery classToXrayTestSet(ITestClass testNgClass) {return null;}
 }
-````
+```
 
-> Note : The default `EmptyMapper` will return `null`. This will lead in a synchronization error, because no matching Jira issue was found.
+#### Custom mapping implementations
 
-#### Generic mapping
+When you want to have full control over the mapping, you can provide your own implementation of `XrayMapper`.
 
-If you don't want to annotate your class with `XrayTestSet` and neither your test methods with `XrayTest` you can use a full generic
-way by implementing the `XrayMapper.classToXrayTestSet()` method as well as the already known `methodToXrayTestQuery()`.
-
-````java
+```java
 public class GenericMapper implements XrayMapper {
 
-    @Override
-    public JqlQuery resultToXrayTest(ITestResult testNgResult) {
-        final Object[] parameters = testNgResult.getParameters();
-        if (parameters.length > 0) {
-            final String summary = String.format("%s with %s", testNgResult.getMethod().getMethodName(), parameters[0]);
-            return JqlQuery.create()
-                    .addCondition(new SummaryContainsExact(summary))
-                    .build();
-        } else {
-            return JqlQuery.create()
-                    .addCondition(new SummaryContainsExact(testNgResult.getMethod().getMethodName()))
-                    .build();
-
-        }
+    default Optional<JqlQuery> createXrayTestExecutionQuery(XrayTestExecutionIssue xrayTestExecutionIssue) {
+        final JqlQuery jqlQuery = JqlQuery.create()
+                .addCondition(new ProjectEquals(xrayTestExecutionIssue.getProject().getKey()))
+                .addCondition(new IssueTypeEquals(xrayTestExecutionIssue.getIssueType()))
+                .addCondition(new RevisionContainsExact(xrayTestExecutionIssue.getRevision()))
+                .build();
+        return Optional.of(jqlQuery);
     }
-
-    @Override
-    public JqlQuery classToXrayTestSet(ITestClass testNgClass) {
-        return JqlQuery.create()
+    
+    public Optional<JqlQuery> createXrayTestQuery(MethodContext methodContext) {
+        return Optional.of(
+                JqlQuery.create()
+                .addCondition(new SummaryContainsExact(methodContext.getName()))
+                .build()
+        );
+    }
+    
+    public Optional<JqlQuery> createXrayTestSetQuery(ClassContext classContext) {
+        return Optional.of(
+                JqlQuery.create()
                 .addCondition(new SummaryContainsExact("My Tests"))
-                .build();
+                .build()
+        );
     }
 }
-````
+```
 
-In this case the Xray connector will search Jira issues for an issue of type `TestSet` with matching summary `My Tests`.  
-Then the connector will run a search for all associated test methods for this test set to find an issue of type `Test` and a summary
-equal the test method name.
+In this case the Xray connector will search Jira issues for an issue of type `TestSet` with matching summary `My Tests`
+Then the connector will run a search for all associated test methods for this test set to find an issue of type `Test` and a summary equal the test method name.
 
-### Test execution updates on transition
+### Update entities
 
-As you may noticed in the cod examples above we provided a `EmptyTestExecutionUpdates` as implementation
-for `XrayTestExecutionUpdates` in our `FooXrayResultsSynchronizer`.  
-Test execution updates should be defined to add metadata to associated Jira issue of type `Test Execution`.
+The `XrayMapper` also provides callbacks for updating entities.
 
-The Xray connector will lookup Jira for Test execution matching your criteria provided as `XrayTestExecutionInfo`.  
-But if no matching Test Execution was found, it will create a new one by using the Jira API.
-
-To add labels, revision, summary, fix versions, associated version or other execution info you can use your own implementation
-of `XrayTestExecutionUpdates`.
-
-````java
-public class DefaultTestExecutionUpdates implements XrayTestExecutionUpdates {
-
-    @Override
-    public JiraIssueUpdate updateOnNewExecutionCreated() {
-        return JiraIssueUpdate.create()
-                .field(new SetLabels("TestAutomation"))
-                .field(new TestPlan("TICKET-ID"))
-                .build();
+```java
+public class GenericMapper implements XrayMapper {
+    default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
+        xrayTestExecutionIssue.getTestEnvironments().add("Test");
+        xrayTestExecutionIssue.getFixVersions().add(new JiraNameReference("1.0"))
     }
-
-    @Override
-    public JiraIssueUpdate updateOnExistingExecutionUpdated() {
-        return JiraIssueUpdate.create()
-                .field(new SetLabels("TestAutomation"))
-                .build();
+    default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+        xrayTestSetIssue.getLabels().add("TestAutomation");
     }
-
-    @Override
-    public JiraIssueUpdate updateOnExecutionDone() {
-        return JiraIssueUpdate.create()
-                .field(new SetAffectedVersions("1.0-RC"))
-                .build();
+    default void updateXrayTest(JiraIssue xrayTestIssue, MethodContext methodContext) {
+        xrayTestIssue.getLabels().add("TestAutomation");
     }
 }
-````
+```
 
-For example, this simple implementation will add the label "Test Automation" to your "updated" or freshly created test execution and
-set the "affected version" to "1.0-RC".
+You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported.
 
 ### Properties
 
@@ -356,7 +242,6 @@ set the "affected version" to "1.0-RC".
 |---|---|---|
 |xray.sync.enabled|false|Enable synchronization|
 |xray.sync.skipped|false|Enable synchronization of test methods in state SKIPPED|
-|xray.sync.strategy|adhoc|Enable `adhoc` or `posthoc` synchronization|
 |xray.rest.service.uri|not set|URI of the Jira REST service (with Xray-Plugin installed)|
 |xray.project.key|not set|Jira project key|
 |xray.user|not set|Jira user to sync test execution|
@@ -366,6 +251,7 @@ set the "affected version" to "1.0-RC".
 |xray.test.execution.revision.field.id|not set|The Jira custom field for test execution revision.|
 |xray.test.execution.test-environments.field.id|not set|The Jira custom field for test execution test-environments.|
 |xray.test.execution.test-plan.field.id|not set|The Jira custom field for test execution test-plans.|
+|xray.test-set.tests.field.id|not set|The Jira custom field for test set tests.|
 |xray.validation.revision.regexp|.*|Revision is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.summary|.*|Summary is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.description|.*|Description is validated against this regular expression to prevent unintended creation of test executions.|

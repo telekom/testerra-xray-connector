@@ -41,10 +41,11 @@ import eu.tsystems.mms.tic.testframework.events.TestStatusUpdateEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
-import eu.tsystems.mms.tic.testframework.report.model.context.ErrorContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import eu.tsystems.mms.tic.testframework.report.model.steps.TestStep;
 import eu.tsystems.mms.tic.testframework.report.model.steps.TestStepAction;
+import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -59,7 +60,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.testng.ITestResult;
 
@@ -118,7 +118,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
             final XrayMapper xrayMapper = getXrayMapper();
             final XrayUtils xrayUtils = getXrayUtils();
-            xrayMapper.updateXrayTestExecution(testExecutionIssue);
+            final ExecutionContext executionContext = ExecutionContextController.getCurrentExecutionContext();
+            xrayMapper.updateXrayTestExecution(testExecutionIssue, executionContext);
 
             Optional<XrayTestExecutionIssue> optionalExistingTestExecution = xrayMapper.createXrayTestExecutionQuery(testExecutionIssue)
                     .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
@@ -131,7 +132,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                         IssueType.TestExecution,
                         xrayConfig.getIssueUrl(testExecutionIssue.getKey()).orElse(null)
                 ));
-                xrayMapper.updateXrayTestExecution(testExecutionIssue);
+                xrayMapper.updateXrayTestExecution(testExecutionIssue, executionContext);
             } else {
                 log().info(String.format("Create new %s", IssueType.TestExecution));
             }
@@ -201,7 +202,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         });
 
         if (this.getExecutionUpdates() != null) {
-            log().warn(String.format("getExecutionUpdates() is ignored. Please use updateXrayTestExecution(%s) instead", XrayTestExecutionIssue.class.getSimpleName()));
+            log().warn("getExecutionUpdates() is ignored");
         }
 
         try {
@@ -219,21 +220,11 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     }
 
     @Override
-    public XrayTestExecutionInfo getExecutionInfo() {
-        return null;
-    }
-
-    @Override
     public XrayMapper getXrayMapper() {
         if (this.xrayMapper == null) {
             this.xrayMapper = new EmptyMapper();
         }
         return this.xrayMapper;
-    }
-
-    @Override
-    public XrayTestExecutionUpdates getExecutionUpdates() {
-        return null;
     }
 
     @Override

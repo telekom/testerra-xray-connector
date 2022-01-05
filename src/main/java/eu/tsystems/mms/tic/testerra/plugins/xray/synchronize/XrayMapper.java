@@ -28,9 +28,11 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.RevisionContainsExact;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import java.util.Optional;
 import org.testng.ITestClass;
@@ -52,6 +54,9 @@ public interface XrayMapper {
         return null;
     }
 
+    /**
+     * Creates a {@link JqlQuery} for mapping {@link MethodContext} to a JiraTest
+     */
     default Optional<JqlQuery> createXrayTestQuery(MethodContext methodContext) {
         return methodContext.getTestNgResult().map(this::resultToXrayTest);
     }
@@ -87,15 +92,21 @@ public interface XrayMapper {
         return Optional.of(jqlQuery);
     }
 
-    default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
-    }
-
-    default void updateXrayTest(JiraIssue xrayTestIssue, MethodContext methodContext) {
+    /**
+     * Updates the test execution before creating or updating.
+     */
+    default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
     }
 
     /**
-     * Updates the test execution before creating or updating
+     * Gets called every time when a test is assigned to the test set.
      */
-    default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
+    default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+    }
+
+    /**
+     * Gets called every time a test will be synchronized.
+     */
+    default void updateXrayTest(JiraIssue xrayTestIssue, MethodContext methodContext) {
     }
 }
