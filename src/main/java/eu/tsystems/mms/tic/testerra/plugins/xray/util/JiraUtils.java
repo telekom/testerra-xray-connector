@@ -23,7 +23,6 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -42,7 +41,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransitionsSearchResult;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.io.IOException;
@@ -184,10 +182,6 @@ public class JiraUtils implements Loggable {
 
     /**
      * @deprecated Use {@link #searchIssues(JqlQuery)} instead
-     * @param webResource
-     * @param jqlQuery
-     * @param fields
-     * @return
      */
     public static Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery,
                                               final Collection<String> fields) {
