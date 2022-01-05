@@ -27,17 +27,14 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class XrayConfig {
-
-    protected static final Logger logger = LoggerFactory.getLogger(XrayConfig.class);
+public class XrayConfig implements Loggable {
     private static final String DEFAULT_PROPERTIES_FILE = "xray.properties";
     private static XrayConfig instance;
     private final String previousResultsFilename;
@@ -71,10 +68,11 @@ public class XrayConfig {
         isSyncSkippedTests = PropertyManager.getBooleanProperty("xray.sync.skipped", false);
 
         URI uri = null;
+        final String baseUriProperty = "xray.rest.service.uri";
         try {
-            uri = new URI(PropertyManager.getProperty("xray.rest.service.uri"));
+            uri = new URI(PropertyManager.getProperty(baseUriProperty));
         } catch (final URISyntaxException e) {
-            logger.error(e.getMessage());
+            log().error(String.format("Unable to parse property %s", baseUriProperty), e);
         }
         restServiceUri = uri;
         webResourceFilterLoggingEnabled = PropertyManager.getBooleanProperty("xray.webresource.filter.logging.enabled", false);
@@ -256,5 +254,15 @@ public class XrayConfig {
      */
     public String getTestEnvironmentsJQLTerm() {
         return Fields.TEST_ENVIRONMENTS.getJQLTerm();
+    }
+
+    public Optional<URI> getIssueUrl(String issueKey) {
+        URI url = null;
+        try {
+            url = new URI(restServiceUri.getScheme(), restServiceUri.getUserInfo(), restServiceUri.getHost(), restServiceUri.getPort(), String.format("/browse/%s", issueKey), null, null);
+        } catch (URISyntaxException e) {
+            log().error("Unable to create issue URL", e);
+        }
+        return Optional.ofNullable(url);
     }
 }
