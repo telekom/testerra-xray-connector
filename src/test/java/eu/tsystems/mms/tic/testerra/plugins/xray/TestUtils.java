@@ -35,19 +35,9 @@ import java.util.Date;
 
 public class TestUtils {
 
-    public static Date getDateFromField(final JiraIssue issue, final String fieldName) throws ParseException {
-        final Object foundFieldValue = issue.getFields().get(fieldName);
-        if (foundFieldValue != null) {
-            return JiraIssue.DATE_FORMAT.parse(foundFieldValue.toString());
-        } else {
-            return null;
-        }
-    }
-
     public static WebResource prepareWebResource(String configFileName) {
         final Client client = RESTClientFactory.createDefault();
 
-        XrayConfig.reset();
         XrayConfig.init(configFileName);
         XrayConfig xrayConfig = XrayConfig.getInstance();
         WebResource webResource = client.resource(xrayConfig.getRestServiceUri());

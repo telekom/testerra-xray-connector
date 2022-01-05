@@ -20,7 +20,7 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
+package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
@@ -36,14 +36,9 @@ import org.testng.annotations.Test;
 public class DefaultSummaryMapperTest extends TestBase {
 
     static {
-        XrayConfig.init("defaultsummarymapper.properties");
+        XrayConfig.init("enable-sync.properties");
         Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
         XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SummaryMapperResultsSynchronizer());
-    }
-
-    @BeforeClass
-    public void beforeClass() {
-
     }
 
     @Override

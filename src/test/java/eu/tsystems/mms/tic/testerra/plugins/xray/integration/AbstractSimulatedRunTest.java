@@ -54,7 +54,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 
-public abstract class SimulatedRunTest extends TesterraTest {
+public abstract class AbstractSimulatedRunTest extends TesterraTest {
 
     protected Map<String, XrayTestExecutionImport.Test.Status> fullWithoutParametrized = ImmutableMap.of(
             "SWFTE-4", XrayTestExecutionImport.Test.Status.PASS,
@@ -88,7 +88,7 @@ public abstract class SimulatedRunTest extends TesterraTest {
     @Parameters("propertiesFileName")
     @BeforeClass
     public void prepareWebResource(
-            @Optional("xray-test-adhoc.properties") String propertiesFileName) throws URISyntaxException {
+            @Optional("enable-sync.properties") String propertiesFileName) throws URISyntaxException {
         webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.prepareWebResource(propertiesFileName);
         xrayConfig = XrayConfig.getInstance();
     }
