@@ -55,8 +55,7 @@ public class XrayConnectorTest extends AbstractTest {
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
-        webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils
-                .prepareWebResource(Paths.get(getClass().getResource("/xray-test-posthoc.properties").toURI()).getFileName().toString());
+        webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.prepareWebResource("sync.test.properties");
         xrayUtils = new XrayUtils(webResource);
         xrayInfo = new XrayInfo("SWFTE", summary, description, revision);
         xrayInfoWithUmlauts = new XrayInfo("SWFTE", "Dummy Umlaut Execution äöüßÄÖÜ", "dummy description mit Umlauten äöüßÄÖÜ", revision);

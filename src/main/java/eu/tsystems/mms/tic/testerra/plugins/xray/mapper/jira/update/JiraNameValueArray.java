@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-
+@Deprecated
 public class JiraNameValueArray implements JiraValue<ArrayNode> {
 
     private final Object[] objects;

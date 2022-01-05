@@ -100,23 +100,6 @@ public class XrayConnector implements Loggable {
         JiraUtils.uploadAttachment(webResource, issueKey, is, fileName);
     }
 
-    public void addTestExecutionComment(final String testExecutionKey, final String comment) throws JsonProcessingException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-
-        final ObjectNode commentNode = objectMapper.createObjectNode();
-        final ObjectNode addNode = objectMapper.createObjectNode();
-        final ArrayNode addArrayNode = objectMapper.createArrayNode();
-        final ObjectNode bodyNode = objectMapper.createObjectNode();
-        bodyNode.put("body", comment);
-        addNode.put("add", bodyNode);
-        addArrayNode.add(addNode);
-        commentNode.put("comment", addArrayNode);
-
-        final ExplicitJiraIssueUpdate update = new ExplicitJiraIssueUpdate();
-        update.setUpdate(commentNode);
-        JiraUtils.updateIssue(webResource, testExecutionKey, update);
-    }
-
     public WebResource getWebResource() {
         return this.webResource;
     }

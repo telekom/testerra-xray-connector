@@ -4,6 +4,9 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 public class JiraIdReference {
+    /**
+     * Is an Object, because some entities provide Integers, some Strings
+     */
     private Object id;
     private String self;
 
@@ -20,7 +23,11 @@ public class JiraIdReference {
     }
 
     public String getId() {
-        return id.toString();
+        if (this.id != null) {
+            return id.toString();
+        } else {
+            return null;
+        }
     }
 
     public void setId(String id) {
@@ -30,6 +37,7 @@ public class JiraIdReference {
     public boolean hasId() {
         return StringUtils.isNotBlank(this.id.toString());
     }
+
     public String getSelf() {
         return self;
     }

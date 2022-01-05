@@ -28,6 +28,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.TestBase;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.SummaryMapperResultsSynchronizer;
+import eu.tsystems.mms.tic.testframework.report.model.steps.TestStep;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -35,8 +36,9 @@ import org.testng.annotations.Test;
 @XrayTestSet
 public class DefaultSummaryMapperTest extends TestBase {
 
-    static {
-        XrayConfig.init("enable-sync.properties");
+    @BeforeClass
+    public void prepareWebResource() {
+        XrayConfig.init("sync.test.properties");
         Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
         XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SummaryMapperResultsSynchronizer());
     }
@@ -60,5 +62,12 @@ public class DefaultSummaryMapperTest extends TestBase {
     @XrayTest()
     public void skips() {
         super.skips();
+    }
+
+    @Test
+    @XrayTest
+    public void testWithSteps() {
+        TestStep.begin("First step");
+        TestStep.begin("Second step");
     }
 }

@@ -24,7 +24,6 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-
 @Deprecated
 public class SimpleJiraIssueUpdate extends JiraIssueUpdate {
 

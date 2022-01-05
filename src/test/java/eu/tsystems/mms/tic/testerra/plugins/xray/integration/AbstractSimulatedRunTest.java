@@ -29,10 +29,12 @@ import static org.testng.Assert.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
+import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.SimulatedTestRunXrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
@@ -87,10 +89,10 @@ public abstract class AbstractSimulatedRunTest extends TesterraTest {
 
     @Parameters("propertiesFileName")
     @BeforeClass
-    public void prepareWebResource(
-            @Optional("enable-sync.properties") String propertiesFileName) throws URISyntaxException {
+    public void prepareWebResource(@Optional("sync.test.properties") String propertiesFileName) throws URISyntaxException {
         webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.prepareWebResource(propertiesFileName);
         xrayConfig = XrayConfig.getInstance();
+        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SimulatedTestRunXrayResultsSynchronizer());
     }
 
     protected void setInvalidTestStatus(String testExecutionKey) throws IOException {

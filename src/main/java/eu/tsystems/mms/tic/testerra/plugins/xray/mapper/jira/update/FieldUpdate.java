@@ -24,6 +24,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 
+@Deprecated
 public class FieldUpdate implements Field {
 
     private final Field field;

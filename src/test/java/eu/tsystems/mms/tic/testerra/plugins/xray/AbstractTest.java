@@ -36,6 +36,6 @@ public class AbstractTest extends TesterraTest {
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
-        webResource = TestUtils.prepareWebResource(Paths.get(Objects.requireNonNull(getClass().getResource("/xray-test-posthoc.properties")).toURI()).getFileName().toString());
+        webResource = TestUtils.prepareWebResource("sync.test.properties");
     }
 }

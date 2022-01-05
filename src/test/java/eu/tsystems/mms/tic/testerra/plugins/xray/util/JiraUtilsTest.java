@@ -37,10 +37,9 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraString;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraVerb;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLabels;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
-import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
+import java.util.ArrayList;
 import java.util.Optional;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
@@ -93,21 +92,6 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
     }
 
     @Test
-    public void test_updateIssue() throws IOException {
-        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
-        issueToUpdate.setSummary("Neues Ticket: " + RandomUtils.generateRandomString());
-        List<String> labels = issueToUpdate.getLabels();
-        labels.add("Testerra");
-        labels.add("XRay");
-        labels.add("Connector");
-        jiraUtils.createOrUpdateIssue(issueToUpdate);
-
-        JiraIssue updatedIssue = jiraUtils.getIssue(issueToUpdate.getKey());
-        assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
-        assertEquals(updatedIssue.getLabels().stream().sorted().collect(Collectors.toList()), labels.stream().sorted().collect(Collectors.toList()));
-    }
-
-    @Test
     public void test_updateIssueWithoutChange() throws IOException {
         final String expectedSummary = "Testerra Xray Connector Test Ticket";
         JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
@@ -142,42 +126,36 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
 
     @Test
     public void testUpdateIssueWithPredefsRemoveAllLabels() throws IOException {
-        String[] labelsToSet = new String[]{};
-        final JiraIssueUpdate update = JiraIssueUpdate.create()
-                .field(new SetLabels(labelsToSet))
-                .build();
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        issueToUpdate.setLabels(new ArrayList<>());
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
 
-        JiraUtils.updateIssue(webResource, updateIssueKey, update);
-        final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
-        assertEquals(issue.getKey(), updateIssueKey);
-        Assert.assertTrue(issue.getLabels().isEmpty());
+        JiraIssue updatedIssue = jiraUtils.getIssue(updateIssueKey);
+        Assert.assertTrue(updatedIssue.getLabels().isEmpty());
     }
 
     @Test(dependsOnMethods = "testUpdateIssueWithPredefsRemoveAllLabels")
     public void testUpdateIssueWithPredefsSetLabels() throws IOException {
-        String[] labelsToSet = new String[]{"Test-Automatisierung", "Aufräumaktion"};
-        final JiraIssueUpdate update = JiraIssueUpdate.create()
-                .field(new SetLabels(labelsToSet))
-                .build();
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        List<String> labels = issueToUpdate.getLabels();
+        labels.add("Test-Automatisierung");
+        labels.add("Aufräumaktion");
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
 
-        JiraUtils.updateIssue(webResource, updateIssueKey, update);
-        final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
-        assertEquals(issue.getKey(), updateIssueKey);
-        final List<String> foundLabels = issue.getLabels();
-        Assert.assertTrue(foundLabels.containsAll(Arrays.asList(labelsToSet)));
-        Assert.assertTrue(Arrays.asList(labelsToSet).containsAll(foundLabels));
+        JiraIssue updatedIssue = jiraUtils.getIssue(updateIssueKey);
+        assertEquals(updatedIssue.getLabels().stream().sorted().collect(Collectors.toList()), labels.stream().sorted().collect(Collectors.toList()));
     }
 
-    @Test(dependsOnMethods = "testUpdateIssueWithPredefsSetLabels")
+    @Test()
     public void testUpdateIssueWithPredefsRemoveSingleLabel() throws IOException {
-        final JiraIssueUpdate update = JiraIssueUpdate.create()
-                .field("labels", JiraVerb.REMOVE, new JiraString("Aufräumaktion"))
-                .build();
+        JiraIssue existingIssue = jiraUtils.getIssue(updateIssueKey);
+        existingIssue.getLabels().removeIf(s -> s.equals("Aufräumaktion"));
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        issueToUpdate.setLabels(existingIssue.getLabels());
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
 
-        JiraUtils.updateIssue(webResource, updateIssueKey, update);
-        final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
-        assertEquals(issue.getKey(), updateIssueKey);
-        final List<String> foundLabels = issue.getLabels();
+        JiraIssue updatedIssue = jiraUtils.getIssue(updateIssueKey);
+        final List<String> foundLabels = updatedIssue.getLabels();
         Assert.assertEquals(foundLabels.size(), 1);
         Assert.assertTrue(foundLabels.contains("Test-Automatisierung"));
         Assert.assertTrue(!foundLabels.contains("Aufräumaktion"));

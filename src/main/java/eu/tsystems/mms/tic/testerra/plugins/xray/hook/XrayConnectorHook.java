@@ -70,13 +70,12 @@ public class XrayConnectorHook implements ModuleHook, Loggable, ISuiteListener {
     }
 
     public synchronized void setXrayResultsSynchronizer(XrayResultsSynchronizer xrayResultsSynchronizer) {
-        if (this.xrayResultsSynchronizer == null) {
-            log().info(String.format("Registering %s", xrayResultsSynchronizer.getClass().getSimpleName()));
-            this.xrayResultsSynchronizer = xrayResultsSynchronizer;
-            xrayResultsSynchronizer.initialize();
-        } else {
-            log().warn(String.format("%s already configured", XrayResultsSynchronizer.class));
+        if (this.xrayResultsSynchronizer != null) {
+            this.xrayResultsSynchronizer.shutdown();
         }
+        log().info(String.format("Registering %s", xrayResultsSynchronizer.getClass().getSimpleName()));
+        this.xrayResultsSynchronizer = xrayResultsSynchronizer;
+        this.xrayResultsSynchronizer.initialize();
     }
 
     @Override

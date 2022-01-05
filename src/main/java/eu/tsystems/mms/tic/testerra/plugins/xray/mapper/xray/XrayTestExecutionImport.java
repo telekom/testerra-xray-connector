@@ -2,10 +2,12 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.MediaTypeSerializer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +23,6 @@ public class XrayTestExecutionImport {
     private static final String PATTERN_DATE_FORMAT ="yyyy-MM-dd'T'HH:mm:ssXXX";
 
     public static abstract class AbstractInfo {
-
         private String summary;
         private String description;
 
@@ -110,8 +111,92 @@ public class XrayTestExecutionImport {
             ABORTED
         }
         public static class Info extends AbstractInfo {
+            public static class Step {
+                private String action;
+                private String result;
+                private String data;
+
+                public Step() {
+
+                }
+
+                public String getAction() {
+                    return action;
+                }
+
+                public void setAction(String action) {
+                    this.action = action;
+                }
+
+                public String getResult() {
+                    return result;
+                }
+
+                public void setResult(String result) {
+                    this.result = result;
+                }
+
+                public String getData() {
+                    return data;
+                }
+
+                public void setData(String data) {
+                    this.data = data;
+                }
+            }
+
             private String projectKey;
             private List<String> labels;
+            private List<Step> steps;
+            private String testType;
+            private String definition;
+
+            public String getTestType() {
+                return testType;
+            }
+
+            public void setTestType(String testType) {
+                this.testType = testType;
+            }
+
+            public void addStep(Step step) {
+                if (this.steps == null) {
+                    this.steps = new ArrayList<>();
+                }
+                this.steps.add(step);
+            }
+
+            public void setSteps(List<Step> steps) {
+                this.steps = steps;
+            }
+
+            public List<Step> getSteps() {
+                return steps;
+            }
+
+            public String getProjectKey() {
+                return projectKey;
+            }
+
+            public void setProjectKey(String projectKey) {
+                this.projectKey = projectKey;
+            }
+
+            public List<String> getLabels() {
+                return labels;
+            }
+
+            public void setLabels(List<String> labels) {
+                this.labels = labels;
+            }
+
+            public String getDefinition() {
+                return definition;
+            }
+
+            public void setDefinition(String definition) {
+                this.definition = definition;
+            }
         }
 
         public static class Evidence {
@@ -145,6 +230,30 @@ public class XrayTestExecutionImport {
             }
         }
 
+        public static class Step {
+            private Status status;
+            private String actualResult;
+
+            public Step() {
+            }
+
+            public Status getStatus() {
+                return status;
+            }
+
+            public void setStatus(Status status) {
+                this.status = status;
+            }
+
+            public String getActualResult() {
+                return actualResult;
+            }
+
+            public void setActualResult(String actualResult) {
+                this.actualResult = actualResult;
+            }
+        }
+
         private Info testInfo;
         private String testKey;
         private Date start;
@@ -152,6 +261,7 @@ public class XrayTestExecutionImport {
         private String comment;
         private Set<Evidence> evidences;
         private Status status;
+        private List<Step> steps;
 
         public Test() {
         }
@@ -161,7 +271,10 @@ public class XrayTestExecutionImport {
             this.testInfo = new Info();
             this.testInfo.setDescription(issue.getDescription());
             this.testInfo.setSummary(issue.getSummary());
-            this.testInfo.labels = issue.getLabels();
+            this.testInfo.setLabels(issue.getLabels());
+            this.testInfo.setDefinition(issue.getSummary());
+            this.testInfo.testType = TestType.AutomatedGeneric.toString();
+            this.testInfo.projectKey = issue.getProject().getKey();
         }
 
         public Test(String testKey) {
@@ -214,12 +327,34 @@ public class XrayTestExecutionImport {
             this.evidences = evidences;
         }
 
+        public void addEvidence(Evidence evidence) {
+            if (this.evidences == null) {
+                this.evidences = new HashSet<>();
+            }
+            this.evidences.add(evidence);
+        }
+
         public Status getStatus() {
             return status;
         }
 
         public void setStatus(Status status) {
             this.status = status;
+        }
+
+        public void addStep(Step step) {
+            if (this.steps == null) {
+                this.steps = new ArrayList<>();
+            }
+            this.steps.add(step);
+        }
+
+        public void setSteps(List<Step> steps) {
+            this.steps = steps;
+        }
+
+        public List<Step> getSteps() {
+            return steps;
         }
     }
 
@@ -269,9 +404,7 @@ public class XrayTestExecutionImport {
     }
 
     public void setTestKeys(Set<String> testKeys, Test.Status status) {
-        if (this.tests != null) {
-            this.tests.clear();
-        }
+        this.tests.clear();
         this.addTestKeys(testKeys, status);
     }
 

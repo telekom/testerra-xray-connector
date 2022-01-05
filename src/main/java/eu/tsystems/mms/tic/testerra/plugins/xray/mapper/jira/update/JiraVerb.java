@@ -22,6 +22,7 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update;
 
+@Deprecated
 public enum JiraVerb {
     SET, ADD, REMOVE
 }

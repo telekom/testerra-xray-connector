@@ -109,23 +109,6 @@ public class JiraUtils implements Loggable {
         return jiraUtils.objectMapper.readValue(result, JiraIssue.class);
     }
 
-    /**
-     * @deprecated Use {@link #createOrUpdateIssue(JiraIssue)}
-     * @param webResource
-     * @param issueKey
-     * @param update
-     * @throws JsonProcessingException
-     */
-    public static void updateIssue(final WebResource webResource, final String issueKey,
-                                   final JiraIssueUpdate update) throws JsonProcessingException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        final String string = objectMapper.writeValueAsString(update);
-        webResource.path(format("%s/%s", ISSUE_PATH, issueKey))
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .put(string);
-    }
-
     public void createOrUpdateIssue(JiraIssue issue) throws IOException {
         final String string = objectMapper.writeValueAsString(issue);
 

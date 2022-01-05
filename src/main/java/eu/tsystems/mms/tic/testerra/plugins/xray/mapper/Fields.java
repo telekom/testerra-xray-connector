@@ -7,7 +7,6 @@ public enum Fields implements Field {
     TEST_ENVIRONMENTS(new PropertyField("xray.test.execution.test-environments.field.id")),
     TEST_PLAN(new PropertyField("xray.test.execution.test-plan.field.id")),
     TEST_SET_TESTS(new PropertyField("xray.test-set.tests.field.id")),
-    TEST_EXECUTION_TESTS(new PropertyField("xray.test-execution.tests.field.id")),
     LABELS(new NameField("labels")),
     SUMMARY(new NameField("summary")),
     DESCRIPTION(new NameField("description")),
