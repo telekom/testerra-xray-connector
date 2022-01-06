@@ -139,6 +139,9 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         Assert.assertTrue(!foundLabels.contains("Aufräumaktion"));
     }
 
+    /**
+     * Disabled because it changes issue state and messes up following tests
+     */
     @Test(enabled = false)
     public void test_performTransition_newApi() throws IOException {
         Set<JiraTransition> transitions = jiraUtils.getAvailableTransitions(statusIssueKey);
@@ -167,7 +170,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
                 && foundTransitionNames.containsAll(expectedTransitionNames));
     }
 
-    @Test(dependsOnMethods = "testGetTransistions")
+    @Test(dependsOnMethods = "testGetTransitions")
     public void testChangeIssueStatus() throws IOException {
         JiraStatus newStatus;
         JiraStatus originalStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
