@@ -31,7 +31,7 @@ This module allows to synchronize the test results to the test management plugin
 | `1.0`          | ` 1.0.0 .. 1.3`   |
 | `1.1`          | ` 1.4 .. 1.7`        |
 | `1.2`          | ` 1.8`        |
-| `1.3 ..`          | ` 1.9`        |
+| `1.3 .. 1.4`          | ` 1.9`        |
 
 
 ### Usage
@@ -40,28 +40,20 @@ Include the following dependency in your project. Please replace the versions wi
 
 Gradle:
 
-````groovy
-implementation 'io.testerra:xray-connector:1.2'
-// From Testerra framework
-implementation 'io.testerra:surefire-connector:1.8'
-````
+```groovy
+implementation 'io.testerra:xray-connector:1.4'
+```
 
 Maven:
 
-````xml
+```xml
 
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>1.2</version>
+    <version>1.4</version>
 </dependency>
-<!-- From Testerra framework -->
-<dependency>
-    <groupId>io.testerra</groupId>
-    <artifactId>surefire-connector</artifactId>
-    <version>1.8</version>
-</dependency>
-````
+```
 
 ## Documentation
 
@@ -84,11 +76,6 @@ xray.token=jiratoken
 # or
 xray.user=jira-sync-user
 xray.password=password
-
-# Validations to avoid unintended operations
-xray.validation.revision.regexp=.*
-xray.validation.summary.regexp=.*
-xray.validation.description.regexp=.*
 ```
 
 ### Implement synchronizer interface

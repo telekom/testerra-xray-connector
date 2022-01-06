@@ -43,6 +43,7 @@ public class XrayTestSetIssue extends XrayIssue {
         this.setDescription(issue.getDescription());
         this.setFixVersions(issue.getFixVersions());
         this.setTestKeys(issue.getTestKeys());
+        this.setAssignee(issue.getAssignee());
     }
 
     public XrayTestSetIssue(JiraIssue issue) {
