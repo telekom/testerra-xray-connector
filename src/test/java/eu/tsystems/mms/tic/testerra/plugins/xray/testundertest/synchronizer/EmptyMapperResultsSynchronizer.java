@@ -1,7 +1,7 @@
 /*
  * Testerra Xray-Connector
  *
- * (C) 2020, Martin Cölln, T-Systems Multimedia Solutions GmbH, Deutsche Telekom AG
+ * (C) 2021, Mike Reiche,  T-Systems MMS GmbH, Deutsche Telekom AG
  *
  * Deutsche Telekom AG and all other contributors /
  * copyright owners license this file to you under the Apache
@@ -17,15 +17,11 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
+package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.AbstractTestBase;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
 
-@XrayTestSet(key = "SWFTE-8")
-public class ClassAnnotatedWithKeyTest extends AbstractTestBase {
-
+public class EmptyMapperResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 }

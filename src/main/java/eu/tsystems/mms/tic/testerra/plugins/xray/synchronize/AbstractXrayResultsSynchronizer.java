@@ -1,7 +1,7 @@
 /*
  * Testerra Xray-Connector
  *
- * (C) 2020, Martin Cölln, T-Systems Multimedia Solutions GmbH, Deutsche Telekom AG
+ * (C) 2021, Mike Reiche,  T-Systems MMS GmbH, Deutsche Telekom AG
  *
  * Deutsche Telekom AG and all other contributors /
  * copyright owners license this file to you under the Apache
@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
@@ -60,6 +59,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.testng.ITestResult;
 
@@ -206,6 +206,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         }
 
         try {
+            xrayTestExecutionImport.getInfo().setFinishDate(new Date());
             xrayUtils.importTestExecution(xrayTestExecutionImport);
             Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestExecutionImport.getTestExecutionKey());
             log().info(String.format("Synchronized %s (%s) with %d %s",
@@ -386,7 +387,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         String testSetKey = clazz.getAnnotation(XrayTestSet.class).key();
         if (StringUtils.isNotBlank(testSetKey)) {
             try {
-                xrayTestSetIssue = xrayUtils.getIssue(testSetKey, XrayTestSetIssue::new);
+                final XrayTestSetIssue existingTestSetIssue = xrayUtils.getIssue(testSetKey, XrayTestSetIssue::new);
+                xrayTestSetIssue = new XrayTestSetIssue(existingTestSetIssue);
             } catch (IOException e) {
                 log().error(String.format("Unable to query %s by key: %s", IssueType.TestSet, testSetKey), e);
             }
@@ -395,7 +397,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             if (xrayTestSetQuery.isPresent()) {
                 Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(xrayTestSetQuery.get(), XrayTestSetIssue::new).findFirst();
                 if (optionalExistingTestSetIssue.isPresent()) {
-                    xrayTestSetIssue = optionalExistingTestSetIssue.get();
+                    xrayTestSetIssue = new XrayTestSetIssue(optionalExistingTestSetIssue.get());
                 } else {
                     xrayTestSetIssue = new XrayTestSetIssue();
                     xrayTestSetIssue.getProject().setKey(xrayConfig.getProjectKey());

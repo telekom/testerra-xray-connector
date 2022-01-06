@@ -38,5 +38,4 @@ public class SimulatedTestRunXrayResultsSynchronizer extends AbstractXrayResults
     public XrayMapper getXrayMapper() {
         return new ResultMapper();
     }
-
 }

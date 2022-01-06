@@ -33,6 +33,8 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.NameField;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIdReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
@@ -47,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -96,12 +99,12 @@ public class JiraUtils implements Loggable {
     public static JiraIssue getIssue(
             final WebResource webResource,
             final String issueKey,
-            final Collection<String> fields
+            final Collection<String> restrictedToFields
     ) throws IOException {
         JiraUtils jiraUtils = new JiraUtils(webResource);
         WebResource path = webResource.path(format("%s/%s", ISSUE_PATH, issueKey));
-        if (!fields.isEmpty()) {
-            path = path.queryParam("fields", StringUtils.join(fields, ','));
+        if (!restrictedToFields.isEmpty()) {
+            path = path.queryParam("fields", StringUtils.join(restrictedToFields, ','));
         }
         String result = path.get(String.class);
         return jiraUtils.objectMapper.readValue(result, JiraIssue.class);
@@ -186,11 +189,15 @@ public class JiraUtils implements Loggable {
     public static Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery,
                                               final Collection<String> fields) {
         JiraUtils jiraUtils = new JiraUtils(webResource);
-        final String result = webResource.path(SEARCH_PATH)
+        WebResource request = webResource.path(SEARCH_PATH)
                 .queryParam("validateQuery", "true")
-                .queryParam("jql", jqlQuery)
-                .queryParam("fields", StringUtils.join(fields, ','))
-                .get(String.class);
+                .queryParam("jql", jqlQuery);
+
+        if (fields.size() > 0) {
+            request.queryParam("fields", StringUtils.join(fields, ','));
+        }
+
+        final String result = request.get(String.class);
         final JiraIssuesSearchResult jiraIssueSearchResult;
         try {
             jiraIssueSearchResult = jiraUtils.objectMapper.readValue(result, JiraIssuesSearchResult.class);

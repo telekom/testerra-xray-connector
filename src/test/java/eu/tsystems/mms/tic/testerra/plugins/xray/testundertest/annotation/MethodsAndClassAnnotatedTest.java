@@ -24,11 +24,11 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.TestBase;
+import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.AbstractTestBase;
 import org.testng.annotations.Test;
 
 @XrayTestSet(key = "SWFTE-7")
-public class MethodsAndClassAnnotatedTest extends TestBase {
+public class MethodsAndClassAnnotatedTest extends AbstractTestBase {
 
     @Override
     @Test

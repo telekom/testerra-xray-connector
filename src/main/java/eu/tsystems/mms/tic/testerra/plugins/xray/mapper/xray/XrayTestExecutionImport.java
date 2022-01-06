@@ -98,6 +98,14 @@ public class XrayTestExecutionImport {
         public void setProject(String project) {
             this.project = project;
         }
+
+        public void setStartDate(Date startDate) {
+            this.startDate = startDate;
+        }
+
+        public void setFinishDate(Date finishDate) {
+            this.finishDate = finishDate;
+        }
     }
 
     public static class Test {

@@ -194,7 +194,7 @@ public class GenericMapper implements XrayMapper {
     
     default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
         xrayTestExecutionIssue.getTestEnvironments().add("Test");
-        xrayTestExecutionIssue.getFixVersions().add(new JiraNameReference("1.0"))
+        xrayTestExecutionIssue.setFixVersions(List.of(new JiraNameReference("1.0")));
     }
     
     default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {

@@ -36,6 +36,15 @@ public class XrayTestSetIssue extends XrayIssue {
         this.setIssueType(IssueType.TestSet.getIssueType());
     }
 
+    public XrayTestSetIssue(XrayTestSetIssue issue) {
+        this.setKey(issue.getKey());
+        this.setLabels(issue.getLabels());
+        this.setSummary(issue.getSummary());
+        this.setDescription(issue.getDescription());
+        this.setFixVersions(issue.getFixVersions());
+        this.setTestKeys(issue.getTestKeys());
+    }
+
     public XrayTestSetIssue(JiraIssue issue) {
         super(issue);
     }

@@ -27,8 +27,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.RevisionContainsExact;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;

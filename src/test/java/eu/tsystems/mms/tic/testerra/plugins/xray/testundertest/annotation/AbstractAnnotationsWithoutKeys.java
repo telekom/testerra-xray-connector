@@ -1,7 +1,7 @@
 /*
  * Testerra Xray-Connector
  *
- * (C) 2020, Martin Cölln, T-Systems Multimedia Solutions GmbH, Deutsche Telekom AG
+ * (C) 2021, Mike Reiche,  T-Systems MMS GmbH, Deutsche Telekom AG
  *
  * Deutsche Telekom AG and all other contributors /
  * copyright owners license this file to you under the Apache
@@ -17,36 +17,42 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.AbstractTestBase;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
+import eu.tsystems.mms.tic.testframework.report.model.steps.TestStep;
+import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class MethodsAnnotatedTest extends AbstractTestBase {
+@XrayTestSet
+public abstract class AbstractAnnotationsWithoutKeys extends TesterraTest {
 
-    @Override
     @Test
-    @XrayTest(key = "SWFTE-4")
+    @XrayTest()
     public void passes() {
-        super.passes();
+        Assert.assertTrue(true);
     }
 
-    @Override
     @Test
-    @XrayTest(key = "SWFTE-5")
+    @XrayTest()
     public void fails() {
-        super.fails();
+        Assert.assertTrue(false);
     }
 
-    @Override
     @Test(dependsOnMethods = "fails")
-    @XrayTest(key = "SWFTE-6")
+    @XrayTest()
     public void skips() {
-        super.skips();
+        Assert.assertTrue(true);
     }
 
+    @Test
+    @XrayTest
+    public void testWithSteps() {
+        TestStep.begin("First step");
+        TestStep.begin("Second step");
+    }
 }

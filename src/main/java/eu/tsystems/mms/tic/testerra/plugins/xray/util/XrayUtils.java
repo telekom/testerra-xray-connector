@@ -22,16 +22,13 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.WebResource;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.Optional;
-
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class XrayUtils extends JiraUtils {
 
@@ -42,15 +39,6 @@ public final class XrayUtils extends JiraUtils {
         super(webResource);
     }
 
-    /**
-     * @deprecated Use {@link #importTestExecution(XrayTestExecutionImport)} instead
-     */
-    public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecutionImport testExecution) throws IOException {
-        XrayUtils xrayUtils = new XrayUtils(webResource);
-        xrayUtils.importTestExecution(testExecution);
-        return testExecution.getTestExecutionKey();
-    }
-
     public void importTestExecution(XrayTestExecutionImport testExecutionImport) throws IOException {
         Optional<String> post = post(IMPORT_EXECUTION_PATH, testExecutionImport);
         if (post.isPresent()) {
@@ -59,52 +47,22 @@ public final class XrayUtils extends JiraUtils {
         }
     }
 
-    @Deprecated
-    public static XrayTestExecutionImport createUpdateTestExecution(final String issueKey, final Iterable<String> testKeys) {
-        final XrayInfo xrayInfo = new XrayInfo();
-        xrayInfo.setKey(issueKey);
-        xrayInfo.setStartDate(new Date());
-        xrayInfo.setFinishDate(new Date());
-        final XrayTestExecutionImport execution = new XrayTestExecutionImport(xrayInfo);
-        execution.setTests(keysToXrayTestWithTodoStatus(testKeys));
-        return execution;
-    }
-
-    @Deprecated
-    public static XrayTestExecutionImport createFreshTestExecution(XrayInfo xrayInfo, final Iterable<String> testKeys) {
-        final XrayTestExecutionImport execution = new XrayTestExecutionImport(xrayInfo);
-        execution.setTests(keysToXrayTestWithTodoStatus(testKeys));
-        return execution;
-    }
-
-    private static LinkedHashSet<XrayTestExecutionImport.Test> keysToXrayTestWithTodoStatus(final Iterable<String> testKeys) {
-        final LinkedHashSet<XrayTestExecutionImport.Test> xrayTestIssues = new LinkedHashSet<>();
-        for (final String testKey : testKeys) {
-            final XrayTestExecutionImport.Test xrayTestIssue = new XrayTestExecutionImport.Test(testKey);
-            xrayTestIssue.setStatus(XrayTestExecutionImport.Test.Status.TODO);
-            xrayTestIssues.add(xrayTestIssue);
-        }
-        return xrayTestIssues;
-    }
-
-    /**
-     * @deprecated Use {@link #getTestsByTestExecutionKey(String)} instead
-     */
-    public static LinkedHashSet<XrayTestExecutionImport.Test> getTestsFromExecution(final WebResource webResource, final String issueKey) throws IOException {
-        XrayUtils xrayUtils = new XrayUtils(webResource);
-        final XrayTestExecutionImport.Test[] testIssues = xrayUtils.getTestsByTestExecutionKey(issueKey);
-        return Sets.newLinkedHashSet(Arrays.asList(testIssues));
-    }
-
-    public XrayTestExecutionImport.Test[] getTestsByTestExecutionKey(String issueKey) throws IOException {
+    public Set<XrayTestExecutionImport.Test> getTestsByTestExecutionKey(String issueKey) throws IOException {
         String jsonResponse = getWebResource()
                 .path(EXECUTION_RESULT_PATH)
                 .queryParam("testExecKey", issueKey)
                 .get(String.class);
-        return getObjectMapper().readValue(jsonResponse, XrayTestExecutionImport.Test[].class);
+        XrayTestExecutionImport.Test[] tests = getObjectMapper().readValue(jsonResponse, XrayTestExecutionImport.Test[].class);
+        return Arrays.stream(tests).collect(Collectors.toSet());
     }
+//
+//    public XrayTestSetIssue getTestSetIssue(String issueKey) throws IOException {
+//        List<String> restrictedFields = getDefaultFields();
+//        restrictedFields.add(Fields.TEST_SET_TESTS.getFieldName());
+//        return getIssue(issueKey, XrayTestSetIssue::new, restrictedFields);
+//    }
 
-    public static String exportTestExecutionAsJson(final WebResource webResource, final String issueKey) {
+    public String exportTestExecutionAsJson(final WebResource webResource, final String issueKey) {
         return webResource.path(EXECUTION_RESULT_PATH)
                 .queryParam("testExecKey", issueKey)
                 .get(String.class);

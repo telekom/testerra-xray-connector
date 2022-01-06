@@ -157,9 +157,9 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         assertTrue(startDate.before(calInFuture.getTime()), String.format("start time %s is before %s", startDate, calInFuture.getTime()));
         assertTrue(startDate.after(calAgo.getTime()), String.format("start time %s is after %s", startDate, calAgo.getTime()));
 
-        XrayTestExecutionImport.Test[] tests = xrayUtils.getTestsByTestExecutionKey(importedIssue.getKey());
+        final Set<XrayTestExecutionImport.Test> testsByTestExecutionKey = xrayUtils.getTestsByTestExecutionKey(importedIssue.getKey());
         EXISTING_TEST_KEYS.forEach(testKey -> {
-            Assert.assertTrue(Arrays.stream(tests).anyMatch(test -> test.getTestKey().equals(testKey)));
+            Assert.assertTrue(testsByTestExecutionKey.stream().anyMatch(test -> test.getTestKey().equals(testKey)));
         });
     }
 
@@ -170,17 +170,17 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(CREATED_TEST_EXECUTION_KEY);
         xrayTestExecutionImport.addTestKeys(Sets.newHashSet(issueToAdd), XrayTestExecutionImport.Test.Status.TODO);
         xrayUtils.importTestExecution(xrayTestExecutionImport);
-        XrayTestExecutionImport.Test[] tests = xrayUtils.getTestsByTestExecutionKey(xrayTestExecutionImport.getTestExecutionKey());
-        Assert.assertTrue(Arrays.stream(tests).anyMatch(test -> test.getTestKey().equals(issueToAdd)));
+        Set<XrayTestExecutionImport.Test> tests = xrayUtils.getTestsByTestExecutionKey(xrayTestExecutionImport.getTestExecutionKey());
+        Assert.assertTrue(tests.stream().anyMatch(test -> test.getTestKey().equals(issueToAdd)));
         EXISTING_TEST_KEYS.forEach(testKey -> {
-            Assert.assertTrue(Arrays.stream(tests).anyMatch(test -> test.getTestKey().equals(testKey)));
+            Assert.assertTrue(tests.stream().anyMatch(test -> test.getTestKey().equals(testKey)));
         });
     }
 
     @Test(dependsOnMethods = "test_importTestExecution")
     public void testExportTestExecutionAsJson() throws Exception {
         Assert.assertNotNull(CREATED_TEST_EXECUTION_KEY);
-        final String json = XrayUtils.exportTestExecutionAsJson(webResource, CREATED_TEST_EXECUTION_KEY);
+        final String json = xrayUtils.exportTestExecutionAsJson(webResource, CREATED_TEST_EXECUTION_KEY);
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.readValue(json, XrayTestExecutionImport.Test[].class);
     }
@@ -189,7 +189,7 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
     public void testSyncTestExecutionWithEvidences() throws Exception {
         final String issueKey = "BLA-13209";
         final XrayTestExecutionImport execution = new XrayTestExecutionImport(issueKey);
-        final Set<XrayTestExecutionImport.Test> existingTests = XrayUtils.getTestsFromExecution(webResource, issueKey);
+        final Set<XrayTestExecutionImport.Test> existingTests = xrayUtils.getTestsByTestExecutionKey(issueKey);
         final XrayTestExecutionImport.Test.Status status = Arrays.asList(XrayTestExecutionImport.Test.Status.values()).get(new Random().nextInt(XrayTestExecutionImport.Test.Status.values().length));
 
         XrayTestExecutionImport.Test testBLA13138 = null;
@@ -234,11 +234,11 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         }
 
         execution.setTests(existingTests);
-        XrayUtils.syncTestExecutionReturnKey(webResource, execution);
+        xrayUtils.importTestExecution(execution);
 
         boolean textFileFound = false;
         boolean zipFileFound = false;
-        final Set<XrayTestExecutionImport.Test> testIssues = XrayUtils.getTestsFromExecution(webResource, issueKey);
+        final Set<XrayTestExecutionImport.Test> testIssues = xrayUtils.getTestsByTestExecutionKey(issueKey);
         for (final XrayTestExecutionImport.Test testIssue : testIssues) {
             for (final XrayTestExecutionImport.Test.Evidence xrayEvidence : testIssue.getEvidences()) {
                 if (xrayEvidence.getFilename().equals("test.txt")) {

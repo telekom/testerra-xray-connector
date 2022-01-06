@@ -25,17 +25,19 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.AbstractAnnotationsWithoutKeys;
+import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.MethodsAndClassAnnotatedTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.SimulatedTestRunXrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.SummaryMapperResultsSynchronizer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 
-@XrayTestSet
-public class DefaultSummaryMapperTest extends AbstractAnnotationsWithoutKeys {
+@XrayTestSet(key = "SWFTE-7")
+public class CustomMapperTest extends MethodsAndClassAnnotatedTest {
 
     @BeforeClass
     public void prepareWebResource() {
         XrayConfig.init("sync.test.properties");
         Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
-        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SummaryMapperResultsSynchronizer());
+        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SimulatedTestRunXrayResultsSynchronizer());
     }
 }

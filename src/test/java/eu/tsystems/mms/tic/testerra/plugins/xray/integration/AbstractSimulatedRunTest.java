@@ -109,7 +109,9 @@ public abstract class AbstractSimulatedRunTest extends TesterraTest {
             xrayTestIssues.add(test);
         }
         execution.setTests(xrayTestIssues);
-        XrayUtils.syncTestExecutionReturnKey(webResource, execution);
+
+        XrayUtils xrayUtils = new XrayUtils(webResource);
+        xrayUtils.importTestExecution(execution);
     }
 
 
@@ -127,8 +129,10 @@ public abstract class AbstractSimulatedRunTest extends TesterraTest {
                 xrayConfig.getTestExecutionStartTimeFieldName(),
                 xrayConfig.getTestExecutionFinishTimeFieldName()));
 
+        XrayUtils xrayUtils = new XrayUtils(webResource);
+
         XrayTestExecutionIssue jiraIssue = new XrayTestExecutionIssue(rawIssue);
-        final Set<XrayTestExecutionImport.Test> testIssues = XrayUtils.getTestsFromExecution(webResource, testExecutionKey);
+        final Set<XrayTestExecutionImport.Test> testIssues = xrayUtils.getTestsByTestExecutionKey(testExecutionKey);
 
         /* check string fields */
         final String foundSummary = jiraIssue.getSummary();
