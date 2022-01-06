@@ -104,7 +104,7 @@ The default mapping implementation of a Test Execution is done by the following 
 
 When a Test Execution was found, it will be reused, otherwise a new Test Execution will be created.
 
-You can control the mapping by implementing [XrayMapper.updateXrayTestExecution()](#Update entities), which will be called right before [XrayMapper.createXrayTestExecutionQuery()](#Custom mapping implementations).
+You can control the mapping by implementing [XrayMapper.updateXrayTestExecution](#Update entities), which will be called right before [XrayMapper.createXrayTestExecutionQuery](#Custom mapping implementations).
 
 #### Test
 
