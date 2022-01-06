@@ -147,14 +147,14 @@ public class XrayConfig implements Loggable {
      * @deprecated Use {@link Fields} instead
      */
     public String getRevisionFieldName() {
-        return Fields.REVISION.getFieldName();
+        return Fields.TEST_EXECUTION_REVISION.getFieldName();
     }
 
     /**
      * @deprecated Use {@link Fields} instead
      */
     public String getRevisionJQLTerm() {
-        return Fields.REVISION.getJQLTerm();
+        return Fields.TEST_EXECUTION_REVISION.getJQLTerm();
     }
 
     public boolean isSyncEnabled() {
@@ -246,14 +246,14 @@ public class XrayConfig implements Loggable {
      * @deprecated Use {@link Fields} instead
      */
     public String getTestEnvironmentsFieldName() {
-        return Fields.TEST_ENVIRONMENTS.getFieldName();
+        return Fields.TEST_EXECUTION_TEST_ENVIRONMENTS.getFieldName();
     }
 
     /**
      * @deprecated Use {@link Fields} instead
      */
     public String getTestEnvironmentsJQLTerm() {
-        return Fields.TEST_ENVIRONMENTS.getJQLTerm();
+        return Fields.TEST_EXECUTION_TEST_ENVIRONMENTS.getJQLTerm();
     }
 
     public Optional<URI> getIssueUrl(String issueKey) {

@@ -5,7 +5,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +27,12 @@ public class XrayTestExecutionIssue extends XrayIssue {
 
     @JsonIgnore
     public List<String> getTestEnvironments() {
-        return getOrCreateStringList(Fields.TEST_ENVIRONMENTS.getFieldName());
+        return getOrCreateStringList(Fields.TEST_EXECUTION_TEST_ENVIRONMENTS.getFieldName());
     }
 
     @JsonIgnore
     public void setTestEnvironments(List<String> testEnvironments) {
-        this.getFields().put(Fields.TEST_ENVIRONMENTS.getFieldName(), testEnvironments);
+        this.getFields().put(Fields.TEST_EXECUTION_TEST_ENVIRONMENTS.getFieldName(), testEnvironments);
     }
 
     @JsonIgnore
@@ -58,7 +57,7 @@ public class XrayTestExecutionIssue extends XrayIssue {
 
     @JsonIgnore
     public String getRevision() {
-        return (String)this.getFields().getOrDefault(Fields.REVISION.getFieldName(), null);
+        return (String)this.getFields().getOrDefault(Fields.TEST_EXECUTION_REVISION.getFieldName(), null);
     }
 
     @JsonIgnore
@@ -68,16 +67,16 @@ public class XrayTestExecutionIssue extends XrayIssue {
             throw new RuntimeException(String.format("revision %s does not conform regex %s",
                     revision, xrayConfig.getValidationRegexRevision()));
         }
-        this.getFields().put(Fields.REVISION.getFieldName(), revision);
+        this.getFields().put(Fields.TEST_EXECUTION_REVISION.getFieldName(), revision);
     }
 
     @JsonIgnore
     public List<String> getTestPlanKeys() {
-        return getOrCreateStringList(Fields.TEST_PLANS.getFieldName());
+        return getOrCreateStringList(Fields.TEST_EXECUTION_TEST_PLANS.getFieldName());
     }
 
     @JsonIgnore
     public void setTestPlanKeys(List<String> testPlanKeys) {
-        this.getFields().put(Fields.TEST_PLANS.getFieldName(), testPlanKeys);
+        this.getFields().put(Fields.TEST_EXECUTION_TEST_PLANS.getFieldName(), testPlanKeys);
     }
 }
