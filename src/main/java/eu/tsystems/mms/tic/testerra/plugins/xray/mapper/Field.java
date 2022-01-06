@@ -6,7 +6,4 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper;
 public interface Field {
     String getFieldName();
     String getJQLTerm();
-    default String getValidationRegex() {
-        return ".*";
-    }
 }

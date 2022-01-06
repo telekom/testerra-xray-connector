@@ -1,13 +1,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by maco on 01.12.2015.
@@ -54,8 +48,8 @@ public abstract class JiraIssueUpdate {
             return this;
         }
 
-        public JiraIssueUpdateBuilder field(FieldUpdate fieldUpdate) {
-            return field(fieldUpdate.getFieldName(), fieldUpdate.getJiraVerb(), fieldUpdate.getJiraValue());
+        public JiraIssueUpdateBuilder field(Field fieldUpdate) {
+            return field(fieldUpdate.getFieldName(), null, null);
         }
     }
 }

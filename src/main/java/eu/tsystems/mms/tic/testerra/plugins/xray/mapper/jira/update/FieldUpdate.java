@@ -52,9 +52,4 @@ public class FieldUpdate implements Field {
     public String getJQLTerm() {
         return this.field.getJQLTerm();
     }
-
-    @Override
-    public String getValidationRegex() {
-        return this.field.getValidationRegex();
-    }
 }

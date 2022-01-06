@@ -9,21 +9,18 @@ public class PropertyField implements Field {
         this.property = property;
     }
 
-    private int getFieldId() {
-        int intProperty = PropertyManager.getIntProperty(property);
-        if (intProperty == -1) {
-            throw new RuntimeException(String.format("Property %s is not defined", property));
-        }
-        return intProperty;
-    }
-
     @Override
     public String getFieldName() {
-        return String.format("customfield_%d", getFieldId());
+        int intProperty = PropertyManager.getIntProperty(property);
+        if (intProperty > 0) {
+            return String.format("customfield_%d", intProperty);
+        } else {
+            return property;
+        }
     }
 
     @Override
     public String getJQLTerm() {
-        return String.format("cf[%s]", getFieldId());
+        return String.format("cf[%s]", PropertyManager.getIntProperty(property));
     }
 }

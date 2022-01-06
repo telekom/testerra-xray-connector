@@ -70,10 +70,9 @@ Maven:
 To use the Xray Connector plugin you have to provide multiple properties in your test project.  
 The easiest way is to create a file `xray.properties` in `src/test/resources` directory of your project.
 
-````properties
+```properties
 # Enable synchronization and define strategy
 xray.sync.enabled=true
-xray.sync.skipped=true
 
 # Connection details (mandatory)
 xray.rest.service.uri=https://jira.example.com/rest
@@ -86,53 +85,26 @@ xray.token=jiratoken
 xray.user=jira-sync-user
 xray.password=password
 
-# Jira field IDs (mandatory)
-xray.test.execution.start.time.field.id=
-xray.test.execution.finish.time.field.id=
-xray.test.execution.revision.field.id=
-xray.test.execution.test-environments.field.id=
-xray.test.execution.test-plan.field.id=
-xray.test-set.tests.field.id=
-
 # Validations to avoid unintended operations
 xray.validation.revision.regexp=.*
 xray.validation.summary.regexp=.*
 xray.validation.description.regexp=.*
+```
 
-# Automatically transitions when state reached
-xray.transitions.on.created=
-xray.transitions.on.updated=Test beginnen,Testdurchführung beenden,Testdurchführung zurücksetzen
-xray.transitions.on.done=An Test übergeben
+### Implement synchronizer interface
 
-# Store previous results, when Updated test Execution is used
-xray.previous.result.filename=
+Before synchronisation can take place, you need to create a subclass of `AbstractXrayResultsSynchronizer`, which implements the interface `XrayResultsSynchronizer`.
 
-# Debugging features
-xray.webresource.filter.getrequestsonly.enabled=false
-xray.webresource.filter.getrequestsonly.fake.response.key=EXAMPLE-1
-````
-
-### Retrieve custom field IDs
-
-The Jira Xray fields are implemented as custom fields and they may differ with every Jira installation. Therefore. you must set up them manually.
-
-You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.
-
-![](doc/Jira-Field-Ids.jpg)
-
-### Implement interfaces
-
-Before synchronisation can take place, you need to create a subclass of `AbstractXrayResultsSynchronizer`.
+The Xray connector will look up in the class path for your implementation and initialize it.
 
 ```java
-public class XrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 }
 ```
 
 ### Mapping
 
-To synchronize your test results to a specific Jira issue, the Xray connector will use some mapping.  
-Basically there are two ways of mapping, both of them are instructed and controlled by annotations.
+To synchronize your test results to a specific Jira issue, the Xray connector will use some mapping mechanism.
 
 #### Test method mapping
 
@@ -235,7 +207,31 @@ public class GenericMapper implements XrayMapper {
 }
 ```
 
-You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported.
+You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#References) [1].
+
+### Jira custom fields IDs
+
+Even if most features are supported by the [Xray import API](#References) [1], in some cases it is necessary to use `JiraIssue` entities via. the Jira ReST API.
+
+But because Jira's Xray extension uses custom field IDs instead of human readable names, you need to define these custom IDs in the `properties` file.
+
+```properties
+# Required if you want to automatically assign tests to test sets
+xray.test.set.tests.field.id=
+
+# Optional (advanced)
+# if you want to update a test execution via Jira's ReST API on your own
+# or if you want to run the integration tests
+xray.test.execution.start.time.field.id=
+xray.test.execution.finish.time.field.id=
+xray.test.execution.revision.field.id=
+xray.test.execution.test-environments.field.id=
+xray.test.execution.test-plans.field.id=
+```
+
+You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.
+
+![](doc/Jira-Field-Ids.jpg)
 
 ### Properties
 
@@ -251,8 +247,8 @@ You can use these methods to update the Jira issues right before importing. Plea
 |xray.test.execution.finish.time.field.id|not set|The Jira custom field for test execution finish time.|
 |xray.test.execution.revision.field.id|not set|The Jira custom field for test execution revision.|
 |xray.test.execution.test-environments.field.id|not set|The Jira custom field for test execution test-environments.|
-|xray.test.execution.test-plan.field.id|not set|The Jira custom field for test execution test-plans.|
-|xray.test-set.tests.field.id|not set|The Jira custom field for test set tests.|
+|xray.test.execution.test-plans.field.id|not set|The Jira custom field for test execution test-plans.|
+|xray.test.set.tests.field.id|not set|The Jira custom field for test set tests.|
 |xray.validation.revision.regexp|.*|Revision is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.summary|.*|Summary is validated against this regular expression to prevent unintended creation of test executions.|
 |xray.validation.revision.description|.*|Description is validated against this regular expression to prevent unintended creation of test executions.|
@@ -289,7 +285,7 @@ gradle publish closeAndReleaseRepository
 
 ## References
 
-- Import Xray results: https://docs.getxray.app/display/XRAY/Import+Execution+Results
+1. Import Xray results: https://docs.getxray.app/display/XRAY/Import+Execution+Results
 
 ## Code of Conduct
 

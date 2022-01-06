@@ -31,7 +31,6 @@ import java.util.Objects;
 import org.testng.annotations.BeforeTest;
 
 public class AbstractTest extends TesterraTest {
-    protected final String projectKey = PropertyManager.getProperty("xray.project.key");
     protected WebResource webResource;
 
     @BeforeTest

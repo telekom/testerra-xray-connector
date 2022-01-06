@@ -371,15 +371,17 @@ public class XrayTestExecutionImport {
         this.info.setProject(testExecutionIssue.getProject().getKey());
         this.info.setDescription(testExecutionIssue.getDescription());
         this.info.setSummary(testExecutionIssue.getSummary());
-        this.info.version = testExecutionIssue.getVersions().stream().findFirst().map(JiraNameReference::getName).orElse(null);
+        this.info.version = testExecutionIssue.getFixVersions().stream().findFirst().map(JiraNameReference::getName).orElse(null);
         this.info.revision = testExecutionIssue.getRevision();
         this.info.user = testExecutionIssue.getAssignee().getName();
         this.info.startDate = testExecutionIssue.getStartDate();
         this.info.finishDate = testExecutionIssue.getFinishDate();
-        /**
-         * @todo Missing
-         */
-        this.info.testPlanKey = null;
+
+        List<String> testPlanKeys = testExecutionIssue.getTestPlanKeys();
+        if  (testPlanKeys.size() > 0) {
+            this.info.testPlanKey = testPlanKeys.get(0);
+        }
+
         List<String> testEnvironments = testExecutionIssue.getTestEnvironments();
         if (testEnvironments.size() > 0) {
             this.info.testEnvironments = testEnvironments;

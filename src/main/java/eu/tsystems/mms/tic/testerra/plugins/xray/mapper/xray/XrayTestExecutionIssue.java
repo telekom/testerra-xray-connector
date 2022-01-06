@@ -32,8 +32,8 @@ public class XrayTestExecutionIssue extends XrayIssue {
     }
 
     @JsonIgnore
-    public void setTestEnvironments(List<String> labels) {
-        this.getFields().put(Fields.TEST_ENVIRONMENTS.getFieldName(), labels);
+    public void setTestEnvironments(List<String> testEnvironments) {
+        this.getFields().put(Fields.TEST_ENVIRONMENTS.getFieldName(), testEnvironments);
     }
 
     @JsonIgnore
@@ -69,5 +69,15 @@ public class XrayTestExecutionIssue extends XrayIssue {
                     revision, xrayConfig.getValidationRegexRevision()));
         }
         this.getFields().put(Fields.REVISION.getFieldName(), revision);
+    }
+
+    @JsonIgnore
+    public List<String> getTestPlanKeys() {
+        return getOrCreateStringList(Fields.TEST_PLANS.getFieldName());
+    }
+
+    @JsonIgnore
+    public void setTestPlanKeys(List<String> testPlanKeys) {
+        this.getFields().put(Fields.TEST_PLANS.getFieldName(), testPlanKeys);
     }
 }

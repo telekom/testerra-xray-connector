@@ -25,6 +25,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTests;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
@@ -34,9 +35,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraString;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraVerb;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.util.ArrayList;
@@ -45,7 +43,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -88,7 +85,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         final JiraIssue issue = JiraUtils.getIssue(webResource, key);
         assertEquals(issue.getKey(), key);
         assertEquals(issue.getSummary(), summary);
-        assertEquals(issue.getProject().getKey(), projectKey);
+        assertEquals(issue.getProject().getKey(), XrayConfig.getInstance().getProjectKey());
     }
 
     @Test
@@ -103,25 +100,6 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
 
         jiraUtils.createOrUpdateIssue(issueToUpdate);
         assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
-    }
-
-    @Test
-    public void test_createTestSet() throws IOException {
-        final String testToLink = "SWFTE-1";
-        XrayTestSetIssue testSet = new XrayTestSetIssue();
-        testSet.setSummary("Testerra Xray Connector TestSet");
-        testSet.getProject().setKey(projectKey);
-        testSet.setDescription("Test set");
-        testSet.setTestKeys(Lists.newArrayList(testToLink));
-
-        jiraUtils.createOrUpdateIssue(testSet);
-
-        assertNotNull(testSet.getKey());
-        log().info("Created test set: " + testSet.getKey());
-
-        XrayTestSetIssue updatedIssue = jiraUtils.getIssue(testSet.getKey(), XrayTestSetIssue::new);
-        assertEquals(updatedIssue.getKey(), testSet.getKey());
-        assertEquals(testSet.getTestKeys().get(0), testToLink);
     }
 
     @Test
