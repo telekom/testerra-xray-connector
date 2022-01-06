@@ -29,7 +29,7 @@ This module allows to synchronize the test results to the test management plugin
 | Xray connector | Testerra         |
 | -------------- | ---------------- |
 | `1.0`          | ` 1.0.0 - 1.3`   |
-| `1.1`          | ` 1.4..1.7`        |
+| `1.1`          | ` 1.4 - 1.7`        |
 | `1.2`          | ` 1.8`        |
 | `1.3`          | ` 1.9`        |
 
@@ -136,10 +136,10 @@ public class AnnotatedClassTest extends TesterraTest {
 
 #### Other mapping implementations
 
-The `DefaultSummaryMapper` maps test methods to Jira Tests and classes to Jira test sets by their name, even when keys are present in the annotation. You enable that feature by passing the mapper in your `XrayResultsSynchronizer`.
+The `DefaultSummaryMapper` maps test methods to Jira Tests and classes to Jira test sets by their name, when no keys are present in the annotations. You enable that feature by passing the mapper in your `XrayResultsSynchronizer`.
 
 ```java
-public class XrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
     public XrayMapper getXrayMapper() {
         return new DefaultSummaryMapper();
     }
