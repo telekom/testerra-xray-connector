@@ -93,7 +93,20 @@ public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 
 To synchronize your test results to a specific Jira issue, the Xray connector will use some mapping mechanism.
 
-#### Test method mapping
+#### Test Execution
+
+The default mapping implementation of a Test Execution is done by the following search criteria:
+
+- Project key
+- Issue Type
+- Summary
+- Revision
+
+When a Test Execution was found, it will be reused, otherwise a new Test Execution will be created.
+
+You can control the mapping by implementing [XrayMapper.updateXrayTestExecution()](#Update entities), which will be called right before [XrayMapper.createXrayTestExecutionQuery()](#Custom mapping implementations).
+
+#### Test
 
 To create a one-to-one mapping between your test methods and your Jira issues of type `Test` you just have to set up the `XrayTest`
 annotation on your method.
@@ -109,7 +122,7 @@ public class MethodsAnnotatedTest extends TesterraTest {
 }
 ```
 
-#### Test class mapping
+#### Test Set
 
 Instead of annotating each method by itself, you can annotate just the test class with the `XrayTestSet` annotation  
 and the Xray connector will do the rest for you by searching Jira issues.
@@ -123,7 +136,7 @@ public class AnnotatedClassTest extends TesterraTest {
 
 #### Other mapping implementations
 
-The `DefaultSummaryMapper` maps test methods to Jira Tests and classes to Jira test sets by their name, when no keys are present in the annotations. You enable that feature by passing the mapper in your `XrayResultsSynchronizer`.
+The `DefaultSummaryMapper` maps Java test methods to Jira Tests and Java classes to Jira Test Sets by their name, when no keys are present in the annotations. You enable that feature by passing the mapper in your `XrayResultsSynchronizer`.
 
 ```java
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
@@ -132,6 +145,8 @@ public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
     }
 }
 ```
+
+You need to configure the property [xray.test.set.tests.field.id](#Jira custom fields IDs) before.
 
 #### Custom mapping implementations
 
@@ -194,11 +209,11 @@ public class GenericMapper implements XrayMapper {
 }
 ```
 
-You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#References) [1].
+You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#References).
 
 ### Jira custom fields IDs
 
-Even if most features are supported by the [Xray import API](#References) [1], in some cases it is necessary to use `JiraIssue` entities via. the Jira ReST API.
+Even if most features are supported by the [Xray import API](#References), in some cases it is necessary to use `JiraIssue` entities via. the Jira ReST API.
 
 But because Jira's Xray extension uses custom field IDs instead of human readable names, you need to define these custom IDs in the `properties` file.
 

@@ -92,7 +92,7 @@ public interface XrayMapper {
     }
 
     /**
-     * Updates the test execution before creating or updating.
+     * Gets called when the test execution is created or updated.
      */
     default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
     }

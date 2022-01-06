@@ -117,14 +117,14 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             testExecutionIssue.setRevision(optionalRevision.orElse(new Date().toString()));
 
             final XrayMapper xrayMapper = getXrayMapper();
+            log().info(String.format("Using mapper %s", xrayMapper.getClass().getSimpleName()));
+
             final XrayUtils xrayUtils = getXrayUtils();
             final ExecutionContext executionContext = ExecutionContextController.getCurrentExecutionContext();
             xrayMapper.updateXrayTestExecution(testExecutionIssue, executionContext);
 
             Optional<XrayTestExecutionIssue> optionalExistingTestExecution = xrayMapper.createXrayTestExecutionQuery(testExecutionIssue)
                     .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
-
-            log().info(String.format("Using mapper %s", xrayMapper.getClass().getSimpleName()));
 
             if (optionalExistingTestExecution.isPresent()) {
                 testExecutionIssue = optionalExistingTestExecution.get();
