@@ -1,20 +1,50 @@
+/*
+ * Testerra Xray-Connector
+ *
+ * (C) 2021, Mike Reiche,  T-Systems MMS GmbH, Deutsche Telekom AG
+ *
+ * Deutsche Telekom AG and all other contributors /
+ * copyright owners license this file to you under the Apache
+ * License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.MediaTypeSerializer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.core.MediaType;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 
+/**
+ * The Xray test execution import format differs from Standard Jira
+ * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results
+ */
 public class XrayTestExecutionImport {
 
     /**
@@ -108,7 +138,7 @@ public class XrayTestExecutionImport {
         }
     }
 
-    public static class Test {
+    public static class TestRun {
         public enum Status {
             PASS,
             PASSED_BEFORE,
@@ -210,14 +240,30 @@ public class XrayTestExecutionImport {
         public static class Evidence {
             private String data;
             private String filename;
-            private MediaType contentType;
+            private String contentType;
 
-            @JsonSerialize(using = MediaTypeSerializer.class)
-            public MediaType getContentType() {
+            public Evidence() {
+
+            }
+
+            public Evidence(File file) throws IOException {
+                this.filename = file.getName();
+                byte[] encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(file));
+                this.data = new String(encoded, StandardCharsets.US_ASCII);
+                MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
+                this.contentType = fileTypeMap.getContentType(file.getName());
+            }
+
+            public String getContentType() {
                 return contentType;
             }
 
+            @JsonIgnore
             public void setContentType(MediaType contentType) {
+                this.contentType = contentType.toString();
+            }
+
+            public void setContentType(String contentType) {
                 this.contentType = contentType;
             }
 
@@ -267,14 +313,14 @@ public class XrayTestExecutionImport {
         private Date start;
         private Date finish;
         private String comment;
-        private Set<Evidence> evidences;
+        private Set<Evidence> evidence;
         private Status status;
         private List<Step> steps;
 
-        public Test() {
+        public TestRun() {
         }
 
-        public Test(JiraIssue issue) {
+        public TestRun(JiraIssue issue) {
             this.testKey = issue.getKey();
             this.testInfo = new Info();
             this.testInfo.setDescription(issue.getDescription());
@@ -285,7 +331,7 @@ public class XrayTestExecutionImport {
             this.testInfo.projectKey = issue.getProject().getKey();
         }
 
-        public Test(String testKey) {
+        public TestRun(String testKey) {
             this.testKey = testKey;
         }
 
@@ -327,19 +373,19 @@ public class XrayTestExecutionImport {
             this.comment = comment;
         }
 
-        public Set<Evidence> getEvidences() {
-            return evidences;
+        public Set<Evidence> getEvidence() {
+            return evidence;
         }
 
-        public void setEvidences(Set<Evidence> evidences) {
-            this.evidences = evidences;
+        public void setEvidence(Set<Evidence> evidence) {
+            this.evidence = evidence;
         }
 
         public void addEvidence(Evidence evidence) {
-            if (this.evidences == null) {
-                this.evidences = new HashSet<>();
+            if (this.evidence == null) {
+                this.evidence = new HashSet<>();
             }
-            this.evidences.add(evidence);
+            this.evidence.add(evidence);
         }
 
         public Status getStatus() {
@@ -368,7 +414,7 @@ public class XrayTestExecutionImport {
 
     private final Info info = new Info();
     private String testExecutionKey;
-    private final Set<Test> tests = new HashSet<>();;
+    private final Set<TestRun> testRuns = new HashSet<>();;
 
     public XrayTestExecutionImport(String testExecutionKey) {
         this.testExecutionKey = testExecutionKey;
@@ -404,34 +450,34 @@ public class XrayTestExecutionImport {
         this.testExecutionKey = testExecutionKey;
     }
 
-    public void setTests(Set<Test> tests) {
-        this.tests.clear();
-        this.addTests(tests);
+    public void setTests(Set<TestRun> testRuns) {
+        this.testRuns.clear();
+        this.addTests(testRuns);
     }
 
-    public void addTests(Set<Test> tests) {
-        this.tests.addAll(tests);
+    public void addTests(Set<TestRun> testRuns) {
+        this.testRuns.addAll(testRuns);
     }
 
-    public void setTestKeys(Set<String> testKeys, Test.Status status) {
-        this.tests.clear();
+    public void setTestKeys(Set<String> testKeys, TestRun.Status status) {
+        this.testRuns.clear();
         this.addTestKeys(testKeys, status);
     }
 
-    public void addTestKeys(Set<String> testKeys, Test.Status status) {
-        this.tests.addAll(testKeys.stream()
-                .map(Test::new)
+    public void addTestKeys(Set<String> testKeys, TestRun.Status status) {
+        this.testRuns.addAll(testKeys.stream()
+                .map(TestRun::new)
                 .peek(test -> test.setStatus(status))
                 .collect(Collectors.toSet())
         );
     }
 
-    public void addTest(Test test) {
-        this.tests.add(test);
+    public void addTest(TestRun testRun) {
+        this.testRuns.add(testRun);
     }
 
-    public Set<Test> getTests() {
-        return this.tests;
+    public Set<TestRun> getTests() {
+        return this.testRuns;
     }
 
     public String getTestExecutionKey() {

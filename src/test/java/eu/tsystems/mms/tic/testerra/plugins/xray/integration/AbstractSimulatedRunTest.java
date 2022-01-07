@@ -47,7 +47,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,19 +57,19 @@ import org.testng.annotations.Parameters;
 
 public abstract class AbstractSimulatedRunTest extends TesterraTest {
 
-    protected Map<String, XrayTestExecutionImport.Test.Status> fullWithoutParametrized = ImmutableMap.of(
-            "SWFTE-4", XrayTestExecutionImport.Test.Status.PASS,
-            "SWFTE-5", XrayTestExecutionImport.Test.Status.FAIL,
-            "SWFTE-6", XrayTestExecutionImport.Test.Status.SKIPPED
+    protected Map<String, XrayTestExecutionImport.TestRun.Status> fullWithoutParametrized = ImmutableMap.of(
+            "SWFTE-4", XrayTestExecutionImport.TestRun.Status.PASS,
+            "SWFTE-5", XrayTestExecutionImport.TestRun.Status.FAIL,
+            "SWFTE-6", XrayTestExecutionImport.TestRun.Status.SKIPPED
     );
     private WebResource webResource;
     private XrayConfig xrayConfig;
-    private Map<String, XrayTestExecutionImport.Test.Status> expectedTestResultsFullSet = ImmutableMap.of(
-            "SWFTE-4", XrayTestExecutionImport.Test.Status.PASS,
-            "SWFTE-5", XrayTestExecutionImport.Test.Status.FAIL,
-            "SWFTE-6", XrayTestExecutionImport.Test.Status.SKIPPED,
-            "SWFTE-319", XrayTestExecutionImport.Test.Status.PASS,
-            "SWFTE-320", XrayTestExecutionImport.Test.Status.FAIL
+    private Map<String, XrayTestExecutionImport.TestRun.Status> expectedTestResultsFullSet = ImmutableMap.of(
+            "SWFTE-4", XrayTestExecutionImport.TestRun.Status.PASS,
+            "SWFTE-5", XrayTestExecutionImport.TestRun.Status.FAIL,
+            "SWFTE-6", XrayTestExecutionImport.TestRun.Status.SKIPPED,
+            "SWFTE-319", XrayTestExecutionImport.TestRun.Status.PASS,
+            "SWFTE-320", XrayTestExecutionImport.TestRun.Status.FAIL
     );
 
     abstract String getExpectedSummary();
@@ -97,16 +96,16 @@ public abstract class AbstractSimulatedRunTest extends TesterraTest {
 
     protected void setInvalidTestStatus(String testExecutionKey) throws IOException {
         final XrayTestExecutionImport execution = new XrayTestExecutionImport(testExecutionKey);
-        final Set<XrayTestExecutionImport.Test> xrayTestIssues = new HashSet<>();
+        final Set<XrayTestExecutionImport.TestRun> xrayTestIssues = new HashSet<>();
         final Calendar oneYearAgo = Calendar.getInstance();
         oneYearAgo.add(Calendar.YEAR, -1);
         Date invalidDate = new GregorianCalendar(1999, 12, 24).getTime();
         for (final String testKey : expectedTestResultsFullSet.keySet()) {
-            XrayTestExecutionImport.Test test = new XrayTestExecutionImport.Test(testKey);
-            test.setStatus(XrayTestExecutionImport.Test.Status.ABORTED);
-            test.setStart(invalidDate);
-            test.setFinish(invalidDate);
-            xrayTestIssues.add(test);
+            XrayTestExecutionImport.TestRun testRun = new XrayTestExecutionImport.TestRun(testKey);
+            testRun.setStatus(XrayTestExecutionImport.TestRun.Status.ABORTED);
+            testRun.setStart(invalidDate);
+            testRun.setFinish(invalidDate);
+            xrayTestIssues.add(testRun);
         }
         execution.setTests(xrayTestIssues);
 
@@ -119,7 +118,7 @@ public abstract class AbstractSimulatedRunTest extends TesterraTest {
         checkTestExecutionResult(testExecutionKey, expectedTestResultsFullSet, before);
     }
 
-    void checkTestExecutionResult(String testExecutionKey, Map<String, XrayTestExecutionImport.Test.Status> expectedTestResults,
+    void checkTestExecutionResult(String testExecutionKey, Map<String, XrayTestExecutionImport.TestRun.Status> expectedTestResults,
                                   Calendar before) throws IOException, ParseException {
 
         /* get data to check */
@@ -132,7 +131,7 @@ public abstract class AbstractSimulatedRunTest extends TesterraTest {
         XrayUtils xrayUtils = new XrayUtils(webResource);
 
         XrayTestExecutionIssue jiraIssue = new XrayTestExecutionIssue(rawIssue);
-        final Set<XrayTestExecutionImport.Test> testIssues = xrayUtils.getTestsByTestExecutionKey(testExecutionKey);
+        final Set<XrayTestExecutionImport.TestRun> testRuns = xrayUtils.getTestRunsByTestExecutionKey(testExecutionKey);
 
         /* check string fields */
         final String foundSummary = jiraIssue.getSummary();
@@ -167,17 +166,17 @@ public abstract class AbstractSimulatedRunTest extends TesterraTest {
 
 
         /* check single tests */
-        for (final XrayTestExecutionImport.Test testIssue : testIssues) {
-            final String testKey = testIssue.getTestKey();
+        for (final XrayTestExecutionImport.TestRun testRunIssue : testRuns) {
+            final String testKey = testRunIssue.getTestKey();
             if (expectedTestResults.containsKey(testKey)) {
-                final XrayTestExecutionImport.Test.Status expectedTestStatus = expectedTestResults.get(testKey);
-                assertEquals(testIssue.getStatus(), expectedTestStatus,
+                final XrayTestExecutionImport.TestRun.Status expectedTestStatus = expectedTestResults.get(testKey);
+                assertEquals(testRunIssue.getStatus(), expectedTestStatus,
                         String.format("test status of %s should be %s", testKey, expectedTestStatus));
 
-                assertTrue(testIssue.getStart().after(agoTime),
-                        String.format("test start time: %s should be newer than 2 minutes ago: %s", testIssue.getStart(), agoTime));
-                assertTrue(testIssue.getFinish().after(agoTime),
-                        String.format("test finish time: %s should be newer than 2 minutes ago: %s", testIssue.getFinish(), agoTime));
+                assertTrue(testRunIssue.getStart().after(agoTime),
+                        String.format("test start time: %s should be newer than 2 minutes ago: %s", testRunIssue.getStart(), agoTime));
+                assertTrue(testRunIssue.getFinish().after(agoTime),
+                        String.format("test finish time: %s should be newer than 2 minutes ago: %s", testRunIssue.getFinish(), agoTime));
             }
         }
     }

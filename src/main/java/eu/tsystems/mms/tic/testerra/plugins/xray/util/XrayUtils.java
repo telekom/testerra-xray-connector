@@ -47,20 +47,14 @@ public final class XrayUtils extends JiraUtils {
         }
     }
 
-    public Set<XrayTestExecutionImport.Test> getTestsByTestExecutionKey(String issueKey) throws IOException {
+    public Set<XrayTestExecutionImport.TestRun> getTestRunsByTestExecutionKey(String issueKey) throws IOException {
         String jsonResponse = getWebResource()
                 .path(EXECUTION_RESULT_PATH)
                 .queryParam("testExecKey", issueKey)
                 .get(String.class);
-        XrayTestExecutionImport.Test[] tests = getObjectMapper().readValue(jsonResponse, XrayTestExecutionImport.Test[].class);
-        return Arrays.stream(tests).collect(Collectors.toSet());
+        XrayTestExecutionImport.TestRun[] testRuns = getObjectMapper().readValue(jsonResponse, XrayTestExecutionImport.TestRun[].class);
+        return Arrays.stream(testRuns).collect(Collectors.toSet());
     }
-//
-//    public XrayTestSetIssue getTestSetIssue(String issueKey) throws IOException {
-//        List<String> restrictedFields = getDefaultFields();
-//        restrictedFields.add(Fields.TEST_SET_TESTS.getFieldName());
-//        return getIssue(issueKey, XrayTestSetIssue::new, restrictedFields);
-//    }
 
     public String exportTestExecutionAsJson(final WebResource webResource, final String issueKey) {
         return webResource.path(EXECUTION_RESULT_PATH)

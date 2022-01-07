@@ -59,7 +59,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.testng.ITestResult;
 
@@ -72,7 +71,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private XrayUtils xrayUtils;
     private final HashMap<String, XrayTestSetIssue> testSetCacheByClassName = new HashMap<>();
     private final HashMap<String, XrayTestIssue> testCacheByMethodName = new HashMap<>();
-    private final ConcurrentLinkedQueue<XrayTestExecutionImport.Test> testSyncQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<XrayTestExecutionImport.TestRun> testRunSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
     private final int SYNC_FREQUENCY_TESTS = 10;
 
@@ -171,7 +170,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         }
 
         final int numTestSetsToSync = testSetSyncQueue.size();
-        final int numTestsToSync = testSyncQueue.size();
+        final int numTestsToSync = testRunSyncQueue.size();
 
         if (numTestSetsToSync == 0 && numTestsToSync == 0) {
             return;
@@ -196,9 +195,9 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         });
 
         final XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(getTestExecutionIssue());
-        testSyncQueue.forEach(test -> {
+        testRunSyncQueue.forEach(test -> {
             xrayTestExecutionImport.addTest(test);
-            testSyncQueue.remove(test);
+            testRunSyncQueue.remove(test);
         });
 
         if (this.getExecutionUpdates() != null) {
@@ -300,59 +299,59 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
          */
         testIssues.stream()
                 .peek(issue -> xrayMapper.updateXrayTest(issue, methodContext))
-                .map(XrayTestExecutionImport.Test::new)
+                .map(XrayTestExecutionImport.TestRun::new)
                 .peek(test -> updateTestImport(test, methodContext))
-                .forEach(testSyncQueue::add);
+                .forEach(testRunSyncQueue::add);
 
-        if (testSyncQueue.size() >= SYNC_FREQUENCY_TESTS) {
+        if (testRunSyncQueue.size() >= SYNC_FREQUENCY_TESTS) {
             flushSyncQueue();
         }
     }
 
-    private void updateTestImport(XrayTestExecutionImport.Test test, MethodContext methodContext) {
+    private void updateTestImport(XrayTestExecutionImport.TestRun testRun, MethodContext methodContext) {
         ITestResult testResult = methodContext.getTestNgResult().get();
 
-        test.setStart(new Date(testResult.getStartMillis()));
+        testRun.setStart(new Date(testResult.getStartMillis()));
 
         switch (testResult.getStatus()) {
             case ITestResult.FAILURE:
-                test.setStatus(XrayTestExecutionImport.Test.Status.FAIL);
+                testRun.setStatus(XrayTestExecutionImport.TestRun.Status.FAIL);
                 break;
             case ITestResult.SUCCESS:
             case ITestResult.SUCCESS_PERCENTAGE_FAILURE:
-                test.setStatus(XrayTestExecutionImport.Test.Status.PASS);
+                testRun.setStatus(XrayTestExecutionImport.TestRun.Status.PASS);
                 break;
             case ITestResult.SKIP:
-                test.setStart(Calendar.getInstance().getTime());
-                test.setStatus(XrayTestExecutionImport.Test.Status.SKIPPED);
+                testRun.setStart(Calendar.getInstance().getTime());
+                testRun.setStatus(XrayTestExecutionImport.TestRun.Status.SKIPPED);
                 break;
             default:
                 log().error("TestNg result status {} cannot be processed", testResult.getStatus());
         }
 
-        test.setFinish(new Date(testResult.getEndMillis()));
+        testRun.setFinish(new Date(testResult.getEndMillis()));
 
         int lastFailedTestStepIndex = methodContext.getLastFailedTestStepIndex();
         List<TestStep> testSteps = methodContext.readTestSteps().collect(Collectors.toList());
         int i = 0;
         for (TestStep testStep : testSteps) {
-            XrayTestExecutionImport.Test.Status testStepStatus = XrayTestExecutionImport.Test.Status.PASS;
+            XrayTestExecutionImport.TestRun.Status testStepStatus = XrayTestExecutionImport.TestRun.Status.PASS;
             if (i == lastFailedTestStepIndex) {
-                testStepStatus = XrayTestExecutionImport.Test.Status.FAIL;
+                testStepStatus = XrayTestExecutionImport.TestRun.Status.FAIL;
             }
 
-            XrayTestExecutionImport.Test.Step step2 = new XrayTestExecutionImport.Test.Step();
+            XrayTestExecutionImport.TestRun.Step step2 = new XrayTestExecutionImport.TestRun.Step();
             step2.setStatus(testStepStatus);
             testStep.getTestStepActions().stream().flatMap(TestStepAction::readErrors).findFirst().ifPresent(errorContext -> {
                 step2.setActualResult(errorContext.getThrowable().getMessage());
             });
 
-            XrayTestExecutionImport.Test.Info.Step step = new XrayTestExecutionImport.Test.Info.Step();
+            XrayTestExecutionImport.TestRun.Info.Step step = new XrayTestExecutionImport.TestRun.Info.Step();
             step.setAction(testStep.getName());
             step.setResult(testStepStatus.toString());
 
-            test.getTestInfo().addStep(step);
-            test.addStep(step2);
+            testRun.getTestInfo().addStep(step);
+            testRun.addStep(step2);
         }
     }
 
