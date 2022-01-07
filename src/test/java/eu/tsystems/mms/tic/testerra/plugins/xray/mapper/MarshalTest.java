@@ -81,7 +81,7 @@ public class MarshalTest extends AbstractTest {
         final XrayTestExecutionImport.TestRun.Evidence evidence = new XrayTestExecutionImport.TestRun.Evidence();
         evidence.setData("YmxhIGJsdWJiDQo=");
         evidence.setFilename("test.txt");
-        evidence.setContentType(MediaType.TEXT_PLAIN_TYPE);
+        evidence.setMediaType(MediaType.TEXT_PLAIN_TYPE);
         final HashSet<XrayTestExecutionImport.TestRun.Evidence> evidences = new HashSet<>();
         evidences.add(evidence);
         testRun.setEvidence(evidences);

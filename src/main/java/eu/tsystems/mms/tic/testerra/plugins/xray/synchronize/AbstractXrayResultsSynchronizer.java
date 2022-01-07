@@ -29,6 +29,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
@@ -40,8 +41,10 @@ import eu.tsystems.mms.tic.testframework.events.TestStatusUpdateEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.ErrorContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.Screenshot;
 import eu.tsystems.mms.tic.testframework.report.model.steps.TestStep;
 import eu.tsystems.mms.tic.testframework.report.model.steps.TestStepAction;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
@@ -175,6 +178,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         if (numTestSetsToSync == 0 && numTestsToSync == 0) {
             return;
         }
+
+        log().info("Synchronizing...");
 
         final XrayUtils xrayUtils = getXrayUtils();
 
@@ -331,27 +336,69 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
         testRun.setFinish(new Date(testResult.getEndMillis()));
 
-        int lastFailedTestStepIndex = methodContext.getLastFailedTestStepIndex();
-        List<TestStep> testSteps = methodContext.readTestSteps().collect(Collectors.toList());
-        int i = 0;
-        for (TestStep testStep : testSteps) {
-            XrayTestExecutionImport.TestRun.Status testStepStatus = XrayTestExecutionImport.TestRun.Status.PASS;
-            if (i == lastFailedTestStepIndex) {
-                testStepStatus = XrayTestExecutionImport.TestRun.Status.FAIL;
+        /**
+         * The test's test type needs to be {@link TestType.Manual} to support test steps.
+         */
+        testRun.getTestInfo().setType(TestType.Manual);
+
+        final int lastFailedTestStepIndex = methodContext.getLastFailedTestStepIndex();
+
+        List<TestStep> testerraTestSteps = methodContext.readTestSteps()
+                .collect(Collectors.toList());
+
+        int stepIndex = -1;
+        for (TestStep testerraTestStep : testerraTestSteps) {
+            ++stepIndex;
+
+            if (testerraTestStep.isInternalTestStep()) {
+                continue;
             }
 
-            XrayTestExecutionImport.TestRun.Step step2 = new XrayTestExecutionImport.TestRun.Step();
-            step2.setStatus(testStepStatus);
-            testStep.getTestStepActions().stream().flatMap(TestStepAction::readErrors).findFirst().ifPresent(errorContext -> {
-                step2.setActualResult(errorContext.getThrowable().getMessage());
-            });
+            /**
+             * The test steps definitions
+             */
+            final XrayTestExecutionImport.TestStep importTestStep = new XrayTestExecutionImport.TestStep();
+            importTestStep.setAction(testerraTestStep.getName());
+            // We always expect the step to pass
+            importTestStep.setResult(XrayTestExecutionImport.TestRun.Status.PASS.toString());
+            testRun.getTestInfo().addStep(importTestStep);
 
-            XrayTestExecutionImport.TestRun.Info.Step step = new XrayTestExecutionImport.TestRun.Info.Step();
-            step.setAction(testStep.getName());
-            step.setResult(testStepStatus.toString());
+            /**
+             * The actual Test Run step
+             */
+            XrayTestExecutionImport.TestRun.Status actualStatus = XrayTestExecutionImport.TestRun.Status.PASS;
 
-            testRun.getTestInfo().addStep(step);
-            testRun.addStep(step2);
+            if (stepIndex == lastFailedTestStepIndex) {
+                actualStatus = XrayTestExecutionImport.TestRun.Status.FAIL;
+            }
+            final XrayTestExecutionImport.TestRun.Step testRunStep = new XrayTestExecutionImport.TestRun.Step();
+            testRunStep.setStatus(actualStatus);
+            testRun.addStep(testRunStep);
+
+            testerraTestStep.getTestStepActions().stream()
+                    .flatMap(TestStepAction::readEntries)
+                    .forEach(entry -> {
+                        if (entry instanceof ErrorContext) {
+                            ErrorContext errorContext = (ErrorContext)entry;
+                            testRunStep.setActualResult(errorContext.getThrowable().getMessage());
+                        } else if (entry instanceof Screenshot) {
+                            Screenshot screenshot = (Screenshot)entry;
+                            try {
+                                XrayTestExecutionImport.TestRun.Evidence evidence = new XrayTestExecutionImport.TestRun.Evidence(screenshot.getScreenshotFile());
+                                testRunStep.addEvidence(evidence);
+                            } catch (IOException e) {
+                                log().error("Unable to add evidence screenshot", e);
+                            }
+                            screenshot.getPageSourceFile().ifPresent(file -> {
+                                try {
+                                    XrayTestExecutionImport.TestRun.Evidence evidence = new XrayTestExecutionImport.TestRun.Evidence(file);
+                                    testRunStep.addEvidence(evidence);
+                                } catch (IOException e) {
+                                    log().error("Unable to add evidence page source file", e);
+                                }
+                            });
+                        }
+                    });
         }
     }
 

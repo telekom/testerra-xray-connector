@@ -44,8 +44,8 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.3.1'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.3.1'
 
-    testImplementation 'io.testerra:core:' + testerraTestVersion
-    testImplementation 'io.testerra:report-ng:' + testerraTestVersion
+    testImplementation 'io.testerra:driver-ui-desktop:' + testerraTestVersion
+    //testImplementation 'io.testerra:report-ng:' + testerraTestVersion
 }
 
 test {

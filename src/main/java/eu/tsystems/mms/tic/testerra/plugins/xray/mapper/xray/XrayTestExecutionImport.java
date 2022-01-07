@@ -22,7 +22,6 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
@@ -149,43 +148,10 @@ public class XrayTestExecutionImport {
             ABORTED
         }
         public static class Info extends AbstractInfo {
-            public static class Step {
-                private String action;
-                private String result;
-                private String data;
-
-                public Step() {
-
-                }
-
-                public String getAction() {
-                    return action;
-                }
-
-                public void setAction(String action) {
-                    this.action = action;
-                }
-
-                public String getResult() {
-                    return result;
-                }
-
-                public void setResult(String result) {
-                    this.result = result;
-                }
-
-                public String getData() {
-                    return data;
-                }
-
-                public void setData(String data) {
-                    this.data = data;
-                }
-            }
 
             private String projectKey;
             private List<String> labels;
-            private List<Step> steps;
+            private List<XrayTestExecutionImport.TestStep> steps;
             private String testType;
             private String definition;
 
@@ -193,22 +159,26 @@ public class XrayTestExecutionImport {
                 return testType;
             }
 
+            public void setType(TestType testType) {
+                this.setTestType(testType.toString());
+            }
+
             public void setTestType(String testType) {
                 this.testType = testType;
             }
 
-            public void addStep(Step step) {
+            public void addStep(XrayTestExecutionImport.TestStep step) {
                 if (this.steps == null) {
                     this.steps = new ArrayList<>();
                 }
                 this.steps.add(step);
             }
 
-            public void setSteps(List<Step> steps) {
+            public void setSteps(List<XrayTestExecutionImport.TestStep> steps) {
                 this.steps = steps;
             }
 
-            public List<Step> getSteps() {
+            public List<XrayTestExecutionImport.TestStep> getSteps() {
                 return steps;
             }
 
@@ -258,9 +228,8 @@ public class XrayTestExecutionImport {
                 return contentType;
             }
 
-            @JsonIgnore
-            public void setContentType(MediaType contentType) {
-                this.contentType = contentType.toString();
+            public void setMediaType(MediaType mediaType) {
+                this.contentType = mediaType.toString();
             }
 
             public void setContentType(String contentType) {
@@ -287,6 +256,7 @@ public class XrayTestExecutionImport {
         public static class Step {
             private Status status;
             private String actualResult;
+            private Set<Evidence> evidences;
 
             public Step() {
             }
@@ -306,6 +276,21 @@ public class XrayTestExecutionImport {
             public void setActualResult(String actualResult) {
                 this.actualResult = actualResult;
             }
+
+            public Set<Evidence> getEvidences() {
+                return evidences;
+            }
+
+            public void setEvidences(Set<Evidence> evidence) {
+                this.evidences = evidence;
+            }
+
+            public void addEvidence(Evidence evidence) {
+                if (this.evidences == null) {
+                    this.evidences = new HashSet<>();
+                }
+                this.evidences.add(evidence);
+            }
         }
 
         private Info testInfo;
@@ -321,18 +306,19 @@ public class XrayTestExecutionImport {
         }
 
         public TestRun(JiraIssue issue) {
-            this.testKey = issue.getKey();
+            this(issue.getKey());
             this.testInfo = new Info();
             this.testInfo.setDescription(issue.getDescription());
             this.testInfo.setSummary(issue.getSummary());
             this.testInfo.setLabels(issue.getLabels());
             this.testInfo.setDefinition(issue.getSummary());
-            this.testInfo.testType = TestType.AutomatedGeneric.toString();
-            this.testInfo.projectKey = issue.getProject().getKey();
+            this.testInfo.setType(TestType.AutomatedGeneric);
+            this.testInfo.setProjectKey(issue.getProject().getKey());
         }
 
         public TestRun(String testKey) {
             this.testKey = testKey;
+            this.setStatus(Status.FAIL);
         }
 
         public Info getTestInfo() {
@@ -410,6 +396,7 @@ public class XrayTestExecutionImport {
         public List<Step> getSteps() {
             return steps;
         }
+
     }
 
     private final Info info = new Info();
@@ -482,5 +469,39 @@ public class XrayTestExecutionImport {
 
     public String getTestExecutionKey() {
         return testExecutionKey;
+    }
+
+    public static class TestStep {
+        private String action;
+        private String result;
+        private String data;
+
+        public TestStep() {
+
+        }
+
+        public String getAction() {
+            return action;
+        }
+
+        public void setAction(String action) {
+            this.action = action;
+        }
+
+        public String getResult() {
+            return result;
+        }
+
+        public void setResult(String result) {
+            this.result = result;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        public void setData(String data) {
+            this.data = data;
+        }
     }
 }

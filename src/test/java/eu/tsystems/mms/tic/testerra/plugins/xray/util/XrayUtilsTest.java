@@ -190,7 +190,7 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
     public void testSyncTestExecutionWithEvidences() throws Exception {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
         final String desiredTestKey = "SWFTE-3";
-        final XrayTestExecutionImport execution = new XrayTestExecutionImport(EXISTING_TEST_EXECUTION_KEY);
+        final XrayTestExecutionImport testExecution = new XrayTestExecutionImport(EXISTING_TEST_EXECUTION_KEY);
         final Set<XrayTestExecutionImport.TestRun> existingTestRuns = xrayUtils.getTestRunsByTestExecutionKey(EXISTING_TEST_EXECUTION_KEY);
 
         final XrayTestExecutionImport.TestRun testRunWithEvidence = existingTestRuns.stream()
@@ -200,15 +200,10 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         testRunWithEvidence.setFinish(new Date());
         testRunWithEvidence.setStatus(XrayTestExecutionImport.TestRun.Status.SKIPPED);
 
-        final XrayTestExecutionImport.TestRun.Evidence evidence = new XrayTestExecutionImport.TestRun.Evidence();
-        evidence.setData("YmxhIGJsdWJiDQo=");
-        evidence.setFilename("test.txt");
-        evidence.setContentType(MediaType.TEXT_PLAIN_TYPE);
-
         final XrayTestExecutionImport.TestRun.Evidence htmlEvidence = new XrayTestExecutionImport.TestRun.Evidence();
         htmlEvidence.setData("PGh0bWw+PGhlYWQ+PHRpdGxlPkZpcnN0IHBhcnNlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+QmxpIEJsYSBCbHViYi48L3A+PC9ib2R5PjwvaHRtbD4=");
         htmlEvidence.setFilename("test.html");
-        htmlEvidence.setContentType(MediaType.TEXT_PLAIN_TYPE);
+        htmlEvidence.setMediaType(MediaType.TEXT_PLAIN_TYPE);
 
         File file = Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource("test.zip")).toURI()).toFile();
         final XrayTestExecutionImport.TestRun.Evidence zipEvidence = new XrayTestExecutionImport.TestRun.Evidence(file);
@@ -217,9 +212,9 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         xrayEvidences.add(htmlEvidence);
         xrayEvidences.add(zipEvidence);
         testRunWithEvidence.setEvidence(xrayEvidences);
-        execution.addTest(testRunWithEvidence);
+        testExecution.addTest(testRunWithEvidence);
 
-        xrayUtils.importTestExecution(execution);
+        xrayUtils.importTestExecution(testExecution);
         log().info(String.format("Updated %s %s", IssueType.TestExecution, xrayConfig.getIssueUrl(EXISTING_TEST_EXECUTION_KEY).orElse(null)));
         log().info(String.format("Updated %s %s", IssueType.Test, xrayConfig.getIssueUrl(testRunWithEvidence.getTestKey()).orElse(null)));
 
@@ -230,6 +225,30 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
                 .get();
         Assert.assertNotNull(updatedTestRun.getEvidence(), "No evidence present");
         Assert.assertTrue(updatedTestRun.getEvidence().stream().anyMatch(evidence1 -> evidence1.getFilename().equals("test.html")));
+    }
+
+    @Test
+    public void test_importTestRunSteps() throws IOException {
+        final String desiredTestKey = "SWFTE-3";
+        final XrayTestExecutionImport testExecution = new XrayTestExecutionImport(EXISTING_TEST_EXECUTION_KEY);
+        final XrayTestExecutionImport.TestRun testRun = new XrayTestExecutionImport.TestRun(desiredTestKey);
+
+        XrayTestExecutionImport.TestRun.Step testRunStep = new XrayTestExecutionImport.TestRun.Step();
+        testRunStep.setStatus(XrayTestExecutionImport.TestRun.Status.TODO);
+        testRunStep.setActualResult("Import test step");
+        testRun.addStep(testRunStep);
+        testRun.setStatus(XrayTestExecutionImport.TestRun.Status.SKIPPED);
+
+        final XrayTestExecutionImport.TestRun.Evidence evidence = new XrayTestExecutionImport.TestRun.Evidence();
+        evidence.setData("YmxhIGJsdWJiDQo=");
+        evidence.setFilename("test.txt");
+        evidence.setMediaType(MediaType.TEXT_PLAIN_TYPE);
+        testRunStep.addEvidence(evidence);
+
+        testExecution.addTest(testRun);
+
+        xrayUtils.importTestExecution(testExecution);;
+
     }
 
 }
