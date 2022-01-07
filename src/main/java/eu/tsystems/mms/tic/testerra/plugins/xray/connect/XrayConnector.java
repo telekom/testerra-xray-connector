@@ -73,20 +73,6 @@ public class XrayConnector implements Loggable {
         if (xrayConfig.isWebResourceFilterLoggingEnabled()) {
             webResource.addFilter(new LoggingFilter());
         }
-
-    }
-
-    @Deprecated
-    public List<String> findTestKeys(final String testSetKey, final JqlQuery methodReferenceQuery) {
-        final JqlQuery baseQuery = JqlQuery.create()
-                .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
-                .addCondition(new IssueTypeEquals(IssueType.Test))
-                .addCondition(new KeyInTestSetTests(testSetKey))
-                .build();
-        final JqlQuery jqlQuery = JqlQuery.combine(baseQuery, methodReferenceQuery);
-
-        final Set<JiraIssue> foundJiraIssues = JiraUtils.searchIssues(webResource, jqlQuery.createJql());
-        return foundJiraIssues.stream().map(JiraIssue::getKey).collect(Collectors.toList());
     }
 
     public void uploadTestExecutionAttachment(final String issueKey, final InputStream is, final String fileName) {

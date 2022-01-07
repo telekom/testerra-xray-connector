@@ -33,8 +33,6 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.NameField;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIdReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
@@ -43,13 +41,11 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransitionsSearchResult;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -319,15 +315,6 @@ public class JiraUtils implements Loggable {
             webResource.path(format("%s/%s", ATTACHMENT_PATH, issueRef.getId()))
                     .delete();
         });
-    }
-
-    /**
-     * @deprecated Use {@link #createOrUpdateIssue(JiraIssue)} instead
-     */
-    public static String createTestExecutionGeneric(WebResource webResource, XrayTestExecutionIssue xrayInfo) throws IOException {
-        JiraUtils jiraUtils = new JiraUtils(webResource);
-        jiraUtils.createOrUpdateIssue(xrayInfo);
-        return xrayInfo.getKey();
     }
 
     protected WebResource getWebResource() {

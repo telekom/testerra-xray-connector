@@ -22,21 +22,14 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.connect;
 
-import static org.testng.Assert.assertEquals;
 
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestTypeEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.DefaultSummaryMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Optional;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
@@ -87,38 +80,6 @@ public class XrayConnectorTest extends AbstractTest {
                 Optional<XrayTestExecutionIssue> optionalExistingTestExecution = defaultSummaryMapper.createXrayTestExecutionQuery(nonExisitngExecution)
                 .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
         Assert.assertFalse(optionalExistingTestExecution.isPresent());
-    }
-
-    @Test
-    public void testFindTestKeys() {
-        final XrayConnector xrayConnector = new XrayConnector();
-        final JqlQuery jqlQuery = JqlQuery.create()
-                .addCondition(new SummaryContainsExact("passes"))
-                .build();
-        final Collection<String> testKeys = xrayConnector.findTestKeys("SWFTE-7", jqlQuery);
-        assertEquals(testKeys.size(), 1);
-        assertEquals(testKeys.iterator().next(), "SWFTE-1");
-    }
-
-    @Test
-    public void testFindTestKeysNotExisting() throws Exception {
-        final XrayConnector xrayConnector = new XrayConnector();
-        final JqlQuery jqlQuery = JqlQuery.create()
-                .addCondition(new SummaryContainsExact("passes"))
-                .addCondition(new TestTypeEquals(TestType.AutomatedCucumber))
-                .build();
-        final Collection<String> testKeys = xrayConnector.findTestKeys("SWFTE-7", jqlQuery);
-        assertEquals(testKeys.size(), 0);
-    }
-
-    @Test
-    public void testFindTestKeysMoreThanOneMatches() throws Exception {
-        final XrayConnector xrayConnector = new XrayConnector();
-        final JqlQuery jqlQuery = JqlQuery.create()
-                .addCondition(new SummaryContainsExact("TM"))
-                .build();
-        final Collection<String> testKeys = xrayConnector.findTestKeys("SWFTE-7", jqlQuery);
-        assertEquals(testKeys.size(), 3);
     }
 
     //
