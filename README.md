@@ -95,20 +95,20 @@ To synchronize your test results to a specific Jira issue, the Xray connector wi
 
 #### Test Execution
 
-The default mapping implementation of a Test Execution is done by the following search criteria:
+The default mapping implementation of a *Test Execution* is done by the following search criteria:
 
 - Project key
 - Issue type
 - Summary
 - Revision
 
-When a Test Execution was found, it will be reused, otherwise a new Test Execution will be created when at least one test should be synchronized.
+When a *Test Execution* was found, it will be reused, otherwise a new *Test Execution* will be created when at least one test should be synchronized.
 
 You can control the mapping by implementing [updateTestExecution()](#Update entities), which will be called right before [queryTestExecution()](#Custom mapping implementations).
 
 #### Annotated Test
 
-To create a mapping between your test methods and your Jira issues of type `Test` you just have to set up the `XrayTest`
+To create a mapping between your test methods and your Jira issues of type *Test* you just have to set up the `@XrayTest`
 annotation on your method.
 
 ```java
@@ -124,7 +124,7 @@ public class MethodsAnnotatedTest extends TesterraTest {
 
 #### Annotated Test Set
 
-You can also annotate the `Test Set` by its issue key.
+You can also annotate the *Test Set* by its issue key.
 
 ```java
 
@@ -139,7 +139,7 @@ A list of other mapping implementations.
 
 #### DefaultSummaryMapper
 
-This maps Java test methods to Jira Tests and Java classes to Jira Test Sets by their name, when no keys are present in the annotations. Additionally, it creates the issues when they don't exist. You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
+This maps Java test methods to Jira *Tests* and Java classes to Jira *Test Sets* by their name, when no keys are present in the annotations. Additionally, it creates the issues when they don't exist. You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
 
 ```java
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
@@ -183,7 +183,7 @@ public class GenericMapper implements XrayMapper {
 }
 ```
 
-In this case the Xray connector will reuse the Test Execution with revision "*Reuse My Test Execution*", maps all classes to the Test Set with summary "*My Tests*" and search for associated Jira Tests where the summary matches the method name. 
+In this case the Xray connector will reuse the Test Execution with revision "*Reuse My Test Execution*", maps all classes to the *Test Set* with summary "*My Tests*" and search for associated Jira *Tests* where the summary matches the method name. 
 
 #### Update entities
 
