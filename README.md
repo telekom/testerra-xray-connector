@@ -89,7 +89,7 @@ public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 }
 ```
 
-### Mapping
+### Default mapping
 
 To synchronize your test results to a specific Jira issue, the Xray connector will use some mapping mechanism.
 
@@ -98,7 +98,7 @@ To synchronize your test results to a specific Jira issue, the Xray connector wi
 The default mapping implementation of a Test Execution is done by the following search criteria:
 
 - Project key
-- Issue Type
+- Issue type
 - Summary
 - Revision
 
@@ -106,7 +106,7 @@ When a Test Execution was found, it will be reused, otherwise a new Test Executi
 
 You can control the mapping by implementing [updateTestExecution()](#Update entities), which will be called right before [queryTestExecution()](#Custom mapping implementations).
 
-#### Test
+#### Annotated Test
 
 To create a mapping between your test methods and your Jira issues of type `Test` you just have to set up the `XrayTest`
 annotation on your method.
@@ -122,7 +122,7 @@ public class MethodsAnnotatedTest extends TesterraTest {
 }
 ```
 
-#### Test Set
+#### Annotated Test Set
 
 You can also annotate the `Test Set` by its issue key.
 
@@ -133,9 +133,13 @@ public class AnnotatedClassTest extends TesterraTest {
 }
 ```
 
-#### Other mapping implementations
+### Other mapping implementations
 
-The `DefaultSummaryMapper` maps Java test methods to Jira Tests and Java classes to Jira Test Sets by their name, when no keys are present in the annotations. Additionally, it creates the issues when they don't exist. You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
+A list of other mapping implementations.
+
+#### DefaultSummaryMapper
+
+This maps Java test methods to Jira Tests and Java classes to Jira Test Sets by their name, when no keys are present in the annotations. Additionally, it creates the issues when they don't exist. You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
 
 ```java
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
@@ -147,7 +151,7 @@ public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 
 You need to configure the property [xray.test.set.tests.field.id](#Jira custom fields IDs) before.
 
-#### Custom mapping implementations
+### Custom mapping
 
 When you want to have full control over the mapping, you can provide your own implementation of `XrayMapper`.
 
@@ -157,15 +161,14 @@ public class GenericMapper implements XrayMapper {
     @Override
     public JqlQuery queryTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
         return JqlQuery.create()
-                .addCondition(new ProjectEquals(xrayTestExecutionIssue.getProject().getKey()))
-                .addCondition(new IssueTypeEquals(xrayTestExecutionIssue.getIssueType()))
-                .addCondition(new RevisionContainsExact(xrayTestExecutionIssue.getRevision()))
+                .addCondition(new RevisionContainsExact("Reuse My Test Execution"))
                 .build();
     }
 
     @Override
     public JqlQuery queryTest(MethodContext methodContext) {
         return JqlQuery.create()
+                .addCondition(new IssueTypeEquals(IssueType.Test))
                 .addCondition(new SummaryContainsExact(methodContext.getName()))
                 .build()
     }
@@ -173,16 +176,16 @@ public class GenericMapper implements XrayMapper {
     @Override
     public JqlQuery queryTestSet(ClassContext classContext) {
         return JqlQuery.create()
+                .addCondition(new IssueTypeEquals(IssueType.TestSet))
                 .addCondition(new SummaryContainsExact("My Tests"))
                 .build()
     }
 }
 ```
 
-In this case the Xray connector will search Jira issues for an issue of type `TestSet` with matching summary `My Tests`.
-Then the connector will run a search for all associated test methods for this test set to find an issue of type `Test` and a summary equal the test method name.
+In this case the Xray connector will reuse the Test Execution with revision "*Reuse My Test Execution*", maps all classes to the Test Set with summary "*My Tests*" and search for associated Jira Tests where the summary matches the method name. 
 
-### Update entities
+#### Update entities
 
 The `XrayMapper` also provides callbacks for updating entities.
 
@@ -210,6 +213,8 @@ public class GenericMapper implements XrayMapper {
 You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#References).
 
 #### Creating new entities
+
+By default, the Xray connector doesn't create any issues. You can enable that by passing `true` in the interface.
 
 ```java
 public class GenericMapper implements XrayMapper {
