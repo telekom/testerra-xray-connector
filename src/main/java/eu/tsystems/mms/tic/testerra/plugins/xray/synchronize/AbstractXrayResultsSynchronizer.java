@@ -123,9 +123,9 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
             final XrayUtils xrayUtils = getXrayUtils();
             final ExecutionContext executionContext = ExecutionContextController.getCurrentExecutionContext();
-            xrayMapper.updateXrayTestExecution(testExecutionIssue, executionContext);
+            xrayMapper.updateTestExecution(testExecutionIssue, executionContext);
 
-            Optional<XrayTestExecutionIssue> optionalExistingTestExecution = xrayMapper.createXrayTestExecutionQuery(testExecutionIssue)
+            Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(xrayMapper.queryTestExecution(testExecutionIssue))
                     .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
 
             if (optionalExistingTestExecution.isPresent()) {
@@ -134,7 +134,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                         IssueType.TestExecution,
                         xrayConfig.getIssueUrl(testExecutionIssue.getKey()).orElse(null)
                 ));
-                xrayMapper.updateXrayTestExecution(testExecutionIssue, executionContext);
+                xrayMapper.updateTestExecution(testExecutionIssue, executionContext);
             } else {
                 log().info(String.format("Create new %s", IssueType.TestExecution));
             }
@@ -256,12 +256,12 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             final String cacheKey = testResult.getMethod().getQualifiedName();
 
             if (!testCacheByMethodName.containsKey(cacheKey)) {
-                Optional<JqlQuery> xrayTestQuery = xrayMapper.createXrayTestQuery(methodContext);
-                if (xrayTestQuery.isPresent()) {
-                    Optional<XrayTestIssue> optionalExistingTestIssue = xrayUtils.searchIssues(xrayTestQuery.get(), XrayTestIssue::new).findFirst();
+                final JqlQuery testQuery = xrayMapper.queryTest(methodContext);
+                if (testQuery != null) {
+                    Optional<XrayTestIssue> optionalExistingTestIssue = xrayUtils.searchIssues(testQuery, XrayTestIssue::new).findFirst();
                     if (optionalExistingTestIssue.isPresent()) {
                         testCacheByMethodName.put(cacheKey, optionalExistingTestIssue.get());
-                    } else {
+                    } else if (xrayMapper.shouldCreateNewTest()) {
                         XrayTestIssue testIssue = new XrayTestIssue();
                         testIssue.getProject().setKey(xrayConfig.getProjectKey());
                         testIssue.setSummary(testResult.getMethod().getQualifiedName());
@@ -279,7 +279,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
         getTestSetIssue(methodContext.getClassContext()).ifPresent(xrayTestSetIssue -> {
             // Update test set by mapper
-            xrayMapper.updateXrayTestSet(xrayTestSetIssue, methodContext.getClassContext());
+            xrayMapper.updateTestSet(xrayTestSetIssue, methodContext.getClassContext());
 
             List<String> testSetTestKeys = xrayTestSetIssue.getTestKeys();
             List<String> newTestKeys = testIssues.stream()
@@ -303,7 +303,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
          * and add to sync queue
          */
         testIssues.stream()
-                .peek(issue -> xrayMapper.updateXrayTest(issue, methodContext))
+                .peek(issue -> xrayMapper.updateTest(issue, methodContext))
                 .map(XrayTestExecutionImport.TestRun::new)
                 .peek(test -> updateTestImport(test, methodContext))
                 .forEach(testRunSyncQueue::add);
@@ -439,12 +439,12 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 log().error(String.format("Unable to query %s by key: %s", IssueType.TestSet, testSetKey), e);
             }
         } else {
-            Optional<JqlQuery> xrayTestSetQuery = xrayMapper.createXrayTestSetQuery(classContext);
-            if (xrayTestSetQuery.isPresent()) {
-                Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(xrayTestSetQuery.get(), XrayTestSetIssue::new).findFirst();
+            final JqlQuery xraytestsetquery = xrayMapper.queryTestSet(classContext);
+            if (xraytestsetquery != null) {
+                Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(xraytestsetquery, XrayTestSetIssue::new).findFirst();
                 if (optionalExistingTestSetIssue.isPresent()) {
                     xrayTestSetIssue = new XrayTestSetIssue(optionalExistingTestSetIssue.get());
-                } else {
+                } else if (xrayMapper.shouldCreateNewTestSet()){
                     xrayTestSetIssue = new XrayTestSetIssue();
                     xrayTestSetIssue.getProject().setKey(xrayConfig.getProjectKey());
                     xrayTestSetIssue.setSummary(clazz.getSimpleName());

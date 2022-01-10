@@ -136,7 +136,7 @@ public class AnnotatedClassTest extends TesterraTest {
 
 #### Other mapping implementations
 
-The `DefaultSummaryMapper` maps Java test methods to Jira Tests and Java classes to Jira Test Sets by their name, when no keys are present in the annotations. You enable that feature by passing the mapper in your `XrayResultsSynchronizer`.
+The `DefaultSummaryMapper` maps Java test methods to Jira Tests and Java classes to Jira Test Sets by their name, when no keys are present in the annotations. Additionally, it create the issues when they don't exist. You enable that feature by passing the mapper in your `XrayResultsSynchronizer`.
 
 ```java
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
@@ -155,37 +155,33 @@ When you want to have full control over the mapping, you can provide your own im
 ```java
 public class GenericMapper implements XrayMapper {
 
-    default Optional<JqlQuery> createXrayTestExecutionQuery(XrayTestExecutionIssue xrayTestExecutionIssue) {
-        final JqlQuery jqlQuery = JqlQuery.create()
+    @Override
+    public JqlQuery queryTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
+        return JqlQuery.create()
                 .addCondition(new ProjectEquals(xrayTestExecutionIssue.getProject().getKey()))
                 .addCondition(new IssueTypeEquals(xrayTestExecutionIssue.getIssueType()))
                 .addCondition(new RevisionContainsExact(xrayTestExecutionIssue.getRevision()))
                 .build();
-        return Optional.of(jqlQuery);
     }
-    
-    public Optional<JqlQuery> createXrayTestQuery(MethodContext methodContext) {
-        return Optional.of(
-                JqlQuery.create()
+
+    @Override
+    public JqlQuery queryTest(MethodContext methodContext) {
+        return JqlQuery.create()
                 .addCondition(new SummaryContainsExact(methodContext.getName()))
                 .build()
-        );
     }
-    
-    public Optional<JqlQuery> createXrayTestSetQuery(ClassContext classContext) {
-        return Optional.of(
-                JqlQuery.create()
+
+    @Override
+    public JqlQuery queryTestSet(ClassContext classContext) {
+        return JqlQuery.create()
                 .addCondition(new SummaryContainsExact("My Tests"))
                 .build()
-        );
     }
 }
 ```
 
 In this case the Xray connector will search Jira issues for an issue of type `TestSet` with matching summary `My Tests`.
 Then the connector will run a search for all associated test methods for this test set to find an issue of type `Test` and a summary equal the test method name.
-
-When the provided `Optional` for tests and test sets are empty, the synchronizer will not start an attempt to create them. 
 
 ### Update entities
 
@@ -194,22 +190,41 @@ The `XrayMapper` also provides callbacks for updating entities.
 ```java
 public class GenericMapper implements XrayMapper {
     
-    default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
+    @Override
+    public void updateTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
         xrayTestExecutionIssue.getTestEnvironments().add("Test");
         xrayTestExecutionIssue.setFixVersions(List.of(new JiraNameReference("1.0")));
     }
-    
-    default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+
+    @Override
+    public void updateTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
         xrayTestSetIssue.getLabels().add("TestAutomation");
     }
-    
-    default void updateXrayTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
+
+    @Override
+    public void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
         xrayTestIssue.getLabels().add("TestAutomation");
     }
 }
 ```
 
 You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#References).
+
+#### Creating new entities
+
+```java
+public class GenericMapper implements XrayMapper {
+    @Override
+    public boolean shouldCreateNewTestSet() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldCreateNewTest() {
+        return true;
+    }
+}
+```
 
 ### Jira custom fields IDs
 

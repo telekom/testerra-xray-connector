@@ -19,34 +19,40 @@ import org.testng.ITestResult;
 public class DefaultSummaryMapper implements XrayMapper {
 
     @Override
-    public Optional<JqlQuery> createXrayTestQuery(MethodContext methodContext) {
-        return Optional.of(
-                JqlQuery.create()
-                        .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
-                        .addCondition(new IssueTypeEquals(IssueType.Test))
-                        .addCondition(new SummaryContainsExact(methodContext.getName()))
-                        .build()
-        );
+    public JqlQuery queryTest(MethodContext methodContext) {
+        return JqlQuery.create()
+                .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
+                .addCondition(new IssueTypeEquals(IssueType.Test))
+                .addCondition(new SummaryContainsExact(methodContext.getName()))
+                .build();
     }
 
     @Override
-    public Optional<JqlQuery> createXrayTestSetQuery(ClassContext classContext) {
-        return Optional.of(
-                JqlQuery.create()
-                        .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
-                        .addCondition(new IssueTypeEquals(IssueType.TestSet))
-                        .addCondition(new SummaryContainsExact(classContext.getTestClassContext().map(TestClassContext::name).orElse(classContext.getName())))
-                        .build()
-        );
+    public boolean shouldCreateNewTest() {
+        return true;
     }
 
     @Override
-    public void updateXrayTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
+    public JqlQuery queryTestSet(ClassContext classContext) {
+        return JqlQuery.create()
+                .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
+                .addCondition(new IssueTypeEquals(IssueType.TestSet))
+                .addCondition(new SummaryContainsExact(classContext.getTestClassContext().map(TestClassContext::name).orElse(classContext.getName())))
+                .build();
+    }
+
+    @Override
+    public boolean shouldCreateNewTestSet() {
+        return true;
+    }
+
+    @Override
+    public void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
         xrayTestIssue.setSummary(methodContext.getName());
     }
 
     @Override
-    public void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+    public void updateTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
         xrayTestSetIssue.setSummary(classContext.getTestClassContext().map(TestClassContext::name).orElse(classContext.getName()));
     }
 }

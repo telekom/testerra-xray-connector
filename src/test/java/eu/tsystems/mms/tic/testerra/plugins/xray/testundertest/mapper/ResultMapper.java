@@ -63,7 +63,7 @@ public class ResultMapper implements XrayMapper {
     }
 
     @Override
-    public void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+    public void updateTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
         xrayTestSetIssue.setSummary(TEST_SET_SUMMARY);
     }
 }

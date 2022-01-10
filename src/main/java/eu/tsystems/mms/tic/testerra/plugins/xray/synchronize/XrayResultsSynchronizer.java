@@ -27,7 +27,7 @@ import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 
 public interface XrayResultsSynchronizer {
     /**
-     * @deprecated Use {@link XrayMapper#updateXrayTestExecution(XrayTestExecutionIssue, ExecutionContext)} instead
+     * @deprecated Use {@link XrayMapper#updateTestExecution(XrayTestExecutionIssue, ExecutionContext)} instead
      */
     default XrayTestExecutionInfo getExecutionInfo() {
         return null;
@@ -36,7 +36,7 @@ public interface XrayResultsSynchronizer {
     XrayMapper getXrayMapper();
 
     /**
-     * @deprecated Use {@link XrayMapper#updateXrayTestExecution(XrayTestExecutionIssue, ExecutionContext)} instead
+     * @deprecated Use {@link XrayMapper#updateTestExecution(XrayTestExecutionIssue, ExecutionContext)} instead
      */
     default XrayTestExecutionUpdates getExecutionUpdates() {
         return null;

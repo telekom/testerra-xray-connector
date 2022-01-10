@@ -33,7 +33,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
-import java.util.Optional;
 import org.testng.ITestClass;
 import org.testng.ITestResult;
 
@@ -47,7 +46,7 @@ public interface XrayMapper {
      *
      * @param testNgResult the test result
      * @return JqlQuery that is able to match a single Xray-Test or null
-     * @deprecated Use {@link #createXrayTestQuery(MethodContext)}
+     * @deprecated Use {@link #queryTest(MethodContext)}
      */
     default JqlQuery resultToXrayTest(ITestResult testNgResult) {
         return null;
@@ -56,8 +55,15 @@ public interface XrayMapper {
     /**
      * Creates a {@link JqlQuery} for mapping {@link MethodContext} to a JiraTest
      */
-    default Optional<JqlQuery> createXrayTestQuery(MethodContext methodContext) {
-        return methodContext.getTestNgResult().map(this::resultToXrayTest);
+    default JqlQuery queryTest(MethodContext methodContext) {
+        return methodContext.getTestNgResult().map(this::resultToXrayTest).orElse(null);
+    }
+
+    /**
+     * If true, try to create a Xray Test
+     */
+    default boolean shouldCreateNewTest() {
+        return false;
     }
 
     /**
@@ -68,44 +74,51 @@ public interface XrayMapper {
      *
      * @param testNgClass test class
      * @return JqlQuery that is able to match a single Xray-TestSet or null
-     * @deprecated Use {@link #createXrayTestSetQuery(ClassContext)} instead
+     * @deprecated Use {@link #queryTestSet(ClassContext)} instead
      */
     default JqlQuery classToXrayTestSet(ITestClass testNgClass) {
         return null;
     }
 
-    default Optional<JqlQuery> createXrayTestSetQuery(ClassContext classContext) {
+    default JqlQuery queryTestSet(ClassContext classContext) {
         return classContext.readMethodContexts()
                 .findFirst()
                 .flatMap(MethodContext::getTestNgResult)
-                .map(testResult -> classToXrayTestSet(testResult.getMethod().getTestClass()));
+                .map(testResult -> classToXrayTestSet(testResult.getMethod().getTestClass()))
+                .orElse(null);
     }
 
-    default Optional<JqlQuery> createXrayTestExecutionQuery(XrayTestExecutionIssue xrayTestExecutionIssue) {
-        final JqlQuery jqlQuery = JqlQuery.create()
+    /**
+     * If true, try to create a Xray Test Set
+     */
+    default boolean shouldCreateNewTestSet() {
+        return false;
+    }
+
+    default JqlQuery queryTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
+        return JqlQuery.create()
                 .addCondition(new ProjectEquals(xrayTestExecutionIssue.getProject().getKey()))
                 .addCondition(new IssueTypeEquals(xrayTestExecutionIssue.getIssueType()))
                 .addCondition(new SummaryContainsExact(xrayTestExecutionIssue.getSummary()))
                 .addCondition(new RevisionContainsExact(xrayTestExecutionIssue.getRevision()))
                 .build();
-        return Optional.of(jqlQuery);
     }
 
     /**
      * Gets called when the test execution is created or updated.
      */
-    default void updateXrayTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
+    default void updateTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
     }
 
     /**
      * Gets called every time when a test is assigned to the test set.
      */
-    default void updateXrayTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+    default void updateTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
     }
 
     /**
      * Gets called every time a test will be synchronized.
      */
-    default void updateXrayTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
+    default void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
     }
 }

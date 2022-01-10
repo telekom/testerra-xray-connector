@@ -56,7 +56,7 @@ public class XrayConnectorTest extends AbstractTest {
 
     @Test
     public void testSearchForExistingTestExecution() {
-        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = defaultSummaryMapper.createXrayTestExecutionQuery(xrayInfo)
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(xrayInfo))
                 .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
 
         Assert.assertTrue(optionalExistingTestExecution.isPresent());
@@ -65,7 +65,7 @@ public class XrayConnectorTest extends AbstractTest {
 
     @Test
     public void testSearchForExistingTestExecutionContainingUmlauts() {
-        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = defaultSummaryMapper.createXrayTestExecutionQuery(xrayInfoWithUmlauts)
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(xrayInfoWithUmlauts))
                 .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
 
         Assert.assertTrue(optionalExistingTestExecution.isPresent());
@@ -76,8 +76,7 @@ public class XrayConnectorTest extends AbstractTest {
     public void testSearchForNonExistingTestExecution() {
         final XrayInfo nonExisitngExecution = xrayInfo;
         nonExisitngExecution.setRevision("not existing");
-
-                Optional<XrayTestExecutionIssue> optionalExistingTestExecution = defaultSummaryMapper.createXrayTestExecutionQuery(nonExisitngExecution)
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(nonExisitngExecution))
                 .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
         Assert.assertFalse(optionalExistingTestExecution.isPresent());
     }
