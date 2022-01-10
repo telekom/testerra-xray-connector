@@ -102,13 +102,13 @@ The default mapping implementation of a Test Execution is done by the following 
 - Summary
 - Revision
 
-When a Test Execution was found, it will be reused, otherwise a new Test Execution will be created.
+When a Test Execution was found, it will be reused, otherwise a new Test Execution will be created when at least one test should be synchronized.
 
-You can control the mapping by implementing [updateXrayTestExecution()](#Update entities), which will be called right before [createXrayTestExecutionQuery()](#Custom mapping implementations).
+You can control the mapping by implementing [updateTestExecution()](#Update entities), which will be called right before [queryTestExecution()](#Custom mapping implementations).
 
 #### Test
 
-To create a one-to-one mapping between your test methods and your Jira issues of type `Test` you just have to set up the `XrayTest`
+To create a mapping between your test methods and your Jira issues of type `Test` you just have to set up the `XrayTest`
 annotation on your method.
 
 ```java
@@ -124,8 +124,7 @@ public class MethodsAnnotatedTest extends TesterraTest {
 
 #### Test Set
 
-Instead of annotating each method by itself, you can annotate just the test class with the `XrayTestSet` annotation  
-and the Xray connector will do the rest for you by searching Jira issues.
+You can also annotate the `Test Set` by its issue key.
 
 ```java
 
@@ -136,7 +135,7 @@ public class AnnotatedClassTest extends TesterraTest {
 
 #### Other mapping implementations
 
-The `DefaultSummaryMapper` maps Java test methods to Jira Tests and Java classes to Jira Test Sets by their name, when no keys are present in the annotations. Additionally, it create the issues when they don't exist. You enable that feature by passing the mapper in your `XrayResultsSynchronizer`.
+The `DefaultSummaryMapper` maps Java test methods to Jira Tests and Java classes to Jira Test Sets by their name, when no keys are present in the annotations. Additionally, it creates the issues when they don't exist. You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
 
 ```java
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
