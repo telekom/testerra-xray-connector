@@ -251,8 +251,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         final XrayUtils xrayUtils = getXrayUtils();
         final XrayConfig xrayConfig = getXrayConfig();
 
-        Set<XrayTestIssue> testIssues = getTestIssues(realMethod);
-        if (testIssues.isEmpty()) {
+        final Set<XrayTestIssue> currentTestIssues = getTestIssuesForMethod(realMethod);
+        if (currentTestIssues.isEmpty()) {
             final String cacheKey = testResult.getMethod().getQualifiedName();
 
             if (!testCacheByMethodName.containsKey(cacheKey)) {
@@ -272,17 +272,14 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             }
 
             if (testCacheByMethodName.containsKey(cacheKey)) {
-                testIssues.add(testCacheByMethodName.get(cacheKey));
+                currentTestIssues.add(testCacheByMethodName.get(cacheKey));
             }
         }
 
 
-        getTestSetIssue(methodContext.getClassContext()).ifPresent(xrayTestSetIssue -> {
-            // Update test set by mapper
-            xrayMapper.updateTestSet(xrayTestSetIssue, methodContext.getClassContext());
-
-            List<String> testSetTestKeys = xrayTestSetIssue.getTestKeys();
-            List<String> newTestKeys = testIssues.stream()
+        getTestSetIssueForClassContext(methodContext.getClassContext()).ifPresent(xrayTestSetIssue -> {
+            final List<String> testSetTestKeys = xrayTestSetIssue.getTestKeys();
+            final List<String> newTestKeys = currentTestIssues.stream()
                     .map(JiraKeyReference::getKey)
                     .filter(Objects::nonNull)
                     .filter(testKey -> !testSetTestKeys.contains(testKey))
@@ -290,6 +287,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
             // Add new tests to testset
             if (newTestKeys.size() > 0) {
+                xrayMapper.updateTestSet(xrayTestSetIssue, methodContext.getClassContext());
+
                 testSetTestKeys.addAll(newTestKeys);
                 if (!testSetSyncQueue.contains(xrayTestSetIssue)) {
                     testSetSyncQueue.add(xrayTestSetIssue);
@@ -302,7 +301,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
          * convert to import entity
          * and add to sync queue
          */
-        testIssues.stream()
+        currentTestIssues.stream()
                 .peek(issue -> xrayMapper.updateTest(issue, methodContext))
                 .map(XrayTestExecutionImport.TestRun::new)
                 .peek(test -> updateTestImport(test, methodContext))
@@ -402,7 +401,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         }
     }
 
-    private Set<XrayTestIssue> getTestIssues(Method realMethod) {
+    private Set<XrayTestIssue> getTestIssuesForMethod(Method realMethod) {
         String[] testKeys = realMethod.getAnnotation(XrayTest.class).key();
 
         return Arrays.stream(testKeys)
@@ -411,16 +410,21 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 .collect(Collectors.toSet());
     }
 
-    private Optional<XrayTestSetIssue> getTestSetIssue(ClassContext classContext) {
-        Class<?> clazz = classContext.getTestClass();
+    /**
+     * Queries Test Sets from API, creates new ones and caches them locally.
+     * If no Test Set could be found or wasn't created, the returned Optional is empty.
+     */
+    private Optional<XrayTestSetIssue> getTestSetIssueForClassContext(ClassContext classContext) {
+        final Class<?> clazz = classContext.getTestClass();
 
         if (!clazz.isAnnotationPresent(XrayTestSet.class)) {
             return Optional.empty();
         }
 
-        String cacheKey = clazz.getCanonicalName();
+        final String cacheKey = clazz.getCanonicalName();
+
+        // The Test Set has been cached by name, even if its null
         if (this.testSetCacheByClassName.containsKey(cacheKey)) {
-            // Cache could be null
             return Optional.ofNullable(this.testSetCacheByClassName.get(cacheKey));
         }
 
@@ -430,7 +434,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         final XrayConfig xrayConfig = getXrayConfig();
 
         // Test set key is present
-        String testSetKey = clazz.getAnnotation(XrayTestSet.class).key();
+        final String testSetKey = clazz.getAnnotation(XrayTestSet.class).key();
         if (StringUtils.isNotBlank(testSetKey)) {
             try {
                 final XrayTestSetIssue existingTestSetIssue = xrayUtils.getIssue(testSetKey, XrayTestSetIssue::new);
@@ -439,9 +443,9 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 log().error(String.format("Unable to query %s by key: %s", IssueType.TestSet, testSetKey), e);
             }
         } else {
-            final JqlQuery xraytestsetquery = xrayMapper.queryTestSet(classContext);
-            if (xraytestsetquery != null) {
-                Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(xraytestsetquery, XrayTestSetIssue::new).findFirst();
+            final JqlQuery testSetQuery = xrayMapper.queryTestSet(classContext);
+            if (testSetQuery != null) {
+                Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(testSetQuery, XrayTestSetIssue::new).findFirst();
                 if (optionalExistingTestSetIssue.isPresent()) {
                     xrayTestSetIssue = new XrayTestSetIssue(optionalExistingTestSetIssue.get());
                 } else if (xrayMapper.shouldCreateNewTestSet()){
