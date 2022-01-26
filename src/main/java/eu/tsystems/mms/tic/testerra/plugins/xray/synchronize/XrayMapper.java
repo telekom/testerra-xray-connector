@@ -37,6 +37,12 @@ import org.testng.ITestClass;
 import org.testng.ITestResult;
 
 public interface XrayMapper {
+    String PROPERTY_TEST_SET_TESTS = "xray.test.set.tests.field.id";
+    String PROPERTY_TEST_EXECUTION_START_DATE = "xray.test.execution.start.time.field.id";
+    String PROPERTY_TEST_EXECUTION_FINISH_DATE = "xray.test.execution.finish.time.field.id";
+    String PROPERTY_TEST_EXECUTION_REVISION = "xray.test.execution.revision.field.id";
+    String PROPERTY_TEST_EXECUTION_TEST_ENVIRONMENTS = "xray.test.execution.test-environments.field.id";
+    String PROPERTY_TEST_EXECUTION_TEST_PLANS = "xray.test.execution.test-plans.field.id";
 
     /**
      * called for matching Test method against Xray Test

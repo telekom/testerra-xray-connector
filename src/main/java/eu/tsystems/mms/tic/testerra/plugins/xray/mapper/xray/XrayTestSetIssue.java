@@ -26,11 +26,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.testng.Assert;
 
 public class XrayTestSetIssue extends XrayIssue {
+
+    static {
+        assert !XrayMapper.PROPERTY_TEST_SET_TESTS.equals(Fields.TEST_SET_TESTS.getFieldName()): String.format("Property '%s' is not defined", XrayMapper.PROPERTY_TEST_SET_TESTS);
+    }
 
     public XrayTestSetIssue() {
         this.setIssueType(IssueType.TestSet.getIssueType());
