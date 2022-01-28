@@ -116,7 +116,7 @@ public class MethodsAnnotatedTest extends TesterraTest {
 
     @Test
     @XrayTest(key = "EXAMPLE-2")
-    public void passes() {
+    public void test_passes() {
         Assert.assertTrue(true);
     }
 }
@@ -124,12 +124,23 @@ public class MethodsAnnotatedTest extends TesterraTest {
 
 #### Annotated Test Set
 
-You can also annotate the *Test Set* by its issue key.
+You can also annotate the *Test Set* by its issue key. All methods (even setup methods) in this class will be handled as having the `@XrayTest` annotation present. When you don't want to synchronize specific methods, add the `@XrayNoSync` annotation.
 
 ```java
 
 @XrayTestSet(key = "EXAMPLE-5")
 public class AnnotatedClassTest extends TesterraTest {
+    
+    @BeforeTest
+    @XrayNoSync
+    public void setup() {
+        // Do some setup here
+    }
+    
+    @Test
+    public void test_fails() {
+        Assert.assertTrue(false);
+    }
 }
 ```
 

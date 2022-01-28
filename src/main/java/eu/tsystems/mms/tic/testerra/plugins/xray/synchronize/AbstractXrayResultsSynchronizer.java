@@ -23,6 +23,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayNoSync;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
@@ -56,6 +57,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -243,7 +245,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
         final ITestResult testResult = testNgResult.get();
         final Method realMethod = testResult.getMethod().getConstructorOrMethod().getMethod();
-        if (!realMethod.isAnnotationPresent(XrayTest.class)) {
+        if (realMethod.isAnnotationPresent(XrayNoSync.class)) {
             return;
         }
 
@@ -251,17 +253,25 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         final XrayUtils xrayUtils = getXrayUtils();
         final XrayConfig xrayConfig = getXrayConfig();
 
+        // Get the class Test Set issue by annotation
+        final Optional<XrayTestSetIssue> optionalXrayTestSetIssue = getTestSetIssueForClassContext(methodContext.getClassContext());
+
+        // Get the method's Test issues by annotation
         final Set<XrayTestIssue> currentTestIssues = getTestIssuesForMethod(realMethod);
-        if (currentTestIssues.isEmpty()) {
+
+        // If a method annotation or class annotation was found
+        if (currentTestIssues.isEmpty() || optionalXrayTestSetIssue.isPresent()) {
             final String cacheKey = testResult.getMethod().getQualifiedName();
 
             if (!testCacheByMethodName.containsKey(cacheKey)) {
                 final JqlQuery testQuery = xrayMapper.queryTest(methodContext);
                 if (testQuery != null) {
-                    Optional<XrayTestIssue> optionalExistingTestIssue = xrayUtils.searchIssues(testQuery, XrayTestIssue::new).findFirst();
+                    // Find existing Test issue
+                    final Optional<XrayTestIssue> optionalExistingTestIssue = xrayUtils.searchIssues(testQuery, XrayTestIssue::new).findFirst();
                     if (optionalExistingTestIssue.isPresent()) {
                         testCacheByMethodName.put(cacheKey, optionalExistingTestIssue.get());
                     } else if (xrayMapper.shouldCreateNewTest()) {
+                        // Create new Test issue
                         XrayTestIssue testIssue = new XrayTestIssue();
                         testIssue.getProject().setKey(xrayConfig.getProjectKey());
                         testIssue.setSummary(testResult.getMethod().getQualifiedName());
@@ -271,13 +281,14 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 }
             }
 
+            // Add the found or new Test issue to the list of current issues
             if (testCacheByMethodName.containsKey(cacheKey)) {
                 currentTestIssues.add(testCacheByMethodName.get(cacheKey));
             }
         }
 
 
-        getTestSetIssueForClassContext(methodContext.getClassContext()).ifPresent(xrayTestSetIssue -> {
+        optionalXrayTestSetIssue.ifPresent(xrayTestSetIssue -> {
             final List<String> testSetTestKeys = xrayTestSetIssue.getTestKeys();
             final List<String> newTestKeys = currentTestIssues.stream()
                     .map(JiraKeyReference::getKey)
@@ -402,8 +413,11 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     }
 
     private Set<XrayTestIssue> getTestIssuesForMethod(Method realMethod) {
-        String[] testKeys = realMethod.getAnnotation(XrayTest.class).key();
+        if (!realMethod.isAnnotationPresent(XrayTest.class)) {
+            return new HashSet<>();
+        }
 
+        String[] testKeys = realMethod.getAnnotation(XrayTest.class).key();
         return Arrays.stream(testKeys)
                 .filter(StringUtils::isNotBlank)
                 .map(XrayTestIssue::new)
