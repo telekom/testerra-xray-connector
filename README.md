@@ -230,12 +230,12 @@ By default, the Xray connector doesn't create any issues. You can enable that by
 ```java
 public class GenericMapper implements XrayMapper {
     @Override
-    public boolean shouldCreateNewTestSet() {
+    public boolean shouldCreateNewTestSet(ClassContext classContext) {
         return true;
     }
 
     @Override
-    public boolean shouldCreateNewTest() {
+    public boolean shouldCreateNewTest(MethodContext methodContext) {
         return true;
     }
 }

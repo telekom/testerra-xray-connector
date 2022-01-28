@@ -68,7 +68,7 @@ public interface XrayMapper {
     /**
      * If true, try to create a Xray Test
      */
-    default boolean shouldCreateNewTest() {
+    default boolean shouldCreateNewTest(MethodContext methodContext) {
         return false;
     }
 
@@ -97,7 +97,7 @@ public interface XrayMapper {
     /**
      * If true, try to create a Xray Test Set
      */
-    default boolean shouldCreateNewTestSet() {
+    default boolean shouldCreateNewTestSet(ClassContext classContext) {
         return false;
     }
 

@@ -270,7 +270,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                     final Optional<XrayTestIssue> optionalExistingTestIssue = xrayUtils.searchIssues(testQuery, XrayTestIssue::new).findFirst();
                     if (optionalExistingTestIssue.isPresent()) {
                         testCacheByMethodName.put(cacheKey, optionalExistingTestIssue.get());
-                    } else if (xrayMapper.shouldCreateNewTest()) {
+                    } else if (xrayMapper.shouldCreateNewTest(methodContext)) {
                         // Create new Test issue
                         XrayTestIssue testIssue = new XrayTestIssue();
                         testIssue.getProject().setKey(xrayConfig.getProjectKey());
@@ -428,7 +428,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
      * Queries Test Sets from API, creates new ones and caches them locally.
      * If no Test Set could be found or wasn't created, the returned Optional is empty.
      */
-    private Optional<XrayTestSetIssue> getTestSetIssueForClassContext(ClassContext classContext) {
+    private Optional<XrayTestSetIssue> getTestSetIssueForClassContext(final ClassContext classContext) {
         final Class<?> clazz = classContext.getTestClass();
 
         if (!clazz.isAnnotationPresent(XrayTestSet.class)) {
@@ -462,7 +462,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(testSetQuery, XrayTestSetIssue::new).findFirst();
                 if (optionalExistingTestSetIssue.isPresent()) {
                     xrayTestSetIssue = new XrayTestSetIssue(optionalExistingTestSetIssue.get());
-                } else if (xrayMapper.shouldCreateNewTestSet()){
+                } else if (xrayMapper.shouldCreateNewTestSet(classContext)){
                     xrayTestSetIssue = new XrayTestSetIssue();
                     xrayTestSetIssue.getProject().setKey(xrayConfig.getProjectKey());
                     xrayTestSetIssue.setSummary(clazz.getSimpleName());
