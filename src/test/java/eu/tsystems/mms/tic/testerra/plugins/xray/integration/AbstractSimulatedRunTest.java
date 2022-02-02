@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
@@ -124,9 +125,10 @@ public abstract class AbstractSimulatedRunTest extends TesterraTest {
         /* get data to check */
         final JiraIssue rawIssue = JiraUtils.getIssue(webResource, testExecutionKey, Arrays.asList(
                 "summary", "description", "labels", "versions",
-                xrayConfig.getRevisionFieldName(),
-                xrayConfig.getTestExecutionStartTimeFieldName(),
-                xrayConfig.getTestExecutionFinishTimeFieldName()));
+                Fields.TEST_EXECUTION_REVISION.getFieldName(),
+                Fields.TEST_EXECUTION_START_DATE.getFieldName(),
+                Fields.TEST_EXECUTION_FINISH_DATE.getFieldName()
+        ));
 
         XrayUtils xrayUtils = new XrayUtils(webResource);
 

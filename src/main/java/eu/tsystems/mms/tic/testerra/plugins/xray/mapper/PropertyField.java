@@ -11,16 +11,20 @@ public class PropertyField implements Field {
 
     @Override
     public String getFieldName() {
+        return String.format("customfield_%d", getCustomFieldId());
+    }
+
+    private int getCustomFieldId() {
         int intProperty = PropertyManager.getIntProperty(property);
         if (intProperty > 0) {
-            return String.format("customfield_%d", intProperty);
+            return intProperty;
         } else {
-            return property;
+            throw new RuntimeException(String.format("Property '%s' is not defined", this.property));
         }
     }
 
     @Override
     public String getJQLTerm() {
-        return String.format("cf[%s]", PropertyManager.getIntProperty(property));
+        return String.format("cf[%s]", getCustomFieldId());
     }
 }

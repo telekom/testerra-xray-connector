@@ -76,15 +76,9 @@ xray.token=jiratoken
 # or
 xray.user=jira-sync-user
 xray.password=password
-
-# Mandatory fields
-xray.test.execution.revision.field.id=
-
-# Recommended fields
-xray.test.set.tests.field.id=
 ```
 
-For setting the field IDs read: [Jira custom fields IDs](#Jira custom fields IDs)
+You also need to configure [Jira custom fields IDs](#Jira custom fields IDs).
 
 ### Implement synchronizer interface
 
@@ -251,24 +245,15 @@ public class GenericMapper implements XrayMapper {
 
 ### Jira custom fields IDs
 
-Even if most features are supported by the [Xray import API](#References), in some cases it is necessary to use `JiraIssue` entities via. the Jira ReST API.
-
-But because Jira's Xray extension uses custom field IDs instead of human readable names, you need to define these custom IDs in the `properties` file.
+Jira's Xray extension uses custom field IDs instead of human readable names, therefore you need to define these custom IDs in the `properties` file.
 
 ```properties
-# Mandatory for Test Execution synchronization
-xray.test.execution.revision.field.id=
-
-# Mandatory for creation of Test Sets (recommended)
-xray.test.set.tests.field.id=
-
-# Optional (advanced)
-# if you want to update a test execution via Jira's ReST API on your own
-# or if you want to run the integration tests
 xray.test.execution.start.time.field.id=
 xray.test.execution.finish.time.field.id=
+xray.test.execution.revision.field.id=
 xray.test.execution.test-environments.field.id=
 xray.test.execution.test-plans.field.id=
+xray.test.set.tests.field.id=
 ```
 
 You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.

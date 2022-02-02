@@ -34,10 +34,6 @@ import org.testng.Assert;
 
 public class XrayTestSetIssue extends XrayIssue {
 
-    static {
-        assert !XrayMapper.PROPERTY_TEST_SET_TESTS.equals(Fields.TEST_SET_TESTS.getFieldName()): String.format("Property '%s' is not defined", XrayMapper.PROPERTY_TEST_SET_TESTS);
-    }
-
     public XrayTestSetIssue() {
         this.setIssueType(IssueType.TestSet.getIssueType());
     }

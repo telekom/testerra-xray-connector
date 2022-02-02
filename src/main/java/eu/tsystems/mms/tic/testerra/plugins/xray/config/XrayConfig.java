@@ -115,48 +115,6 @@ public class XrayConfig implements Loggable {
         return instance;
     }
 
-    /**
-     * @deprecated Use {@link Fields} instead
-     */
-    public String getTestExecutionStartTimeFieldName() {
-        return Fields.TEST_EXECUTION_START_DATE.getFieldName();
-    }
-
-    /**
-     * @deprecated Use {@link Fields} instead
-     */
-    public String getTestExecutionStartTimeJQLTerm() {
-        return Fields.TEST_EXECUTION_START_DATE.getJQLTerm();
-    }
-
-    /**
-     * @deprecated Use {@link Fields} instead
-     */
-    public String getTestExecutionFinishTimeFieldName() {
-        return Fields.TEST_EXECUTION_FINISH_DATE.getFieldName();
-    }
-
-    /**
-     * @deprecated Use {@link Fields} instead
-     */
-    public String getTestExecutionFinishTimeJQLTerm() {
-        return Fields.TEST_EXECUTION_FINISH_DATE.getJQLTerm();
-    }
-
-    /**
-     * @deprecated Use {@link Fields} instead
-     */
-    public String getRevisionFieldName() {
-        return Fields.TEST_EXECUTION_REVISION.getFieldName();
-    }
-
-    /**
-     * @deprecated Use {@link Fields} instead
-     */
-    public String getRevisionJQLTerm() {
-        return Fields.TEST_EXECUTION_REVISION.getJQLTerm();
-    }
-
     public boolean isSyncEnabled() {
         return PropertyManager.getBooleanProperty("xray.sync.enabled", false);
     }
