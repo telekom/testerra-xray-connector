@@ -76,7 +76,15 @@ xray.token=jiratoken
 # or
 xray.user=jira-sync-user
 xray.password=password
+
+# Mandatory fields
+xray.test.execution.revision.field.id=
+
+# Recommended fields
+xray.test.set.tests.field.id=
 ```
+
+For setting the field IDs read: [Jira custom fields IDs](#Jira custom fields IDs)
 
 ### Implement synchronizer interface
 
@@ -248,7 +256,10 @@ Even if most features are supported by the [Xray import API](#References), in so
 But because Jira's Xray extension uses custom field IDs instead of human readable names, you need to define these custom IDs in the `properties` file.
 
 ```properties
-# Required if you want to automatically assign tests to test sets
+# Mandatory for Test Execution synchronization
+xray.test.execution.revision.field.id=
+
+# Mandatory for creation of Test Sets (recommended)
 xray.test.set.tests.field.id=
 
 # Optional (advanced)
@@ -256,7 +267,6 @@ xray.test.set.tests.field.id=
 # or if you want to run the integration tests
 xray.test.execution.start.time.field.id=
 xray.test.execution.finish.time.field.id=
-xray.test.execution.revision.field.id=
 xray.test.execution.test-environments.field.id=
 xray.test.execution.test-plans.field.id=
 ```
