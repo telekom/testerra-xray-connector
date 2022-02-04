@@ -38,6 +38,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIs
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
+import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.events.TestStatusUpdateEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
@@ -78,7 +79,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private final HashMap<String, XrayTestIssue> testCacheByMethodName = new HashMap<>();
     private final ConcurrentLinkedQueue<XrayTestExecutionImport.TestRun> testRunSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
-    private final int SYNC_FREQUENCY_TESTS = 10;
+    private final int SYNC_FREQUENCY_TESTS = PropertyManager.getIntProperty("xray.sync.frequency", 10);
 
     private XrayConfig getXrayConfig() {
         return XrayConfig.getInstance();

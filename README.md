@@ -265,7 +265,6 @@ You can retrieve these IDs directly from the Jira frontend by inspecting the fie
 |Property|Default|Description|
 |---|---|---|
 |xray.sync.enabled|false|Enable synchronization|
-|xray.sync.skipped|false|Enable synchronization of test methods in state SKIPPED|
 |xray.rest.service.uri|not set|URI of the Jira REST service (with Xray-Plugin installed)|
 |xray.project.key|not set|Jira project key|
 |xray.user|not set|Jira user to sync test execution|
@@ -276,14 +275,11 @@ You can retrieve these IDs directly from the Jira frontend by inspecting the fie
 |xray.test.execution.test-environments.field.id|not set|The Jira custom field for test execution test-environments.|
 |xray.test.execution.test-plans.field.id|not set|The Jira custom field for test execution test-plans.|
 |xray.test.set.tests.field.id|not set|The Jira custom field for test set tests.|
-|xray.validation.revision.regexp|.*|Revision is validated against this regular expression to prevent unintended creation of test executions.|
-|xray.validation.revision.summary|.*|Summary is validated against this regular expression to prevent unintended creation of test executions.|
-|xray.validation.revision.description|.*|Description is validated against this regular expression to prevent unintended creation of test executions.|
-|xray.previous.result.filename|not set|When updating test execution, previous results are attached as json files using the defined file name. Default: No file created.|
-|xray.transitions.on.created|not set|Transitions made on Jira issue of type "Test Execution" when a status 'created' is reached (comma separated)|
-|xray.transitions.on.updated|not set|Transitions made on Jira issue of type "Test Execution" when a status 'updated' is reached (comma separated)|
-|xray.transitions.on.done|not set|Transitions made on Jira issue of type "Test Execution" when a status 'done' is reached (comma separated)|
-|xray.webresource.filter.logging.enabled|false|Enable logging of all web requests and response sent/received to/from Jira (deprecated)|
+|xray.sync.frequency|10|Xray import frequency (after n methods)|
+|xray.validation.revision.regexp|.*|Revision is validated against this regular expression to prevent unintended creation of test executions.  (**deprecated**)|
+|xray.validation.revision.summary|.*|Summary is validated against this regular expression to prevent unintended creation of test executions.  (**deprecated**)|
+|xray.validation.revision.description|.*|Description is validated against this regular expression to prevent unintended creation of test executions.  (**deprecated**)|
+|xray.webresource.filter.logging.enabled|false|Enable logging of all web requests and response sent/received to/from Jira|
 |xray.webresource.filter.getrequestsonly.enabled|false|Enable this for debugging to avoid PUT/POST/DELETE requests sent to Jira|
 |xray.webresource.filter.getrequestsonly.fake.response.key|FAKE-666666|This key will returned, when `xray.webresource.filter.getrequestsonly.enabled` set to `true` and PUT/POST/DELETE request was sent.|
 
