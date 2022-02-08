@@ -275,6 +275,9 @@ You can retrieve these IDs directly from the Jira frontend by inspecting the fie
 |xray.test.execution.test-environments.field.id|not set|The Jira custom field for test execution test-environments.|
 |xray.test.execution.test-plans.field.id|not set|The Jira custom field for test execution test-plans.|
 |xray.test.set.tests.field.id|not set|The Jira custom field for test set tests.|
+|xray.test.execution.issuetype.name|`Test Execution`|The issueType name for a test execution |
+|xray.test.issuetype.name|`Test`|The issueType name for a test |
+|xray.test.set.issuetype.name|`Test Set`|The issueType name for a test set |
 |xray.sync.frequency|10|Xray import frequency (after n methods)|
 |xray.validation.revision.regexp|.*|Revision is validated against this regular expression to prevent unintended creation of test executions.  (**deprecated**)|
 |xray.validation.revision.summary|.*|Summary is validated against this regular expression to prevent unintended creation of test executions.  (**deprecated**)|

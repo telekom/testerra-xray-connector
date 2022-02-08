@@ -23,11 +23,13 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssueType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
+import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 
 public enum IssueType {
-    Test(new JiraIssueType("Test")),
-    TestExecution(new JiraIssueType("Test Execution")),
-    TestSet(new JiraIssueType("Test Set")),
+    Test(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_ISSUETYPE_NAME, "Test"))),
+    TestExecution(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_EXECUTION_ISSUETYPE_NAME, "Test Execution"))),
+    TestSet(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_SET_ISSUETYPE_NAME,"Test Set"))),
     ;
 
     private final JiraIssueType issueType;

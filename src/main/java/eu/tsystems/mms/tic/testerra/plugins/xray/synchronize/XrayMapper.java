@@ -43,6 +43,9 @@ public interface XrayMapper {
     String PROPERTY_TEST_EXECUTION_REVISION = "xray.test.execution.revision.field.id";
     String PROPERTY_TEST_EXECUTION_TEST_ENVIRONMENTS = "xray.test.execution.test-environments.field.id";
     String PROPERTY_TEST_EXECUTION_TEST_PLANS = "xray.test.execution.test-plans.field.id";
+    String PROPERTY_TEST_EXECUTION_ISSUETYPE_NAME = "xray.test.execution.issuetype.name";
+    String PROPERTY_TEST_SET_ISSUETYPE_NAME = "xray.test.set.issuetype.name";
+    String PROPERTY_TEST_ISSUETYPE_NAME = "xray.test.issuetype.name";
 
     /**
      * called for matching Test method against Xray Test
