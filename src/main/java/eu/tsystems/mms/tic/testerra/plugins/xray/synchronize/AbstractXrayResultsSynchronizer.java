@@ -128,7 +128,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             final ExecutionContext executionContext = ExecutionContextController.getCurrentExecutionContext();
             xrayMapper.updateTestExecution(testExecutionIssue, executionContext);
 
-            Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(xrayMapper.queryTestExecution(testExecutionIssue))
+            final Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(xrayMapper.queryTestExecution(testExecutionIssue))
                     .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
 
             if (optionalExistingTestExecution.isPresent()) {
@@ -189,7 +189,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         testSetSyncQueue.forEach(xrayTestSetIssue -> {
             try {
                 xrayUtils.createOrUpdateIssue(xrayTestSetIssue);
-                Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestSetIssue.getKey());
+                final Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestSetIssue.getKey());
                 log().info(String.format("Synchronized %s (%s) with %d %s",
                         IssueType.TestSet,
                         issueUrl.orElse(null),

@@ -194,7 +194,7 @@ public class JiraUtils implements Loggable {
         try {
             final String result = request.get(String.class);
             jiraIssueSearchResult = jiraUtils.objectMapper.readValue(result, JiraIssuesSearchResult.class);
-            jiraIssueSearchResult.getIssues();
+            return jiraIssueSearchResult.getIssues();
         } catch (UniformInterfaceException e) {
             log().error(e.getResponse().getEntity(String.class), e);
         } catch (IOException e) {

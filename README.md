@@ -288,6 +288,15 @@ You can retrieve these IDs directly from the Jira frontend by inspecting the fie
 
 ---
 
+## Troubleshooting
+
+Hints for the following occuring symptoms:
+
+Symptom | Explanation | Solution
+--- | --- | ---
+`{"error": "...java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (JIRA_SCHEMA.SYS_C00134897) violated` | An issue could not be imported because it already exists. | Make sure that the issue key for an existing issue could be found via. the `query()` methods of the `XrayMapper`.
+`{"errorMessages":["We can't create this issue for you right now, it could be due to unsupported content you've entered into one or more of the issue fields...` | Missing data on the issue. | Try to create an issue manually, call the REST API for this issue and check which fields are set by default. |
+
 ## Publication
 
 This module is deployed and published to Maven Central. All JAR files are signed via Gradle signing plugin.
