@@ -300,7 +300,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             // Add new tests to testset
             if (newTestKeys.size() > 0) {
                 xrayMapper.updateTestSet(xrayTestSetIssue, methodContext.getClassContext());
-
+                finalizeTestSet(xrayTestSetIssue, methodContext.getClassContext());
                 testSetTestKeys.addAll(newTestKeys);
                 if (!testSetSyncQueue.contains(xrayTestSetIssue)) {
                     testSetSyncQueue.add(xrayTestSetIssue);
@@ -460,14 +460,12 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         } else {
             final JqlQuery testSetQuery = xrayMapper.queryTestSet(classContext);
             if (testSetQuery != null) {
-                Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(testSetQuery, XrayTestSetIssue::new).findFirst();
+                final Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(testSetQuery, XrayTestSetIssue::new).findFirst();
                 if (optionalExistingTestSetIssue.isPresent()) {
                     xrayTestSetIssue = new XrayTestSetIssue(optionalExistingTestSetIssue.get());
                 } else if (xrayMapper.shouldCreateNewTestSet(classContext)){
                     xrayTestSetIssue = new XrayTestSetIssue();
                     xrayTestSetIssue.getProject().setKey(xrayConfig.getProjectKey());
-                    xrayTestSetIssue.setSummary(clazz.getSimpleName());
-                    xrayTestSetIssue.setDescription(String.format("%s generated %s by class %s", VENDOR_PREFIX, IssueType.TestSet, clazz.getCanonicalName()));
                 }
             }
         }
@@ -475,5 +473,16 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         // cache could be null
         this.testSetCacheByClassName.put(cacheKey, xrayTestSetIssue);
         return Optional.ofNullable(xrayTestSetIssue);
+    }
+
+    private void finalizeTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+        final Class<?> clazz = classContext.getTestClass();
+        if (StringUtils.isBlank(xrayTestSetIssue.getSummary())) {
+            xrayTestSetIssue.setSummary(clazz.getSimpleName());
+        }
+
+        if (StringUtils.isBlank(xrayTestSetIssue.getDescription())) {
+            xrayTestSetIssue.setDescription(String.format("%s generated %s by class %s", VENDOR_PREFIX, IssueType.TestSet, clazz.getCanonicalName()));
+        }
     }
 }

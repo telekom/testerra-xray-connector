@@ -7,6 +7,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
 public class XrayIssue extends JiraIssue {
     public XrayIssue() {
@@ -32,7 +33,7 @@ public class XrayIssue extends JiraIssue {
     @Override
     public void setSummary(String summary) {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
-        if (!summary.matches(xrayConfig.getValidationRegexSummary())) {
+        if (StringUtils.isNotBlank(summary) && !summary.matches(xrayConfig.getValidationRegexSummary())) {
             throw new RuntimeException(String.format("summary %s does not conform regex %s",
                     summary, xrayConfig.getValidationRegexSummary()));
         }
@@ -42,7 +43,7 @@ public class XrayIssue extends JiraIssue {
     @Override
     public void setDescription(String description) {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
-        if (!description.matches(xrayConfig.getValidationRegexDescription())) {
+        if (StringUtils.isNotBlank(description) && !description.matches(xrayConfig.getValidationRegexDescription())) {
             throw new RuntimeException(String.format("description %s does not conform regex %s",
                     description, xrayConfig.getValidationRegexDescription()));
         }
