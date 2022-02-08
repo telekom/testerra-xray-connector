@@ -175,14 +175,11 @@ public class JiraUtils implements Loggable {
      * @return returns a Jira Issue containing no fields
      * @deprecated Use {@link #searchIssues(JqlQuery)} instead
      */
-    public static Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery) {
+    private Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery) {
         return searchIssues(webResource, jqlQuery, Lists.newArrayList("\"\""));
     }
 
-    /**
-     * @deprecated Use {@link #searchIssues(JqlQuery)} instead
-     */
-    public static Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery,
+    private Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery,
                                               final Collection<String> fields) {
         JiraUtils jiraUtils = new JiraUtils(webResource);
         WebResource request = webResource.path(SEARCH_PATH)
@@ -193,14 +190,17 @@ public class JiraUtils implements Loggable {
             request.queryParam("fields", StringUtils.join(fields, ','));
         }
 
-        final String result = request.get(String.class);
         final JiraIssuesSearchResult jiraIssueSearchResult;
         try {
+            final String result = request.get(String.class);
             jiraIssueSearchResult = jiraUtils.objectMapper.readValue(result, JiraIssuesSearchResult.class);
+            jiraIssueSearchResult.getIssues();
+        } catch (UniformInterfaceException e) {
+            log().error(e.getResponse().getEntity(String.class), e);
         } catch (IOException e) {
-            return new HashSet<>();
+            log().error("Unable to parse response", e);
         }
-        return jiraIssueSearchResult.getIssues();
+        return new HashSet<>();
     }
 
     public Stream<JiraIssue> searchIssues(JqlQuery jqlQuery) {

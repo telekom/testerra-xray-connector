@@ -37,22 +37,22 @@ public abstract class AbstractAnnotationsWithoutKeys extends TesterraTest {
         Assert.assertTrue(true);
     }
 
-    @Test
-    @XrayTest()
-    public void fails() {
-        Assert.assertTrue(false);
-    }
-
-    @Test(dependsOnMethods = "fails")
-    @XrayTest()
-    public void skips() {
-        Assert.assertTrue(true);
-    }
-
-    @Test
-    @XrayTest
-    public void testWithSteps() {
-        TestStep.begin("First step");
-        TestStep.begin("Second step");
-    }
+//    @Test
+//    @XrayTest()
+//    public void fails() {
+//        Assert.assertTrue(false);
+//    }
+//
+//    @Test(dependsOnMethods = "fails")
+//    @XrayTest()
+//    public void skips() {
+//        Assert.assertTrue(true);
+//    }
+//
+//    @Test
+//    @XrayTest
+//    public void testWithSteps() {
+//        TestStep.begin("First step");
+//        TestStep.begin("Second step");
+//    }
 }

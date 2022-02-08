@@ -235,7 +235,7 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
                 .addCondition(new TestTypeEquals(TestType.AutomatedGeneric))
                 .addCondition(new KeyInTestSetTests("SWFTE-8"))
                 .build();
-        final Set<JiraIssue> jiraIssues = JiraUtils.searchIssues(webResource, jqlQuery.createJql());
+        final Set<JiraIssue> jiraIssues = jiraUtils.searchIssues(jqlQuery).collect(Collectors.toSet());
         //        final Collection<String> foundKeys = Collections2.transform(jiraIssues, JiraIssue::getKey);
         final List<String> foundKeys = jiraIssues.stream().map(JiraIssue::getKey).collect(Collectors.toList());
         assertTrue(foundKeys.containsAll(Arrays.asList("SWFTE-4", "SWFTE-5", "SWFTE-6")));
