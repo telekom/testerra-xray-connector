@@ -34,7 +34,7 @@ public class DefaultSummaryMapperTest extends AbstractAnnotationsWithoutKeys {
 
     @BeforeClass
     public void prepareWebResource() {
-        XrayConfig.init("xray-tcforce.properties");
+        XrayConfig.init("sync.test.properties");
         Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
         XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SummaryMapperResultsSynchronizer());
     }
