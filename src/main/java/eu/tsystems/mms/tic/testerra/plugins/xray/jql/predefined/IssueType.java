@@ -27,23 +27,29 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 
 public enum IssueType {
-    Test(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_ISSUETYPE_NAME, "Test"))),
-    TestExecution(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_EXECUTION_ISSUETYPE_NAME, "Test Execution"))),
-    TestSet(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_SET_ISSUETYPE_NAME,"Test Set"))),
+    Test,
+    TestExecution,
+    TestSet,
     ;
 
-    private final JiraIssueType issueType;
-
-    IssueType(JiraIssueType literal) {
-        this.issueType = literal;
+    IssueType() {
     }
 
     @Override
     public String toString() {
-        return issueType.getName();
+        return getIssueType().getName();
     }
 
+    // Properties can be set later after class loading, so resolve issue type at runtime
     public JiraIssueType getIssueType() {
-        return this.issueType;
+        switch ( this ) {
+            case Test: return new JiraIssueType(
+                    PropertyManager.getProperty( XrayMapper.PROPERTY_TEST_ISSUETYPE_NAME, "Test") );
+            case TestExecution: return new JiraIssueType(
+                    PropertyManager.getProperty( XrayMapper.PROPERTY_TEST_EXECUTION_ISSUETYPE_NAME, "Test Execution") );
+            case TestSet: return new JiraIssueType(
+                    PropertyManager.getProperty( XrayMapper.PROPERTY_TEST_SET_ISSUETYPE_NAME,"Test Set") );
+            default: throw new RuntimeException("not implemented yet");
+        }
     }
 }

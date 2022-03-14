@@ -129,7 +129,8 @@ public class JiraUtils implements Loggable {
     }
 
     public Optional<String> post(String apiPath, Object entity) throws IOException {
-        return post(apiPath, objectMapper.writeValueAsString(entity));
+        String payload = objectMapper.writeValueAsString( entity );
+        return post(apiPath, payload);
     }
 
     public Optional<String> post(String apiPath, String body) throws IOException {

@@ -22,6 +22,12 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.EmptyMapper;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 
 public class EmptyMapperResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+    @Override
+    public XrayMapper getXrayMapper() {
+        return new EmptyMapper();
+    }
 }

@@ -34,6 +34,7 @@ public class DefaultSummaryMapperTest extends AbstractAnnotationsWithoutKeys {
 
     @BeforeClass
     public void prepareWebResource() {
+        System.setProperty("java.net.useSystemProxies", "true");
         XrayConfig.init("sync.test.properties");
         Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
         XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SummaryMapperResultsSynchronizer());

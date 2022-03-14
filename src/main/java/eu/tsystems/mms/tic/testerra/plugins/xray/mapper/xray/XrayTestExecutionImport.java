@@ -42,7 +42,7 @@ import org.apache.commons.io.FileUtils;
 
 /**
  * The Xray test execution import format differs from Standard Jira
- * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results
+ * @see <a href="https://docs.getxray.app/display/XRAY/Import+Execution+Results">Import+Execution+Results</a>
  */
 public class XrayTestExecutionImport {
 
@@ -88,10 +88,23 @@ public class XrayTestExecutionImport {
         private Date startDate;
         private Date finishDate;
         private String testPlanKey;
-        private List<String> testEnvironments;
+        private List<String> testEnvironments = new ArrayList<>();
+        private List<String> fixVersions = null;
+
+        public List<String> getFixVersions() {
+            return fixVersions;
+        }
+
+        public void setFixVersions( List<String> fixVersions ) {
+            this.fixVersions = fixVersions;
+        }
 
         public String getVersion() {
             return version;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
         }
 
         public String getRevision() {
@@ -100,6 +113,10 @@ public class XrayTestExecutionImport {
 
         public String getUser() {
             return user;
+        }
+
+        public void setUser(String user) {
+            this.user = user;
         }
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = PATTERN_DATE_FORMAT, timezone = "CET")
@@ -333,6 +350,10 @@ public class XrayTestExecutionImport {
             return testKey;
         }
 
+        public void setTestKey(String testKey) {
+            this.testKey = testKey;
+        }
+
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = PATTERN_DATE_FORMAT, timezone = "CET")
         public Date getStart() {
             return start;
@@ -414,17 +435,17 @@ public class XrayTestExecutionImport {
         this.info.setSummary(testExecutionIssue.getSummary());
         this.info.version = testExecutionIssue.getFixVersions().stream().findFirst().map(JiraNameReference::getName).orElse(null);
         this.info.revision = testExecutionIssue.getRevision();
-        this.info.user = testExecutionIssue.getAssignee().getName();
+        this.info.user = testExecutionIssue.getAssignee() != null ? testExecutionIssue.getAssignee().getName() : null;
         this.info.startDate = testExecutionIssue.getStartDate();
         this.info.finishDate = testExecutionIssue.getFinishDate();
 
         List<String> testPlanKeys = testExecutionIssue.getTestPlanKeys();
-        if  (testPlanKeys.size() > 0) {
+        if  (testPlanKeys != null && testPlanKeys.size() > 0) {
             this.info.testPlanKey = testPlanKeys.get(0);
         }
 
         List<String> testEnvironments = testExecutionIssue.getTestEnvironments();
-        if (testEnvironments.size() > 0) {
+        if (testEnvironments != null && testEnvironments.size() > 0) {
             this.info.testEnvironments = testEnvironments;
         }
     }

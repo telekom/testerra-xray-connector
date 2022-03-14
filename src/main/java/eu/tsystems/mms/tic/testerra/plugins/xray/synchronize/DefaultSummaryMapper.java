@@ -14,12 +14,21 @@ import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 
 public class DefaultSummaryMapper implements XrayMapper {
 
+    // name of the method is probably not unique in the whole project,
+    // prefix it with name of the test class
+    protected String makeDefaultSummaryForMethod(MethodContext methodContext) {
+        return String.format(
+                "%s_%s",
+                methodContext.getClassContext().getTestClass().getSimpleName(),
+                methodContext.getName());
+    }
+
     @Override
     public JqlQuery queryTest(MethodContext methodContext) {
         return JqlQuery.create()
                 .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
                 .addCondition(new IssueTypeEquals(IssueType.Test))
-                .addCondition(new SummaryContainsExact(methodContext.getName()))
+                .addCondition(new SummaryContainsExact( makeDefaultSummaryForMethod( methodContext ) ) )
                 .build();
     }
 
@@ -39,12 +48,12 @@ public class DefaultSummaryMapper implements XrayMapper {
 
     @Override
     public boolean shouldCreateNewTestSet(ClassContext classContext) {
-        return false;
+        return true;
     }
 
     @Override
     public void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
-        xrayTestIssue.setSummary(methodContext.getName());
+        xrayTestIssue.setSummary( makeDefaultSummaryForMethod( methodContext ) );
     }
 
     @Override
