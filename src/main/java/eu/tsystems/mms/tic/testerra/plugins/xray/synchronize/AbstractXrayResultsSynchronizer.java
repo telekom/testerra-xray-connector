@@ -189,7 +189,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             if( testIssuesNewTemporaryKeys.contains( oldKey ) ) {
                 log().warn(String.format( "Creating test with summary '%s'", test.getTestInfo().getSummary() ));
                 XrayTestIssue testIssue = new XrayTestIssue();
-                testIssue.setIssueType( IssueType.Test.getIssueType() );
+                testIssue.setIssueType( IssueType.Test.get() );
                 testIssue.setDescription( test.getTestInfo().getDescription() );
                 testIssue.setLabels( test.getTestInfo().getLabels() );
                 testIssue.setSummary( test.getTestInfo().getSummary() );

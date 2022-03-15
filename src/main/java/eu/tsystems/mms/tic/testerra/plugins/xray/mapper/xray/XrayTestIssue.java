@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class XrayTestIssue extends XrayIssue {
     public XrayTestIssue() {
-        this.setIssueType(IssueType.Test.getIssueType());
+        this.setIssueType(IssueType.Test.get());
     }
 
     public XrayTestIssue(String issueKey) {

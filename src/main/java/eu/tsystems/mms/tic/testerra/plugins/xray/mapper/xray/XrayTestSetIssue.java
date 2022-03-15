@@ -35,7 +35,7 @@ import org.testng.Assert;
 public class XrayTestSetIssue extends XrayIssue {
 
     public XrayTestSetIssue() {
-        this.setIssueType(IssueType.TestSet.getIssueType());
+        this.setIssueType(IssueType.TestSet.get());
     }
 
     public XrayTestSetIssue(XrayTestSetIssue issue) {

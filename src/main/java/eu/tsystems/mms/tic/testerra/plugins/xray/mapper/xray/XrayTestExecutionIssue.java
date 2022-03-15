@@ -12,7 +12,7 @@ import java.util.Map;
 public class XrayTestExecutionIssue extends XrayIssue {
 
     public XrayTestExecutionIssue() {
-        this.setIssueType(IssueType.TestExecution.getIssueType());
+        this.setIssueType(IssueType.TestExecution.get());
         this.setStartDate(new Date());
         //this.setStatus(JiraStatus.NEW);
     }
