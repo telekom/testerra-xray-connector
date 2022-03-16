@@ -422,7 +422,7 @@ public class XrayTestExecutionImport {
 
     private final Info info = new Info();
     private String testExecutionKey;
-    private final Set<TestRun> testRuns = new HashSet<>();;
+    private final Set<TestRun> testRuns = new HashSet<>();
 
     public XrayTestExecutionImport(String testExecutionKey) {
         this.testExecutionKey = testExecutionKey;
@@ -435,17 +435,17 @@ public class XrayTestExecutionImport {
         this.info.setSummary(testExecutionIssue.getSummary());
         this.info.version = testExecutionIssue.getFixVersions().stream().findFirst().map(JiraNameReference::getName).orElse(null);
         this.info.revision = testExecutionIssue.getRevision();
-        this.info.user = testExecutionIssue.getAssignee() != null ? testExecutionIssue.getAssignee().getName() : null;
+        this.info.user = testExecutionIssue.getAssignee().getName();
         this.info.startDate = testExecutionIssue.getStartDate();
         this.info.finishDate = testExecutionIssue.getFinishDate();
 
         List<String> testPlanKeys = testExecutionIssue.getTestPlanKeys();
-        if  (testPlanKeys != null && testPlanKeys.size() > 0) {
+        if  (testPlanKeys.size() > 0) {
             this.info.testPlanKey = testPlanKeys.get(0);
         }
 
         List<String> testEnvironments = testExecutionIssue.getTestEnvironments();
-        if (testEnvironments != null && testEnvironments.size() > 0) {
+        if (testEnvironments.size() > 0) {
             this.info.testEnvironments = testEnvironments;
         }
     }
