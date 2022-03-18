@@ -25,6 +25,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.config;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -40,6 +41,7 @@ public class XrayConfig implements Loggable {
     private final URI restServiceUri;
     private final String password;
     private final String token;
+    private final int syncFrequencyTests;
     private final boolean webResourceFilterLoggingEnabled;
     private final boolean webResourceFilterGetRequestsOnlyEnabled;
     private final String fakeTestExecutionKey;
@@ -53,6 +55,7 @@ public class XrayConfig implements Loggable {
         username = PropertyManager.getProperty("xray.user");
         password = PropertyManager.getProperty("xray.password");
         token = PropertyManager.getProperty("xray.token");
+        syncFrequencyTests = PropertyManager.getIntProperty("xray.sync.frequency", 10);
 
         URI uri = null;
         final String baseUriProperty = "xray.rest.service.uri";
@@ -79,7 +82,6 @@ public class XrayConfig implements Loggable {
         PropertyManager.loadProperties(propFileName);
         getInstance();
     }
-
 
     /**
      * @deprecated Use {@link #init(String)} instead
@@ -129,6 +131,10 @@ public class XrayConfig implements Loggable {
 
     public String getToken() {
         return token;
+    }
+
+    public int getSyncFrequencyTests() {
+        return syncFrequencyTests;
     }
 
     public boolean isWebResourceFilterLoggingEnabled() {

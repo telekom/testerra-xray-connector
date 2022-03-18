@@ -79,7 +79,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private final HashMap<String, XrayTestIssue> testCacheByMethodName = new HashMap<>();
     private final ConcurrentLinkedQueue<XrayTestExecutionImport.TestRun> testRunSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
-    private final int SYNC_FREQUENCY_TESTS = PropertyManager.getIntProperty("xray.sync.frequency", 10);
+
 
     private XrayConfig getXrayConfig() {
         return XrayConfig.getInstance();
@@ -319,7 +319,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 .peek(test -> updateTestImport(test, methodContext))
                 .forEach(testRunSyncQueue::add);
 
-        if (testRunSyncQueue.size() >= SYNC_FREQUENCY_TESTS) {
+        log().info("*** Try to sync test " + methodContext.getName());
+        if (testRunSyncQueue.size() >= xrayConfig.getSyncFrequencyTests()) {
             flushSyncQueue();
         }
     }
