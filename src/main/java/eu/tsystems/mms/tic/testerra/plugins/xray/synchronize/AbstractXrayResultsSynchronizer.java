@@ -319,7 +319,6 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 .peek(test -> updateTestImport(test, methodContext))
                 .forEach(testRunSyncQueue::add);
 
-        log().info("*** Try to sync test " + methodContext.getName());
         if (testRunSyncQueue.size() >= xrayConfig.getSyncFrequencyTests()) {
             flushSyncQueue();
         }
