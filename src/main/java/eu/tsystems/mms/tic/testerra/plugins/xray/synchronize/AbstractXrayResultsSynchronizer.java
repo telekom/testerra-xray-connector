@@ -39,7 +39,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIs
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
-import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.events.TestStatusUpdateEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
@@ -51,6 +50,8 @@ import eu.tsystems.mms.tic.testframework.report.model.context.Screenshot;
 import eu.tsystems.mms.tic.testframework.report.model.steps.TestStep;
 import eu.tsystems.mms.tic.testframework.report.model.steps.TestStepAction;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
+import org.apache.commons.lang3.StringUtils;
+import org.testng.ITestResult;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -68,9 +69,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.testng.ITestResult;
-
 public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSynchronizer, Loggable, TestStatusUpdateEvent.Listener {
     private static final String VENDOR_PREFIX = "Testerra Xray connector";
     private boolean isSyncEnabled = false;
@@ -81,6 +79,11 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private final HashMap<String, XrayTestIssue> testCacheByMethodName = new HashMap<>();
     private final ConcurrentLinkedQueue<XrayTestExecutionImport.TestRun> testRunSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
+    private final XrayTestExecutionImport xrayTestExecutionImport;
+
+    public AbstractXrayResultsSynchronizer() {
+        xrayTestExecutionImport = new XrayTestExecutionImport(getTestExecutionIssue());
+    }
 
     private XrayConfig getXrayConfig() {
         return XrayConfig.getInstance();
@@ -187,8 +190,11 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
         final XrayUtils xrayUtils = getXrayUtils();
 
-        // Prepare test runs for import
-        final XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(getTestExecutionIssue());
+        // Prepare Xray Test execution for import, clear old stuff from previous import
+        xrayTestExecutionImport.getTests().clear();
+        xrayTestExecutionImport.setResultTestIssueImport(null);
+
+        // Add all new tests to execution
         testRunSyncQueue.forEach(test -> {
             xrayTestExecutionImport.addTest(test);
             testRunSyncQueue.remove(test);
@@ -213,13 +219,16 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         }
 
         // xrayTestExecutionImport now contains all keys of created and updated test issues
-        // Only run key update on testSetSyncQueue if new tests have to create
+        //
+        // Only run key update on testSetSyncQueue if new tests have to create:
+        // New test issues have special key: XrayUtils.PREFIX_NEW_ISSUE + method name
         boolean areNewTestsToImport = testSetSyncQueue.stream().anyMatch(xrayTestSetIssue -> {
             return xrayTestSetIssue.getTestKeys().stream().anyMatch(key -> key.contains(XrayUtils.PREFIX_NEW_ISSUE));
         });
         if (areNewTestsToImport) {
             xrayTestExecutionImport.getResultTestIssueImport().getSuccess().forEach(jiraIssueReference -> {
                 try {
+                    // Replace the temporary key with real Jira key from the result 'xrayTestExecutionImport'
                     JiraIssue issue = xrayUtils.getIssue(jiraIssueReference.getKey());
                     testSetSyncQueue.forEach(xrayTestSetIssue -> {
                         Optional<String> findKey = xrayTestSetIssue.getTestKeys().stream().filter(key -> key.contains(issue.getSummary())).findFirst();
@@ -233,11 +242,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 }
             });
         }
-        // xrayTestSetIssue-Liste enthält nun noch NEW-KEY-Elemente
-        // Finden der erstellten Tests anhand Methodenname
-//        xrayUtils.getIssue()
 
-        // Create or update test sets
+        // After fixing temporary key of test issues, the test set can create or update
         testSetSyncQueue.forEach(xrayTestSetIssue -> {
             try {
                 xrayUtils.createOrUpdateIssue(xrayTestSetIssue);

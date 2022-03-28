@@ -43,7 +43,6 @@ public final class XrayUtils extends JiraUtils {
     }
 
     public void importTestExecution(XrayTestExecutionImport testExecutionImport) throws IOException {
-
         testExecutionImport.getTests().forEach(testRun -> {
             if (testRun.getTestKey() != null && testRun.getTestKey().contains(PREFIX_NEW_ISSUE)) {
                 testRun.setTestKey(null);
