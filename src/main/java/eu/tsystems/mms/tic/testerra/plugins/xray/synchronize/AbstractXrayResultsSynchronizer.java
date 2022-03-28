@@ -31,6 +31,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnector;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
@@ -50,6 +51,7 @@ import eu.tsystems.mms.tic.testframework.report.model.context.Screenshot;
 import eu.tsystems.mms.tic.testframework.report.model.steps.TestStep;
 import eu.tsystems.mms.tic.testframework.report.model.steps.TestStepAction;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -65,9 +67,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.testng.ITestResult;
-
 
 public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSynchronizer, Loggable, TestStatusUpdateEvent.Listener {
     private static final String VENDOR_PREFIX = "Testerra Xray connector";
@@ -79,7 +81,6 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private final HashMap<String, XrayTestIssue> testCacheByMethodName = new HashMap<>();
     private final ConcurrentLinkedQueue<XrayTestExecutionImport.TestRun> testRunSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
-
 
     private XrayConfig getXrayConfig() {
         return XrayConfig.getInstance();
@@ -186,22 +187,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
         final XrayUtils xrayUtils = getXrayUtils();
 
-        testSetSyncQueue.forEach(xrayTestSetIssue -> {
-            try {
-                xrayUtils.createOrUpdateIssue(xrayTestSetIssue);
-                final Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestSetIssue.getKey());
-                log().info(String.format("Synchronized %s (%s) with %d %s",
-                        IssueType.TestSet,
-                        issueUrl.orElse(null),
-                        xrayTestSetIssue.getTestKeys().size(),
-                        IssueType.Test
-                ));
-            } catch (IOException e) {
-                log().error(String.format("Unable to update %s", IssueType.TestSet), e);
-            }
-            testSetSyncQueue.remove(xrayTestSetIssue);
-        });
-
+        // Prepare test runs for import
         final XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(getTestExecutionIssue());
         testRunSyncQueue.forEach(test -> {
             xrayTestExecutionImport.addTest(test);
@@ -225,6 +211,48 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         } catch (IOException e) {
             log().error(String.format("Unable to synchronize %s", IssueType.TestExecution), e);
         }
+
+        // xrayTestExecutionImport now contains all keys of created and updated test issues
+        // Only run key update on testSetSyncQueue if new tests have to create
+        boolean areNewTestsToImport = testSetSyncQueue.stream().anyMatch(xrayTestSetIssue -> {
+            return xrayTestSetIssue.getTestKeys().stream().anyMatch(key -> key.contains(XrayUtils.PREFIX_NEW_ISSUE));
+        });
+        if (areNewTestsToImport) {
+            xrayTestExecutionImport.getResultTestIssueImport().getSuccess().forEach(jiraIssueReference -> {
+                try {
+                    JiraIssue issue = xrayUtils.getIssue(jiraIssueReference.getKey());
+                    testSetSyncQueue.forEach(xrayTestSetIssue -> {
+                        Optional<String> findKey = xrayTestSetIssue.getTestKeys().stream().filter(key -> key.contains(issue.getSummary())).findFirst();
+                        if (findKey.isPresent()) {
+                            xrayTestSetIssue.getTestKeys().removeIf(key -> key.contains(issue.getSummary()));
+                            xrayTestSetIssue.getTestKeys().add(issue.getKey());
+                        }
+                    });
+                } catch (IOException e) {
+                    log().error(String.format("Unable to read %s", IssueType.TestExecution), e);
+                }
+            });
+        }
+        // xrayTestSetIssue-Liste enthält nun noch NEW-KEY-Elemente
+        // Finden der erstellten Tests anhand Methodenname
+//        xrayUtils.getIssue()
+
+        // Create or update test sets
+        testSetSyncQueue.forEach(xrayTestSetIssue -> {
+            try {
+                xrayUtils.createOrUpdateIssue(xrayTestSetIssue);
+                final Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestSetIssue.getKey());
+                log().info(String.format("Synchronized %s (%s) with %d %s",
+                        IssueType.TestSet,
+                        issueUrl.orElse(null),
+                        xrayTestSetIssue.getTestKeys().size(),
+                        IssueType.Test
+                ));
+            } catch (IOException e) {
+                log().error(String.format("Unable to update %s", IssueType.TestSet), e);
+            }
+            testSetSyncQueue.remove(xrayTestSetIssue);
+        });
     }
 
     @Override
@@ -274,6 +302,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                     } else if (xrayMapper.shouldCreateNewTest(methodContext)) {
                         // Create new Test issue
                         XrayTestIssue testIssue = new XrayTestIssue();
+                        String newKey = String.format("%s.%s", XrayUtils.PREFIX_NEW_ISSUE, methodContext.getName());
+                        testIssue.setKey(newKey);
                         testIssue.getProject().setKey(xrayConfig.getProjectKey());
                         testIssue.setSummary(testResult.getMethod().getQualifiedName());
                         testIssue.setDescription(String.format("%s generated %s by method %s", VENDOR_PREFIX, IssueType.Test, testResult.getMethod().getQualifiedName()));
@@ -287,7 +317,6 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 currentTestIssues.add(testCacheByMethodName.get(cacheKey));
             }
         }
-
 
         optionalXrayTestSetIssue.ifPresent(xrayTestSetIssue -> {
             final List<String> testSetTestKeys = xrayTestSetIssue.getTestKeys();
@@ -390,10 +419,10 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                     .flatMap(TestStepAction::readEntries)
                     .forEach(entry -> {
                         if (entry instanceof ErrorContext) {
-                            ErrorContext errorContext = (ErrorContext)entry;
+                            ErrorContext errorContext = (ErrorContext) entry;
                             testRunStep.setActualResult(errorContext.getThrowable().getMessage());
                         } else if (entry instanceof Screenshot) {
-                            Screenshot screenshot = (Screenshot)entry;
+                            Screenshot screenshot = (Screenshot) entry;
                             try {
                                 XrayTestExecutionImport.TestRun.Evidence evidence = new XrayTestExecutionImport.TestRun.Evidence(screenshot.getScreenshotFile());
                                 testRunStep.addEvidence(evidence);
@@ -463,7 +492,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 final Optional<XrayTestSetIssue> optionalExistingTestSetIssue = xrayUtils.searchIssues(testSetQuery, XrayTestSetIssue::new).findFirst();
                 if (optionalExistingTestSetIssue.isPresent()) {
                     xrayTestSetIssue = new XrayTestSetIssue(optionalExistingTestSetIssue.get());
-                } else if (xrayMapper.shouldCreateNewTestSet(classContext)){
+                } else if (xrayMapper.shouldCreateNewTestSet(classContext)) {
                     xrayTestSetIssue = new XrayTestSetIssue();
                     xrayTestSetIssue.getProject().setKey(xrayConfig.getProjectKey());
                 }

@@ -24,6 +24,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
@@ -35,15 +36,24 @@ public final class XrayUtils extends JiraUtils {
     private static final String IMPORT_EXECUTION_PATH = "raven/1.0/import/execution";
     private static final String EXECUTION_RESULT_PATH = "raven/1.0/execution/result";
 
+    public static final String PREFIX_NEW_ISSUE = "_NEW_";
+
     public XrayUtils(WebResource webResource) {
         super(webResource);
     }
 
     public void importTestExecution(XrayTestExecutionImport testExecutionImport) throws IOException {
+
+        testExecutionImport.getTests().forEach(testRun -> {
+            if (testRun.getTestKey() != null && testRun.getTestKey().contains(PREFIX_NEW_ISSUE)) {
+                testRun.setTestKey(null);
+            }
+        });
         Optional<String> post = post(IMPORT_EXECUTION_PATH, testExecutionImport);
         if (post.isPresent()) {
             XrayTestExecutionImport.Result xrayTestExecutionResult = getObjectMapper().readValue(post.get(), XrayTestExecutionImport.Result.class);
             testExecutionImport.setTestExecutionKey(xrayTestExecutionResult.getTestExecIssue().getKey());
+            testExecutionImport.setResultTestIssueImport(xrayTestExecutionResult.getTestIssues());
         }
     }
 

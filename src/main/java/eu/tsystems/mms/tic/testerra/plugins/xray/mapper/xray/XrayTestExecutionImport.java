@@ -26,22 +26,25 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+
+import javax.activation.MimetypesFileTypeMap;
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.activation.MimetypesFileTypeMap;
-import javax.ws.rs.core.MediaType;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
 
 /**
  * The Xray test execution import format differs from Standard Jira
+ *
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results
  */
 public class XrayTestExecutionImport {
@@ -49,7 +52,7 @@ public class XrayTestExecutionImport {
     /**
      * This date pattern differs from {@link JiraIssue#PATTERN_DATE_FORMAT}
      */
-    private static final String PATTERN_DATE_FORMAT ="yyyy-MM-dd'T'HH:mm:ssXXX";
+    private static final String PATTERN_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
 
     public static abstract class AbstractInfo {
         private String summary;
@@ -75,8 +78,26 @@ public class XrayTestExecutionImport {
     public static class Result {
         private JiraKeyReference testExecIssue;
 
+        private ResultTestIssueImport testIssues;
+
         public JiraKeyReference getTestExecIssue() {
             return testExecIssue;
+        }
+
+        public ResultTestIssueImport getTestIssues() {
+            return testIssues;
+        }
+    }
+
+    public static class ResultTestIssueImport {
+
+        private JiraKeyReference[] success;
+
+        public ResultTestIssueImport() {
+        }
+
+        public List<JiraKeyReference> getSuccess() {
+            return Arrays.asList(success);
         }
     }
 
@@ -147,6 +168,7 @@ public class XrayTestExecutionImport {
             SKIPPED,
             ABORTED
         }
+
         public static class Info extends AbstractInfo {
 
             private String projectKey;
@@ -333,6 +355,10 @@ public class XrayTestExecutionImport {
             return testKey;
         }
 
+        public void setTestKey(String testKey) {
+            this.testKey = testKey;
+        }
+
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = PATTERN_DATE_FORMAT, timezone = "CET")
         public Date getStart() {
             return start;
@@ -401,7 +427,9 @@ public class XrayTestExecutionImport {
 
     private final Info info = new Info();
     private String testExecutionKey;
-    private final Set<TestRun> testRuns = new HashSet<>();;
+    private ResultTestIssueImport resultTestIssueImport;
+    private final Set<TestRun> testRuns = new HashSet<>();
+    ;
 
     public XrayTestExecutionImport(String testExecutionKey) {
         this.testExecutionKey = testExecutionKey;
@@ -419,7 +447,7 @@ public class XrayTestExecutionImport {
         this.info.finishDate = testExecutionIssue.getFinishDate();
 
         List<String> testPlanKeys = testExecutionIssue.getTestPlanKeys();
-        if  (testPlanKeys.size() > 0) {
+        if (testPlanKeys.size() > 0) {
             this.info.testPlanKey = testPlanKeys.get(0);
         }
 
@@ -435,6 +463,14 @@ public class XrayTestExecutionImport {
 
     public void setTestExecutionKey(String testExecutionKey) {
         this.testExecutionKey = testExecutionKey;
+    }
+
+    public void setResultTestIssueImport(ResultTestIssueImport result) {
+        this.resultTestIssueImport = result;
+    }
+
+    public ResultTestIssueImport getResultTestIssueImport() {
+        return resultTestIssueImport;
     }
 
     public void setTests(Set<TestRun> testRuns) {
