@@ -130,4 +130,13 @@ public interface XrayMapper {
      */
     default void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
     }
+
+    /**
+     * Returns the default test issue summery for creating new tests or searching for mapping
+     * @param methodContext
+     * @return
+     */
+    default String getDefaultTestIssueSummery(MethodContext methodContext) {
+        return methodContext.getName();
+    }
 }

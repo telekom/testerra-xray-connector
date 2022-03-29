@@ -19,7 +19,7 @@ public class DefaultSummaryMapper implements XrayMapper {
         return JqlQuery.create()
                 .addCondition(new ProjectEquals(XrayConfig.getInstance().getProjectKey()))
                 .addCondition(new IssueTypeEquals(IssueType.Test))
-                .addCondition(new SummaryContainsExact(methodContext.getName()))
+                .addCondition(new SummaryContainsExact(this.getDefaultTestIssueSummery(methodContext)))
                 .build();
     }
 
@@ -44,7 +44,7 @@ public class DefaultSummaryMapper implements XrayMapper {
 
     @Override
     public void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
-        xrayTestIssue.setSummary(methodContext.getName());
+        xrayTestIssue.setSummary(this.getDefaultTestIssueSummery(methodContext));
     }
 
     @Override

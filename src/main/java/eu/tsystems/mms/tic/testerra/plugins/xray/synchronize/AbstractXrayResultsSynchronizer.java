@@ -304,10 +304,10 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                     } else if (xrayMapper.shouldCreateNewTest(methodContext)) {
                         // Create new Test issue
                         XrayTestIssue testIssue = new XrayTestIssue();
-                        String newKey = String.format("%s.%s", XrayUtils.PREFIX_NEW_ISSUE, methodContext.getName());
+                        String newKey = String.format("%s.%s", XrayUtils.PREFIX_NEW_ISSUE, xrayMapper.getDefaultTestIssueSummery(methodContext));
                         testIssue.setKey(newKey);
                         testIssue.getProject().setKey(xrayConfig.getProjectKey());
-                        testIssue.setSummary(testResult.getMethod().getQualifiedName());
+                        testIssue.setSummary(getXrayMapper().getDefaultTestIssueSummery(methodContext));
                         testIssue.setDescription(String.format("%s generated %s by method %s", VENDOR_PREFIX, IssueType.Test, testResult.getMethod().getQualifiedName()));
                         testCacheByMethodName.put(cacheKey, testIssue);
                     }

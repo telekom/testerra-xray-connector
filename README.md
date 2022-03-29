@@ -171,33 +171,47 @@ When you want to have full control over the mapping, you can provide your own im
 
 ```java
 public class GenericMapper implements XrayMapper {
-
+    
     @Override
     public JqlQuery queryTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
         return JqlQuery.create()
                 .addCondition(new RevisionContainsExact("Reuse My Test Execution"))
                 .build();
     }
-
+    
     @Override
     public JqlQuery queryTest(MethodContext methodContext) {
         return JqlQuery.create()
                 .addCondition(new IssueTypeEquals(IssueType.Test))
-                .addCondition(new SummaryContainsExact(methodContext.getName()))
-                .build()
+                .addCondition(new SummaryContainsExact(this.getDefaultTestIssueSummery(methodContext)))
+                .build();
     }
-
+    
     @Override
     public JqlQuery queryTestSet(ClassContext classContext) {
         return JqlQuery.create()
                 .addCondition(new IssueTypeEquals(IssueType.TestSet))
                 .addCondition(new SummaryContainsExact("My Tests"))
-                .build()
+                .build();
+    }
+    
+    @Override
+    public String getDefaultTestIssueSummery(MethodContext methodContext) {
+        return String.format("%s_%s", methodContext.getClassContext().getName(), methodContext.getName());
     }
 }
 ```
 
-In this case the Xray connector will reuse the Test Execution with revision "*Reuse My Test Execution*", maps all classes to the *Test Set* with summary "*My Tests*" and search for associated Jira *Tests* where the summary matches the method name. 
+In this case the Xray connector will 
+
+- reuse the Test Execution with revision "*Reuse My Test Execution*", 
+- maps all classes to the *Test Set* with summary "*My Tests*" and
+- search for associated Jira *Tests* where the summary matches the class and the method name.
+
+Please note, that
+
+- `queryTest` is also called if you use `@XrayTest` annotation, but without key attribute
+- `queryTestSet` is also called if you `@XrayTestSet` annotation, but without key attribute
 
 #### Update entities
 
@@ -243,6 +257,8 @@ public class GenericMapper implements XrayMapper {
     }
 }
 ```
+
+If you create new test issues, Xray connector will use the method `getDefaultTestIssueSummery` for generate new issue summary.
 
 ### Jira custom fields IDs
 
