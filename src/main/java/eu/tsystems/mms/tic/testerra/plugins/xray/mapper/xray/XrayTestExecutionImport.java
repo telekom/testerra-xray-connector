@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * The Xray test execution import format differs from Standard Jira
  *
- * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results
+ * @see <a href="https://docs.getxray.app/display/XRAY/Import+Execution+Results">Import execution results</a>
  */
 public class XrayTestExecutionImport {
 
@@ -429,7 +429,6 @@ public class XrayTestExecutionImport {
     private String testExecutionKey;
     private ResultTestIssueImport resultTestIssueImport;
     private final Set<TestRun> testRuns = new HashSet<>();
-    ;
 
     public XrayTestExecutionImport(String testExecutionKey) {
         this.testExecutionKey = testExecutionKey;
