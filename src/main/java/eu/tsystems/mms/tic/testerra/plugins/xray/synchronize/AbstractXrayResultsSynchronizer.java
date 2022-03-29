@@ -52,6 +52,7 @@ import eu.tsystems.mms.tic.testframework.report.model.steps.TestStepAction;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import org.apache.commons.lang3.StringUtils;
 import org.testng.ITestResult;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -275,7 +276,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
         final ITestResult testResult = testNgResult.get();
         final Method realMethod = testResult.getMethod().getConstructorOrMethod().getMethod();
-        if (realMethod.isAnnotationPresent(XrayNoSync.class)) {
+        if (realMethod.isAnnotationPresent(XrayNoSync.class) || !realMethod.isAnnotationPresent(Test.class)) {
             return;
         }
 
