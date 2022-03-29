@@ -79,11 +79,6 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private final HashMap<String, XrayTestIssue> testCacheByMethodName = new HashMap<>();
     private final ConcurrentLinkedQueue<XrayTestExecutionImport.TestRun> testRunSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
-    private final XrayTestExecutionImport xrayTestExecutionImport;
-
-    public AbstractXrayResultsSynchronizer() {
-        xrayTestExecutionImport = new XrayTestExecutionImport(getTestExecutionIssue());
-    }
 
     private XrayConfig getXrayConfig() {
         return XrayConfig.getInstance();
@@ -190,9 +185,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
         final XrayUtils xrayUtils = getXrayUtils();
 
-        // Prepare Xray Test execution for import, clear old stuff from previous import
-        xrayTestExecutionImport.getTests().clear();
-        xrayTestExecutionImport.setResultTestIssueImport(null);
+        // Prepare Xray Test execution for import
+        XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(getTestExecutionIssue());
 
         // Add all new tests to execution
         testRunSyncQueue.forEach(test -> {
@@ -207,6 +201,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         try {
             xrayTestExecutionImport.getInfo().setFinishDate(new Date());
             xrayUtils.importTestExecution(xrayTestExecutionImport);
+            this.testExecutionIssue.setKey(xrayTestExecutionImport.getTestExecutionKey());
             Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestExecutionImport.getTestExecutionKey());
             log().info(String.format("Synchronized %s (%s) with %d %s",
                     IssueType.TestExecution,
