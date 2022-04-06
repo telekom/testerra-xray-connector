@@ -268,6 +268,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     @Override
     @Subscribe
     public void onTestStatusUpdate(TestStatusUpdateEvent event) {
+
         final MethodContext methodContext = event.getMethodContext();
         Optional<ITestResult> testNgResult = methodContext.getTestNgResult();
         if (!testNgResult.isPresent()) {
@@ -283,6 +284,11 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         final XrayMapper xrayMapper = getXrayMapper();
         final XrayUtils xrayUtils = getXrayUtils();
         final XrayConfig xrayConfig = getXrayConfig();
+
+        if (!xrayConfig.isSyncEnabled()) {
+            log().info("Xray sync is disabled.");
+            return;
+        }
 
         // Get the class Test Set issue by annotation
         final Optional<XrayTestSetIssue> optionalXrayTestSetIssue = getTestSetIssueForClassContext(methodContext.getClassContext());
