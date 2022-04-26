@@ -273,7 +273,7 @@ xray.test.execution.test-plans.field.id=
 xray.test.set.tests.field.id=
 ```
 
-You can retrieve these IDs directly from the Jira frontend by inspecting the field in the DOM as shown in the following screenshot.
+You can retrieve these IDs directly from a Jira by **editing** an Xray **Test Execution** issue and click on `Configure Fields`. Open the Browser dev tools and inspect the field in the DOM as shown in the following screenshot.
 
 ![](doc/Jira-Field-Ids.jpg)
 
