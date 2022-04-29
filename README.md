@@ -85,7 +85,7 @@ xray.user=jira-sync-user
 xray.password=password
 ```
 
-Important: You also need to configure [Jira custom fields IDs](#Jira custom fields IDs)!
+Important: You also need to configure [Jira custom fields IDs](#jira-custom-fields-ids)!
 
 ### Implement synchronizer interface
 
