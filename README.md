@@ -61,7 +61,7 @@ Maven:
 Steps to use the Xray Connector plugin:
 1. [Define properties](#add-property-file) 
 2. [Implement synchronizer](#implement-synchronizer-interface)
-3. [Define the issue mapping and the annotations](#default mapping)
+3. [Define the issue mapping and the annotations](#default-mapping)
 
 ### Add property file
 
