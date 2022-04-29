@@ -58,6 +58,11 @@ Maven:
 
 ## Documentation
 
+Steps to use the Xray Connector plugin:
+1. [Define properties](#add-property-file) 
+2. [Implement synchronizer](#implement-synchronizer-interface)
+3. [Define the issue mapping and the annotations](#default mapping)
+
 ### Add property file
 
 To use the Xray Connector plugin you have to provide multiple properties in your test project.  
@@ -79,7 +84,7 @@ xray.user=jira-sync-user
 xray.password=password
 ```
 
-You also need to configure [Jira custom fields IDs](#Jira custom fields IDs).
+Important: You also need to configure [Jira custom fields IDs](#Jira custom fields IDs)!
 
 ### Implement synchronizer interface
 
@@ -88,6 +93,7 @@ Before synchronisation can take place, you need to create a subclass of `Abstrac
 The Xray connector will look up in the class path for your implementation and initialize it.
 
 ```java
+// This is the simpliest implemented result synchronizer 
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 }
 ```
@@ -107,7 +113,7 @@ The default mapping implementation of a *Test Execution* is done by the followin
 
 When a *Test Execution* was found, it will be reused, otherwise a new *Test Execution* will be created when at least one test should be synchronized.
 
-You can control the mapping by implementing [updateTestExecution()](#Update entities), which will be called right before [queryTestExecution()](#Custom mapping implementations).
+You can control the mapping by implementing [updateTestExecution()](#update-entities), which will be called right before [queryTestExecution()](#custom-mapping-implementations).
 
 #### Annotated Test
 
@@ -129,16 +135,25 @@ public class MethodsAnnotatedTest extends TesterraTest {
 
 You can also annotate the *Test Set* by its issue key. All methods (even setup methods) in this class will be handled as having the `@XrayTest` annotation present. When you don't want to synchronize specific methods, add the `@XrayNoSync` annotation.
 
+Setup methods like `@BeforeTest` are ignored automatically by synchronizer.
+
 ```java
 
 @XrayTestSet(key = "EXAMPLE-5")
 public class AnnotatedClassTest extends TesterraTest {
-    
+
     @BeforeTest
-    @XrayNoSync
     public void setup() {
         // Do some setup here
+        // Here is no annotation XrayNoSync needed
     }
+    
+    @Test
+    @XrayNoSync
+    public void test_other() {
+
+    }
+    
     
     @Test
     public void test_fails() {
@@ -163,7 +178,7 @@ public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 }
 ```
 
-You need to configure the property [xray.test.set.tests.field.id](#Jira custom fields IDs) before.
+You need to configure the property [xray.test.set.tests.field.id](#jira-custom-fields-ids) before.
 
 ### Custom mapping
 
@@ -193,11 +208,6 @@ public class GenericMapper implements XrayMapper {
                 .addCondition(new IssueTypeEquals(IssueType.TestSet))
                 .addCondition(new SummaryContainsExact("My Tests"))
                 .build();
-    }
-    
-    @Override
-    public String getDefaultTestIssueSummery(MethodContext methodContext) {
-        return String.format("%s_%s", methodContext.getClassContext().getName(), methodContext.getName());
     }
 }
 ```
@@ -238,7 +248,7 @@ public class GenericMapper implements XrayMapper {
 }
 ```
 
-You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#References).
+You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#references).
 
 #### Creating new entities
 
@@ -246,6 +256,7 @@ By default, the Xray connector doesn't create any issues. You can enable that by
 
 ```java
 public class GenericMapper implements XrayMapper {
+    
     @Override
     public boolean shouldCreateNewTestSet(ClassContext classContext) {
         return true;
@@ -255,10 +266,17 @@ public class GenericMapper implements XrayMapper {
     public boolean shouldCreateNewTest(MethodContext methodContext) {
         return true;
     }
+
+    @Override
+    public String getDefaultTestIssueSummery(MethodContext methodContext) {
+        return String.format("%s_%s", methodContext.getClassContext().getName(), methodContext.getName());
+    }
 }
 ```
 
 If you create new test issues, Xray connector will use the method `getDefaultTestIssueSummery` for generate new issue summary.
+
+In the example above new created test issues get the summery according the format `<TestClass_TestMethod>` like `MyTestClass_testSomething`. 
 
 ### Jira custom fields IDs
 
