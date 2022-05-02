@@ -33,7 +33,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.xml.XmlSuite;
 
-public class MultipleMatchesSimulatedRunTest extends SimulatedRunTest {
+public class MultipleMatchesSimulatedRunTest extends AbstractSimulatedRunTest {
 
     @BeforeMethod
     protected void setInvalidTestStatus(Method method) throws IOException {

@@ -23,11 +23,29 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.RevisionContainsExact;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
+import eu.tsystems.mms.tic.testframework.report.model.context.ClassContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
+import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import org.testng.ITestClass;
 import org.testng.ITestResult;
 
-
 public interface XrayMapper {
+    String PROPERTY_TEST_SET_TESTS = "xray.test.set.tests.field.id";
+    String PROPERTY_TEST_EXECUTION_START_DATE = "xray.test.execution.start.time.field.id";
+    String PROPERTY_TEST_EXECUTION_FINISH_DATE = "xray.test.execution.finish.time.field.id";
+    String PROPERTY_TEST_EXECUTION_REVISION = "xray.test.execution.revision.field.id";
+    String PROPERTY_TEST_EXECUTION_TEST_ENVIRONMENTS = "xray.test.execution.test-environments.field.id";
+    String PROPERTY_TEST_EXECUTION_TEST_PLANS = "xray.test.execution.test-plans.field.id";
+    String PROPERTY_TEST_EXECUTION_ISSUETYPE_NAME = "xray.test.execution.issuetype.name";
+    String PROPERTY_TEST_SET_ISSUETYPE_NAME = "xray.test.set.issuetype.name";
+    String PROPERTY_TEST_ISSUETYPE_NAME = "xray.test.issuetype.name";
 
     /**
      * called for matching Test method against Xray Test
@@ -37,8 +55,25 @@ public interface XrayMapper {
      *
      * @param testNgResult the test result
      * @return JqlQuery that is able to match a single Xray-Test or null
+     * @deprecated Use {@link #queryTest(MethodContext)}
      */
-    JqlQuery resultToXrayTest(ITestResult testNgResult);
+    default JqlQuery resultToXrayTest(ITestResult testNgResult) {
+        return null;
+    }
+
+    /**
+     * Creates a {@link JqlQuery} for mapping {@link MethodContext} to a JiraTest
+     */
+    default JqlQuery queryTest(MethodContext methodContext) {
+        return methodContext.getTestNgResult().map(this::resultToXrayTest).orElse(null);
+    }
+
+    /**
+     * If true, try to create a Xray Test
+     */
+    default boolean shouldCreateNewTest(MethodContext methodContext) {
+        return false;
+    }
 
     /**
      * called for matching Test class against Xray TestSet
@@ -48,7 +83,60 @@ public interface XrayMapper {
      *
      * @param testNgClass test class
      * @return JqlQuery that is able to match a single Xray-TestSet or null
+     * @deprecated Use {@link #queryTestSet(ClassContext)} instead
      */
-    JqlQuery classToXrayTestSet(ITestClass testNgClass);
+    default JqlQuery classToXrayTestSet(ITestClass testNgClass) {
+        return null;
+    }
 
+    default JqlQuery queryTestSet(ClassContext classContext) {
+        return classContext.readMethodContexts()
+                .findFirst()
+                .flatMap(MethodContext::getTestNgResult)
+                .map(testResult -> classToXrayTestSet(testResult.getMethod().getTestClass()))
+                .orElse(null);
+    }
+
+    /**
+     * If true, try to create a Xray Test Set
+     */
+    default boolean shouldCreateNewTestSet(ClassContext classContext) {
+        return false;
+    }
+
+    default JqlQuery queryTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue) {
+        return JqlQuery.create()
+                .addCondition(new ProjectEquals(xrayTestExecutionIssue.getProject().getKey()))
+                .addCondition(new IssueTypeEquals(xrayTestExecutionIssue.getIssueType()))
+                .addCondition(new SummaryContainsExact(xrayTestExecutionIssue.getSummary()))
+                .addCondition(new RevisionContainsExact(xrayTestExecutionIssue.getRevision()))
+                .build();
+    }
+
+    /**
+     * Gets called when the test execution is created or updated.
+     */
+    default void updateTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
+    }
+
+    /**
+     * Gets called every time when a test is assigned to the test set.
+     */
+    default void updateTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+    }
+
+    /**
+     * Gets called every time a test will be synchronized.
+     */
+    default void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
+    }
+
+    /**
+     * Returns the default test issue summery for creating new tests or searching for mapping
+     * @param methodContext
+     * @return
+     */
+    default String getDefaultTestIssueSummery(MethodContext methodContext) {
+        return methodContext.getName();
+    }
 }

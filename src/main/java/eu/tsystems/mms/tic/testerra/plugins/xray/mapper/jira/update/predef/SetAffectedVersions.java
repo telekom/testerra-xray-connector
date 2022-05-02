@@ -27,6 +27,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.FieldUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraNameValueArray;
 
+@Deprecated
 public class SetAffectedVersions extends FieldUpdate {
 
     public SetAffectedVersions(final String... versionNames) {

@@ -22,11 +22,11 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Set;
 
-
-@JsonIgnoreProperties(ignoreUnknown = true)
+/**
+ * @deprecated Use {@link JiraIssue} instead
+ */
 public class JiraFields {
 
     private String summary;

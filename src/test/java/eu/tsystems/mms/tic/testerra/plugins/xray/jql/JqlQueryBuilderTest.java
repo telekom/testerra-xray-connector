@@ -26,8 +26,8 @@ import static org.testng.Assert.assertEquals;
 
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.Operator;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import org.testng.annotations.Test;
 
 public class JqlQueryBuilderTest extends AbstractTest {
@@ -37,7 +37,7 @@ public class JqlQueryBuilderTest extends AbstractTest {
         final JqlQuery query = JqlQuery.create()
                 .addCondition(new DefaultJqlCondition("summary", Operator.Equals, new SingleValue("bli")))
                 .addCondition(new DefaultJqlCondition("description", Operator.Contains, new SingleValue("bla")))
-                .addCondition(new DefaultJqlCondition(XrayConfig.getInstance().getRevisionJQLTerm(), Operator.Contains, new SingleValue("blubb")))
+                .addCondition(new DefaultJqlCondition(Fields.TEST_EXECUTION_REVISION.getJQLTerm(), Operator.Contains, new SingleValue("blubb")))
                 .build();
         assertEquals(query.createJql(), "summary = bli AND description ~ bla AND cf[14272] ~ blubb");
     }

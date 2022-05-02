@@ -22,31 +22,16 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.connect;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-
 
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestTypeEquals;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
-import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
-import java.io.IOException;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.DefaultSummaryMapper;
+import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Set;
-import org.apache.commons.lang3.SerializationUtils;
+import java.util.Optional;
+import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
@@ -55,117 +40,45 @@ public class XrayConnectorTest extends AbstractTest {
     private final String summary = "Dummy Execution";
     private final String description = "dummy description";
     private WebResource webResource;
-    private XrayConfig xrayConfig;
     private String revision = "2017-04-10_dummy";
-    private final XrayInfo xrayInfo = new XrayInfo("SWFTE", summary, description, revision);
-    private final XrayInfo xrayInfoWithUmlauts = new XrayInfo("SWFTE", "Dummy Umlaut Execution äöüßÄÖÜ",
-            "dummy description mit Umlauten äöüßÄÖÜ", revision);
+    private XrayInfo xrayInfo;
+    private XrayInfo xrayInfoWithUmlauts;
+    private XrayUtils xrayUtils;
+    private final DefaultSummaryMapper defaultSummaryMapper = new DefaultSummaryMapper();
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
-        webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils
-                .prepareWebResource(Paths.get(getClass().getResource("/xray-test-posthoc.properties").toURI()).getFileName().toString());
-        xrayConfig = XrayConfig.getInstance();
+        webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.prepareWebResource("sync.test.properties");
+        xrayUtils = new XrayUtils(webResource);
+        xrayInfo = new XrayInfo("SWFTE", summary, description, revision);
+        xrayInfoWithUmlauts = new XrayInfo("SWFTE", "Dummy Umlaut Execution äöüßÄÖÜ", "dummy description mit Umlauten äöüßÄÖÜ", revision);
     }
 
     @Test
-    public void testSearchForExistingTestExecution() throws Exception {
-        final XrayConnector xrayConnector = new XrayConnector(xrayInfo);
-        final Set<String> testExecKeys = xrayConnector.searchForExistingTestExecutions();
-        assertEquals(testExecKeys.size(), 1);
-        assertEquals(testExecKeys.iterator().next(), "SWFTE-799");
+    public void testSearchForExistingTestExecution() {
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(xrayInfo))
+                .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
+
+        Assert.assertTrue(optionalExistingTestExecution.isPresent());
+        Assert.assertEquals(optionalExistingTestExecution.get().getKey(), "SWFTE-799");
     }
 
     @Test
-    public void testSearchForExistingTestExecutionContainingUmlauts() throws Exception {
-        final XrayConnector xrayConnector = new XrayConnector(xrayInfoWithUmlauts);
-        final Set<String> testExecKeys = xrayConnector.searchForExistingTestExecutions();
-        assertEquals(testExecKeys.size(), 1);
-        assertEquals(testExecKeys.iterator().next(), "SWFTE-798");
+    public void testSearchForExistingTestExecutionContainingUmlauts() {
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(xrayInfoWithUmlauts))
+                .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
+
+        Assert.assertTrue(optionalExistingTestExecution.isPresent());
+        Assert.assertEquals(optionalExistingTestExecution.get().getKey(), "SWFTE-798");
     }
 
     @Test
-    public void testSearchForNonExistingTestExecution() throws Exception {
-        final XrayInfo nonExisitngExecution = (XrayInfo) SerializationUtils.clone(xrayInfo);
+    public void testSearchForNonExistingTestExecution() {
+        final XrayInfo nonExisitngExecution = xrayInfo;
         nonExisitngExecution.setRevision("not existing");
-        final XrayConnector xrayConnector = new XrayConnector(nonExisitngExecution);
-        final Set<String> testExecKeys = xrayConnector.searchForExistingTestExecutions();
-        assertTrue(testExecKeys.isEmpty());
-    }
-
-    @Test
-    public void testFindTestKeys() throws Exception {
-        final XrayConnector xrayConnector = new XrayConnector(xrayInfo);
-        final JqlQuery jqlQuery = JqlQuery.create()
-                .addCondition(new SummaryContainsExact("passes"))
-                .build();
-        final Collection<String> testKeys = xrayConnector.findTestKeys("SWFTE-7", jqlQuery);
-        assertEquals(testKeys.size(), 1);
-        assertEquals(testKeys.iterator().next(), "SWFTE-1");
-    }
-
-    @Test
-    public void testFindTestKeysNotExisting() throws Exception {
-        final XrayConnector xrayConnector = new XrayConnector(xrayInfo);
-        final JqlQuery jqlQuery = JqlQuery.create()
-                .addCondition(new SummaryContainsExact("passes"))
-                .addCondition(new TestTypeEquals(TestType.AutomatedCucumber))
-                .build();
-        final Collection<String> testKeys = xrayConnector.findTestKeys("SWFTE-7", jqlQuery);
-        assertEquals(testKeys.size(), 0);
-    }
-
-    @Test
-    public void testFindTestKeysMoreThanOneMatches() throws Exception {
-        final XrayConnector xrayConnector = new XrayConnector(xrayInfo);
-        final JqlQuery jqlQuery = JqlQuery.create()
-                .addCondition(new SummaryContainsExact("TM"))
-                .build();
-        final Collection<String> testKeys = xrayConnector.findTestKeys("SWFTE-7", jqlQuery);
-        assertEquals(testKeys.size(), 3);
-    }
-
-    @Test
-    public void testFindOrCreateTestExecutionExisting() throws Exception {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, -1);
-        final Date oneMinuteAgo = calendar.getTime();
-
-        final XrayConnector xrayConnector = new XrayConnector(xrayInfo);
-        final String testExecutionKey = xrayConnector.findOrCreateTestExecution(Arrays.asList("SWFTE-1", "SWFTE-2", "SWFTE-3"));
-
-        final JiraIssue issue = JiraUtils.getIssue(webResource, testExecutionKey, Arrays.asList(
-                xrayConfig.getTestExecutionStartTimeFieldName(),
-                xrayConfig.getTestExecutionFinishTimeFieldName()));
-        final Date startTime =
-                eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.getDateFromField(issue, xrayConfig.getTestExecutionStartTimeFieldName());
-        final Date finishTime =
-                eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.getDateFromField(issue, xrayConfig.getTestExecutionFinishTimeFieldName());
-
-        final Date now = Calendar.getInstance().getTime();
-        assertTrue(startTime.after(oneMinuteAgo), String.format("start time: '%s' is after one minute ago: '%s'", startTime, oneMinuteAgo));
-        assertTrue(startTime.before(now), String.format("start time: '%s' is before now: '%s'", startTime, now));
-        assertTrue(finishTime.after(oneMinuteAgo), String.format("finish time: '%s' is after one minute ago: '%s'", finishTime, oneMinuteAgo));
-        assertTrue(finishTime.before(now), String.format("finish time: '%s' is before now: '%s'", finishTime, now));
-    }
-
-    @Test(dependsOnMethods = "testFindOrCreateTestExecutionExisting")
-    public void testUpdateFinishTimeOfTestExecution() throws NotSyncableException, IOException, ParseException {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, -1);
-        final Date oneMinuteAgo = calendar.getTime();
-
-        final String issueKey = "SWFTE-9";
-        final XrayConnector xrayConnector = new XrayConnector(xrayInfo);
-        xrayConnector.updateFinishTimeOfTestExecution(issueKey);
-        final XrayConfig xrayConfig = XrayConfig.getInstance();
-        final JiraIssue issue = JiraUtils.getIssue(webResource, issueKey, Arrays.asList(xrayConfig.getTestExecutionFinishTimeFieldName()));
-
-        final Date finishTime =
-                eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.getDateFromField(issue, xrayConfig.getTestExecutionFinishTimeFieldName());
-
-        assertTrue(finishTime.before(Calendar.getInstance().getTime()));
-        assertTrue(finishTime.after(oneMinuteAgo), String.format("finish time: %s, one miute ago: %s", finishTime, oneMinuteAgo));
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(nonExisitngExecution))
+                .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
+        Assert.assertFalse(optionalExistingTestExecution.isPresent());
     }
 
     //

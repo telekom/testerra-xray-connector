@@ -22,14 +22,13 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.DefaultJqlCondition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.ExactSingleValue;
-
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 
 public class RevisionContainsExact extends DefaultJqlCondition {
 
     public RevisionContainsExact(final String revision) {
-        super(XrayConfig.getInstance().getRevisionJQLTerm(), Operator.Contains, new ExactSingleValue(revision));
+        super(Fields.TEST_EXECUTION_REVISION.getJQLTerm(), Operator.Contains, new ExactSingleValue(revision));
     }
 }

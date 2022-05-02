@@ -24,6 +24,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 
+@Deprecated
 public class FieldUpdate implements Field {
 
     private final Field field;
@@ -50,10 +51,5 @@ public class FieldUpdate implements Field {
     @Override
     public String getJQLTerm() {
         return this.field.getJQLTerm();
-    }
-
-    @Override
-    public String getValidationRegex() {
-        return this.field.getValidationRegex();
     }
 }

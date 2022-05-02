@@ -22,102 +22,50 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Sets;
-import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.FreshXrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.UpdateXrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecution;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestStatus;
-import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.NotSyncableException;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-
-public final class XrayUtils {
+public final class XrayUtils extends JiraUtils {
 
     private static final String IMPORT_EXECUTION_PATH = "raven/1.0/import/execution";
     private static final String EXECUTION_RESULT_PATH = "raven/1.0/execution/result";
-    private static Logger logger = LoggerFactory.getLogger(XrayUtils.class);
 
-    private XrayUtils() {
+    public static final String PREFIX_NEW_ISSUE = "_NEW_";
+
+    public XrayUtils(WebResource webResource) {
+        super(webResource);
     }
 
-    public static String syncTestExecutionReturnKey(final WebResource webResource, final XrayTestExecution testExecution)
-            throws IOException, NotSyncableException {
-        final String response = syncTestExecReturnResponse(webResource, testExecution);
-        final JsonNode jsonNode = new ObjectMapper().readTree(response);
-        final JsonNode foundKey = jsonNode.findValue("key");
-        if (foundKey != null) {
-            return foundKey.asText();
-        } else {
-            throw new NotSyncableException("no key found in server response");
+    public void importTestExecution(XrayTestExecutionImport testExecutionImport) throws IOException {
+        testExecutionImport.getTests().forEach(testRun -> {
+            if (testRun.getTestKey() != null && testRun.getTestKey().contains(PREFIX_NEW_ISSUE)) {
+                testRun.setTestKey(null);
+            }
+        });
+        Optional<String> post = post(IMPORT_EXECUTION_PATH, testExecutionImport);
+        if (post.isPresent()) {
+            XrayTestExecutionImport.Result xrayTestExecutionResult = getObjectMapper().readValue(post.get(), XrayTestExecutionImport.Result.class);
+            testExecutionImport.setTestExecutionKey(xrayTestExecutionResult.getTestExecIssue().getKey());
+            testExecutionImport.setResultTestIssueImport(xrayTestExecutionResult.getTestIssues());
         }
     }
 
-    public static String syncTestExecReturnResponse(final WebResource webResource, final XrayTestExecution testExecution)
-            throws JsonProcessingException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        final String string = objectMapper.writeValueAsString(testExecution);
-        try {
-            return webResource.path(IMPORT_EXECUTION_PATH)
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .entity(string)
-                    .post(String.class);
-        } catch (final UniformInterfaceException e) {
-            logger.error(String.format("error POSTing request: %s", string), e);
-            throw new NotSyncableException(e);
-        }
+    public Set<XrayTestExecutionImport.TestRun> getTestRunsByTestExecutionKey(String issueKey) throws IOException {
+        String jsonResponse = getWebResource()
+                .path(EXECUTION_RESULT_PATH)
+                .queryParam("testExecKey", issueKey)
+                .get(String.class);
+        XrayTestExecutionImport.TestRun[] testRuns = getObjectMapper().readValue(jsonResponse, XrayTestExecutionImport.TestRun[].class);
+        return Arrays.stream(testRuns).collect(Collectors.toSet());
     }
 
-    public static UpdateXrayTestExecution createUpdateTestExecution(final String issueKey, final Iterable<String> testKeys) {
-        final UpdateXrayTestExecution execution = new UpdateXrayTestExecution(issueKey);
-        final XrayInfo xrayInfo = new XrayInfo();
-        xrayInfo.setStartDate(new Date());
-        xrayInfo.setFinishDate(new Date());
-        execution.setInfo(xrayInfo);
-        execution.setTests(keysToXrayTestWithTodoStatus(testKeys));
-        return execution;
-    }
-
-    public static FreshXrayTestExecution createFreshTestExecution(XrayInfo xrayInfo, final Iterable<String> testKeys) {
-        final FreshXrayTestExecution execution = new FreshXrayTestExecution();
-        execution.setInfo(xrayInfo);
-        execution.setTests(keysToXrayTestWithTodoStatus(testKeys));
-        return execution;
-    }
-
-    private static LinkedHashSet<XrayTestIssue> keysToXrayTestWithTodoStatus(final Iterable<String> testKeys) {
-        final LinkedHashSet<XrayTestIssue> xrayTestIssues = new LinkedHashSet<>();
-        for (final String testKey : testKeys) {
-            final XrayTestIssue xrayTestIssue = new XrayTestIssue();
-            xrayTestIssue.setTestKey(testKey);
-            xrayTestIssue.setStatus(XrayTestStatus.TODO);
-            xrayTestIssues.add(xrayTestIssue);
-        }
-        return xrayTestIssues;
-    }
-
-    public static LinkedHashSet<XrayTestIssue> getTestsFromExecution(final WebResource webResource, final String issueKey) throws IOException {
-        final String result = webResource.path(EXECUTION_RESULT_PATH).queryParam("testExecKey", issueKey).get(String.class);
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final XrayTestIssue[] testIssues = objectMapper.readValue(result, XrayTestIssue[].class);
-        return Sets.newLinkedHashSet(Arrays.asList(testIssues));
-    }
-
-    public static String exportTestExecutionAsJson(final WebResource webResource, final String issueKey) {
+    public String exportTestExecutionAsJson(final WebResource webResource, final String issueKey) {
         return webResource.path(EXECUTION_RESULT_PATH)
                 .queryParam("testExecKey", issueKey)
                 .get(String.class);

@@ -22,20 +22,23 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.hook;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestAnnotationConverter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.DefaultReport;
-import eu.tsystems.mms.tic.testframework.report.Report;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.testng.ISuite;
+import org.testng.ISuiteListener;
 
 /**
  * XrayConnectorHook
@@ -45,17 +48,43 @@ import org.reflections.util.ConfigurationBuilder;
  *
  * @author Eric Kubenka
  */
-public class XrayConnectorHook implements ModuleHook, Loggable {
+public class XrayConnectorHook implements ModuleHook, Loggable, ISuiteListener {
+    private XrayResultsSynchronizer xrayResultsSynchronizer;
+    private static XrayConnectorHook instance;
 
-    private static final List<AbstractXrayResultsSynchronizer> XRAY_LISTENER = new LinkedList<>();
+    public XrayConnectorHook() {
+        instance = this;
+    }
+
+    @Override
+    @Subscribe
+    public void onStart(ISuite suite) {
+        this.initDefaultListener();
+
+        EventBus eventBus = TesterraListener.getEventBus();
+        eventBus.unregister(this);
+    }
+
+    public static XrayConnectorHook getInstance() {
+        return instance;
+    }
+
+    public synchronized void setXrayResultsSynchronizer(XrayResultsSynchronizer xrayResultsSynchronizer) {
+        if (this.xrayResultsSynchronizer != null) {
+            this.xrayResultsSynchronizer.shutdown();
+        }
+        log().info(String.format("Registering %s", xrayResultsSynchronizer.getClass().getSimpleName()));
+        this.xrayResultsSynchronizer = xrayResultsSynchronizer;
+        this.xrayResultsSynchronizer.initialize();
+    }
 
     @Override
     public void init() {
+        EventBus eventBus = TesterraListener.getEventBus();
+        eventBus.register(this);
 
-        this.initListener();
         DefaultReport report = (DefaultReport) TesterraListener.getReport();
         report.registerAnnotationConverter(XrayTest.class, new XrayTestAnnotationConverter());
-
     }
 
     @Override
@@ -63,34 +92,38 @@ public class XrayConnectorHook implements ModuleHook, Loggable {
         DefaultReport report = (DefaultReport) TesterraListener.getReport();
         report.unregisterAnnotationConverter(XrayTest.class);
 
-        for (final AbstractXrayResultsSynchronizer xraySynchronizer : XRAY_LISTENER) {
-            xraySynchronizer.shutdown();
-            TesterraListener.getEventBus().unregister(xraySynchronizer);
+        if (this.xrayResultsSynchronizer != null) {
+            this.xrayResultsSynchronizer.shutdown();
         }
     }
 
-    private void initListener() {
+    private synchronized void initDefaultListener() {
+        if (this.xrayResultsSynchronizer != null) {
+            return;
+        }
 
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
         configurationBuilder.addClassLoader(Thread.currentThread().getContextClassLoader());
         configurationBuilder.setUrls(ClasspathHelper.forJavaClassPath());
         final Reflections reflections = new Reflections(configurationBuilder);
-        final Set<Class<? extends AbstractXrayResultsSynchronizer>> hooks = reflections.getSubTypesOf(AbstractXrayResultsSynchronizer.class);
+        final Set<Class<? extends XrayResultsSynchronizer>> synchronizers = reflections.getSubTypesOf(XrayResultsSynchronizer.class);
 
-        if (hooks.isEmpty()) {
-            log().warn("No " + AbstractXrayResultsSynchronizer.class.getSimpleName() + " found");
+        if (synchronizers.isEmpty()) {
+            log().warn(String.format("No implementations of %s found", XrayResultsSynchronizer.class.getSimpleName()));
         }
 
-        hooks.forEach(aClass -> {
-            try {
-                final AbstractXrayResultsSynchronizer xrayListener = aClass.getConstructor().newInstance();
-                log().debug("Calling xray result listener " + aClass.getSimpleName() + "...");
-                xrayListener.initialize();
-                TesterraListener.getEventBus().register(xrayListener);
-                XRAY_LISTENER.add(xrayListener);
-            } catch (Exception e) {
-                log().error("Could not load Xray result listener", e);
-            }
-        });
+        synchronizers.stream()
+                .filter(aClass -> aClass != AbstractXrayResultsSynchronizer.class)
+                .map(aClass -> {
+                    try {
+                        return aClass.getConstructor().newInstance();
+                    } catch (Exception e) {
+                        log().error(String.format("Could not create instance of %s", aClass.getSimpleName()), e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .ifPresent(this::setXrayResultsSynchronizer);
     }
 }

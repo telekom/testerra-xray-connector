@@ -26,6 +26,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.FieldUpdate;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraArray;
 
+@Deprecated
 public class SetLabels extends FieldUpdate {
 
     public SetLabels(final String... labels) {

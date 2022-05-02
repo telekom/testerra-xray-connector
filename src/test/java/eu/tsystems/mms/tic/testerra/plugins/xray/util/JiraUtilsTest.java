@@ -22,46 +22,31 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.GlobalTestData;
-import eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTests;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestTypeEquals;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraString;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraVerb;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.SimpleJiraIssueUpdate;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.predef.SetLabels;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
-import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
+import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import java.util.ArrayList;
+import java.util.Optional;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,20 +56,20 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class JiraUtilsTest extends AbstractTest {
+public class JiraUtilsTest extends AbstractTest implements Loggable {
 
-    private WebResource webResource;
-    private String updateIssueKey = "SWFTE-802";
-    private String statusIssueKey = "SWFTE-809";
+    private final String updateIssueKey = "SWFTE-802";
+    private final String statusIssueKey = "SWFTE-809";
+    private JiraUtils jiraUtils;
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
-        webResource =
-                TestUtils.prepareWebResource(Paths.get(getClass().getResource("/xray-test-posthoc.properties").toURI()).getFileName().toString());
+        super.prepareWebResource();
+        jiraUtils = new JiraUtils(webResource);
     }
 
     @DataProvider
-    private Object[][] provideExistingIssues() {
+    private Object[][] provideExistingTestIssues() {
         return new Object[][]{
                 {"SWFTE-1", "TM - passes"},
                 {"SWFTE-2", "TM - fails"},
@@ -95,109 +80,74 @@ public class JiraUtilsTest extends AbstractTest {
         };
     }
 
-    @Test(dataProvider = "provideExistingIssues")
+    @Test(dataProvider = "provideExistingTestIssues")
     public void testGetIssue(final String key, final String summary) throws IOException {
-        final JiraIssue issue = JiraUtils.getIssue(webResource, key, Lists.newArrayList("summary"));
+        final JiraIssue issue = JiraUtils.getIssue(webResource, key);
         assertEquals(issue.getKey(), key);
-        final JsonNode fields = issue.getFields();
-        assertEquals(fields.get("summary").asText(), summary);
+        assertEquals(issue.getSummary(), summary);
+        assertEquals(issue.getProject().getKey(), XrayConfig.getInstance().getProjectKey());
     }
 
     @Test
-    public void testUpdateIssue() throws IOException {
-        final SimpleJiraIssueUpdate jiraIssueUpdate = new SimpleJiraIssueUpdate();
-        final String randomizedDescription = RandomUtils.generateRandomString();
+    public void test_updateIssueWithoutChange() throws IOException {
+        final String expectedSummary = "Testerra Xray Connector Test Ticket";
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        issueToUpdate.setSummary(expectedSummary);
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
 
-        final ObjectNode objectNode = new ObjectMapper().createObjectNode();
-        objectNode.put("description", randomizedDescription);
+        JiraIssue updatedIssue = jiraUtils.getIssue(issueToUpdate.getKey());
+        assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
 
-        jiraIssueUpdate.setFields(objectNode);
-        JiraUtils.updateIssue(webResource, updateIssueKey, jiraIssueUpdate);
-        final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("description"));
-        assertEquals(issue.getKey(), updateIssueKey);
-        assertEquals(issue.getFields().get("description").asText(), randomizedDescription);
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
+        assertEquals(updatedIssue.getSummary(), issueToUpdate.getSummary());
     }
 
     @Test
     public void testUpdateIssueWithPredefsRemoveAllLabels() throws IOException {
-        String[] labelsToSet = new String[]{};
-        final JiraIssueUpdate update = JiraIssueUpdate.create()
-                .field(new SetLabels(labelsToSet))
-                .build();
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        issueToUpdate.setLabels(new ArrayList<>());
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
 
-        JiraUtils.updateIssue(webResource, updateIssueKey, update);
-        final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
-        assertEquals(issue.getKey(), updateIssueKey);
-        final List<String> foundLabels = Arrays.asList(new ObjectMapper().treeToValue(issue.getFields().get("labels"), String[].class));
-        Assert.assertTrue(foundLabels.isEmpty());
+        JiraIssue updatedIssue = jiraUtils.getIssue(updateIssueKey);
+        Assert.assertTrue(updatedIssue.getLabels().isEmpty());
     }
 
     @Test(dependsOnMethods = "testUpdateIssueWithPredefsRemoveAllLabels")
     public void testUpdateIssueWithPredefsSetLabels() throws IOException {
-        String[] labelsToSet = new String[]{"Test-Automatisierung", "Aufräumaktion"};
-        final JiraIssueUpdate update = JiraIssueUpdate.create()
-                .field(new SetLabels(labelsToSet))
-                .build();
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        List<String> labels = issueToUpdate.getLabels();
+        labels.add("Test-Automatisierung");
+        labels.add("Aufräumaktion");
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
 
-        JiraUtils.updateIssue(webResource, updateIssueKey, update);
-        final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
-        assertEquals(issue.getKey(), updateIssueKey);
-        final List<String> foundLabels = Arrays.asList(new ObjectMapper().treeToValue(issue.getFields().get("labels"), String[].class));
-        Assert.assertTrue(foundLabels.containsAll(Arrays.asList(labelsToSet)));
-        Assert.assertTrue(Arrays.asList(labelsToSet).containsAll(foundLabels));
+        JiraIssue updatedIssue = jiraUtils.getIssue(updateIssueKey);
+        assertEquals(updatedIssue.getLabels().stream().sorted().collect(Collectors.toList()), labels.stream().sorted().collect(Collectors.toList()));
     }
 
-    @Test(dependsOnMethods = "testUpdateIssueWithPredefsSetLabels")
+    @Test()
     public void testUpdateIssueWithPredefsRemoveSingleLabel() throws IOException {
-        final JiraIssueUpdate update = JiraIssueUpdate.create()
-                .field("labels", JiraVerb.REMOVE, new JiraString("Aufräumaktion"))
-                .build();
+        JiraIssue existingIssue = jiraUtils.getIssue(updateIssueKey);
+        existingIssue.getLabels().removeIf(s -> s.equals("Aufräumaktion"));
+        JiraIssue issueToUpdate = new JiraIssue(updateIssueKey);
+        issueToUpdate.setLabels(existingIssue.getLabels());
+        jiraUtils.createOrUpdateIssue(issueToUpdate);
 
-        JiraUtils.updateIssue(webResource, updateIssueKey, update);
-        final JiraIssue issue = JiraUtils.getIssue(webResource, updateIssueKey, Lists.newArrayList("labels"));
-        assertEquals(issue.getKey(), updateIssueKey);
-        final List<String> foundLabels = Arrays.asList(new ObjectMapper().treeToValue(issue.getFields().get("labels"), String[].class));
+        JiraIssue updatedIssue = jiraUtils.getIssue(updateIssueKey);
+        final List<String> foundLabels = updatedIssue.getLabels();
         Assert.assertEquals(foundLabels.size(), 1);
         Assert.assertTrue(foundLabels.contains("Test-Automatisierung"));
         Assert.assertTrue(!foundLabels.contains("Aufräumaktion"));
     }
 
-    @Test
-    public void testCreateTestExecution() throws IOException, ParseException {
-        final String projectKey = "SWFTE";
-        final String summary = RandomUtils.generateRandomString();
-        final String description = RandomUtils.generateRandomString();
-        final String revision = RandomUtils.generateRandomString();
-        final List<String> testEnvironments = ImmutableList.of("Android", "Samsung");
-
-        final XrayInfo xrayInfo = new XrayInfo(projectKey, summary, description, testEnvironments, revision, "1.0.2", "fnu-jira-testerra");
-        final String key = JiraUtils.createTestExecutionGeneric(webResource, xrayInfo);
-
-        final JiraIssue issue = JiraUtils.getIssue(webResource, key,
-                Lists.newArrayList("project", "summary", "description",
-                        Fields.REVISION.getFieldName(),
-                        Fields.TEST_EXECUTION_START_DATE.getFieldName(),
-                        Fields.TEST_ENVIRONMENTS.getFieldName()
-                )
-        );
-        assertEquals(issue.getKey(), key);
-        assertEquals(issue.getFields().findValue("project").findValue("name").asText(), "Spielwiese Framework-Tests");
-        assertEquals(issue.getFields().findValue("summary").asText(), summary);
-        assertEquals(issue.getFields().findValue("description").asText(), description);
-        assertEquals(issue.getFields().findValue(Fields.REVISION.getFieldName()).asText(), revision);
-        issue.getFields().findValue(Fields.TEST_ENVIRONMENTS.getFieldName())
-                .forEach(x -> assertTrue(testEnvironments.contains(x.textValue())));
-
-        final JsonNode startDateNode = issue.getFields().findValue(Fields.TEST_EXECUTION_START_DATE.getFieldName());
-        assertNotNull(startDateNode);
-        final Date startDate = JiraUtils.dateFormat.parse(startDateNode.asText());
-        final Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, -1);
-        assertTrue(startDate.before(Calendar.getInstance().getTime()));
-        assertTrue(startDate.after(calendar.getTime()), String.format("finish time: %s, calendar time: %s", startDate, calendar.getTime()));
-
-        /* set global property to use later */
-        GlobalTestData.getInstance().setKeyOfNewTestExecution(key);
+    /**
+     * Disabled because it changes issue state and messes up following tests
+     */
+    @Test(enabled = false)
+    public void test_performTransition_newApi() throws IOException {
+        Set<JiraTransition> transitions = jiraUtils.getAvailableTransitions(statusIssueKey);
+        Optional<JiraTransition> transitionByStatusCategory = jiraUtils.getTransitionByStatusCategory(transitions, JiraStatusCategory.DONE);
+        Assert.assertTrue(transitionByStatusCategory.isPresent(), String.format("Transition to %s is not available", JiraStatusCategory.DONE.getKey()));
+        jiraUtils.performTransition(statusIssueKey, transitionByStatusCategory.get());
     }
 
     @Test(groups = "issueStatus")
@@ -207,7 +157,7 @@ public class JiraUtilsTest extends AbstractTest {
     }
 
     @Test(dependsOnMethods = "testGetIssueStatus")
-    public void testGetTransistions() throws IOException {
+    public void testGetTransitions() throws IOException {
         final Set<JiraTransition> transitions = JiraUtils.getTransitions(webResource, statusIssueKey);
         final HashSet<String> expectedTransitionNames = Sets.newHashSet("Arbeit beginnen", "Information anfordern");
         final HashSet<String> foundTransitionNames = new HashSet<>();
@@ -220,13 +170,14 @@ public class JiraUtilsTest extends AbstractTest {
                 && foundTransitionNames.containsAll(expectedTransitionNames));
     }
 
-    @Test(dependsOnMethods = "testGetTransistions")
+    @Test(dependsOnMethods = "testGetTransitions")
     public void testChangeIssueStatus() throws IOException {
-        final JiraStatus originalStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
+        JiraStatus newStatus;
+        JiraStatus originalStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
         Assert.assertEquals(originalStatus.getName(), "Erneut geöffnet");
 
         JiraUtils.doTransitionByName(webResource, statusIssueKey, "Arbeit beginnen");
-        JiraStatus newStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
+        newStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
         assertEquals(newStatus.getName(), "In Arbeit");
 
         JiraUtils.doTransitionByName(webResource, statusIssueKey, "Arbeit beenden");
@@ -244,8 +195,8 @@ public class JiraUtilsTest extends AbstractTest {
         final String attachmentFilename = "testBliBlaBlubb.json";
         JiraUtils.uploadJsonAttachment(webResource, issueKey, "content", attachmentFilename);
         final JiraIssue issue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
-        Assert.assertNotNull(issue.getFields().findValue("filename"));
-        final String foundFileName = issue.getFields().findValue("attachment").findValue("filename").asText();
+        Assert.assertEquals(issue.getAttachments().size(), 1);
+        final String foundFileName = issue.getAttachments().get(0).getFilename();
         //TODO also assert content of file
         assertEquals(foundFileName, attachmentFilename);
     }
@@ -257,7 +208,7 @@ public class JiraUtilsTest extends AbstractTest {
         final String attachmentFilename = "archive.zip";
         JiraUtils.uploadAttachment(webResource, issueKey, is, attachmentFilename);
         final JiraIssue issue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
-        final String foundFileName = issue.getFields().findValue("attachment").findValue("filename").asText();
+        final String foundFileName = issue.getAttachments().get(0).getFilename();
         //TODO also assert content of file
         assertEquals(foundFileName, attachmentFilename);
     }
@@ -267,13 +218,13 @@ public class JiraUtilsTest extends AbstractTest {
         final String issueKey = "SWFTE-12";
 
         final JiraIssue originalIssue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
-        int attachmentCount = originalIssue.getFields().findValue("attachment").size();
+        int attachmentCount = originalIssue.getAttachments().size();
         assertTrue(attachmentCount > 0);
 
         JiraUtils.deleteAllAttachments(webResource, issueKey);
 
         final JiraIssue nakedIssue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
-        attachmentCount = nakedIssue.getFields().findValue("attachment").size();
+        attachmentCount = nakedIssue.getAttachments().size();
         assertEquals(attachmentCount, 0);
     }
 
@@ -284,7 +235,7 @@ public class JiraUtilsTest extends AbstractTest {
                 .addCondition(new TestTypeEquals(TestType.AutomatedGeneric))
                 .addCondition(new KeyInTestSetTests("SWFTE-8"))
                 .build();
-        final Set<JiraIssue> jiraIssues = JiraUtils.searchIssues(webResource, jqlQuery.createJql());
+        final Set<JiraIssue> jiraIssues = jiraUtils.searchIssues(jqlQuery).collect(Collectors.toSet());
         //        final Collection<String> foundKeys = Collections2.transform(jiraIssues, JiraIssue::getKey);
         final List<String> foundKeys = jiraIssues.stream().map(JiraIssue::getKey).collect(Collectors.toList());
         assertTrue(foundKeys.containsAll(Arrays.asList("SWFTE-4", "SWFTE-5", "SWFTE-6")));

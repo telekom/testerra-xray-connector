@@ -31,10 +31,9 @@ apply from: rootProject.file('publish.gradle')
 
 dependencies {
     compileOnly 'io.testerra:core:' + testerraCompileVersion
-    compileOnly 'io.testerra:surefire-connector:' + testerraCompileVersion
 
     implementation 'org.reflections:reflections:0.9.12'
-    api 'com.google.guava:guava:28.1-jre'
+    implementation 'commons-codec:commons-codec:1.13'
 
     // https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
     implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.31'
@@ -45,10 +44,8 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.3.1'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.3.1'
 
-    testImplementation 'io.testerra:core:' + testerraTestVersion
-    testImplementation 'io.testerra:surefire-connector:' + testerraTestVersion
-    testImplementation 'io.testerra:report-ng:' + testerraTestVersion
-    testImplementation 'commons-codec:commons-codec:1.13'
+    testImplementation 'io.testerra:driver-ui-desktop:' + testerraTestVersion
+    //testImplementation 'io.testerra:report-ng:' + testerraTestVersion
 }
 
 test {

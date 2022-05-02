@@ -22,12 +22,11 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.jql;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
+import java.util.stream.Collectors;
 
 
 public class JqlQuery implements JqlCreator {
@@ -49,8 +48,7 @@ public class JqlQuery implements JqlCreator {
 
     @Override
     public String createJql() {
-        //TODO: make nice if Java8 is finally used
-        return StringUtils.join(Collections2.transform(jqlConditions, JqlUtils.CreateJqlFunc), " AND ");
+        return jqlConditions.stream().map(JqlCreator::createJql).collect(Collectors.joining(" AND "));
     }
 
     public static class JqlQueryBuilder {

@@ -22,7 +22,7 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
-
+@Deprecated
 public class NotSyncableException extends RuntimeException {
 
     private final boolean expected;

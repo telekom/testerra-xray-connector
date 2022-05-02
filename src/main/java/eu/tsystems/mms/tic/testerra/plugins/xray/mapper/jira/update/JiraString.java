@@ -22,7 +22,7 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update;
 
-
+@Deprecated
 public class JiraString implements JiraValue<String> {
 
     private final String s;

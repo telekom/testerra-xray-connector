@@ -22,27 +22,41 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.Map;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class JiraStatus {
+public class JiraStatus extends JiraNameReference {
+    private JiraStatusCategory statusCategory;
+    private String description;
 
-    private String name;
-    private int id;
-
-    public String getName() {
-        return name;
+    public JiraStatus(Map<String, Object> map) {
+        super(map);
+        this.description = (String)map.getOrDefault("description", null);
+        if (map.containsKey("statusCategory")) {
+            this.statusCategory = new JiraStatusCategory((Map<String, Object>)map.get("statusCategory"));
+        }
     }
 
-    public void setName(final String name) {
-        this.name = name;
+    public JiraStatus() {
+        super();
     }
 
-    public int getId() {
-        return id;
+    public JiraStatus(String name) {
+        super(name);
     }
 
-    public void setId(final int id) {
-        this.id = id;
+    public JiraStatusCategory getStatusCategory() {
+        return statusCategory;
+    }
+
+    public void setStatusCategory(JiraStatusCategory statusCategory) {
+        this.statusCategory = statusCategory;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

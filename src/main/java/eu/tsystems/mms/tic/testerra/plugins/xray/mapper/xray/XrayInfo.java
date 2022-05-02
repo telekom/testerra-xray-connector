@@ -22,35 +22,28 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.io.Serializable;
-import java.util.Collections;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Stream;
 
-public class XrayInfo implements Serializable {
-
-    private String project;
-    private String summary;
-    private String description;
-    private String version;
-    private String user;
-    private String revision;
-    private List<String> testEnvironments;
-    private Date startDate;
-    private Date finishDate;
-
+/**
+ * @deprecated Use {@link XrayTestExecutionIssue}
+ */
+public class XrayInfo extends XrayTestExecutionIssue {
     public XrayInfo() {
     }
 
+    @Deprecated
     public XrayInfo(String project, String summary, String description, String revision) {
-        this.project = project;
-        this.summary = summary;
-        this.description = description;
-        this.revision = revision;
+        this.setProject(project);
+        this.setSummary(summary);
+        this.setDescription(description);
+        this.setRevision(revision);
+        this.setStartDate(new Date());
     }
 
+    @Deprecated
     public XrayInfo(
             String project,
             String summary,
@@ -60,100 +53,53 @@ public class XrayInfo implements Serializable {
             String fixVersion,
             String assignee
     ) {
-        this.project = project;
-        this.summary = summary;
-        this.description = description;
-        this.revision = revision;
-        setTestEnvironments(testEnvironments);
-        version = fixVersion;
-        user = assignee;
+        this(project, summary, description, revision);
+        setLabels(testEnvironments);
+        setVersion(fixVersion);
+        setUser(assignee);
     }
 
     /**
-     * @deprecated Use {@link #readTestEnvironments()} instead
-     * @return
+     * @deprecated Use {@link #getFixVersions()} instead
      */
-    public List<String> getTestEnvironments() {
-        return testEnvironments;
-    }
-
-    public void setTestEnvironments(List<String> testEnvironments) {
-        if (testEnvironments != null) {
-            this.testEnvironments = Collections.unmodifiableList(testEnvironments);
-        }
-    }
-
-    public Stream<String> readTestEnvironments() {
-        if (this.testEnvironments==null) {
-            return Stream.empty();
-        } else {
-            return this.testEnvironments.stream();
-        }
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public void setSummary(final String summary) {
-        this.summary = summary;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(final String description) {
-        this.description = description;
-    }
-
     public String getVersion() {
-        return version;
+        return getFixVersions().stream().findFirst().map(JiraNameReference::getName).orElse(null);
     }
 
+    /**
+     * @deprecated Use {@link #setFixVersions(List)} instead
+     */
     public void setVersion(final String version) {
-        this.version = version;
+        ArrayList<JiraNameReference> jiraIssueNameReferences = new ArrayList<>();
+        jiraIssueNameReferences.add(new JiraNameReference(version));
+        this.setFixVersions(jiraIssueNameReferences);
     }
 
+    /**
+     * @deprecated Use {@link #getAssignee()} instead
+     */
     public String getUser() {
-        return user;
+        return getAssignee().getName();
     }
 
+    /**
+     * @deprecated Use {@link #setAssignee(JiraNameReference)} instead
+     */
     public void setUser(final String user) {
-        this.user = user;
+        this.setAssignee(new JiraNameReference(user));
     }
 
-    public String getRevision() {
-        return revision;
+    /**
+     * @deprecated Use {@link #getProject()} instead
+     */
+    public String getProjectKey() {
+        return super.getProject().getKey();
     }
 
-    public void setRevision(final String revision) {
-        this.revision = revision;
-    }
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "CET")
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(final Date startDate) {
-        this.startDate = startDate;
-    }
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "CET")
-    public Date getFinishDate() {
-        return finishDate;
-    }
-
-    public void setFinishDate(final Date finishDate) {
-        this.finishDate = finishDate;
-    }
-
-    public String getProject() {
-        return project;
-    }
-
+    /**
+     * @deprecated Use {@link #setProject(JiraNameReference)} instead
+     */
     public void setProject(String project) {
-        this.project = project;
+        getProject().setKey(project);
     }
 }

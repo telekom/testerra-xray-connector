@@ -23,9 +23,9 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testframework.events.MethodEndEvent;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
-import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import eu.tsystems.mms.tic.testframework.report.utils.ExecutionContextController;
 import java.util.List;
 import org.testng.IInvokedMethod;
@@ -43,7 +43,7 @@ import org.testng.xml.XmlSuite;
  * Created by maco on 19.05.2017.
  * <p>
  * replacement for TesterraListener which may not be instantiated more thane once per execution. Fires necesarry events
- * to acturally trigger behavior in {@link eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer}
+ * to acturally trigger behavior in {@link AbstractXrayResultsSynchronizer}
  */
 public class FakeTesterraEventTriggerer implements ITestListener, IInvokedMethodListener, ISuiteListener, IReporter {
 

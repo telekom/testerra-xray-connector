@@ -24,10 +24,15 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.DefaultJqlCondition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.SingleValue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssueType;
 
 public class IssueTypeEquals extends DefaultJqlCondition {
 
     public IssueTypeEquals(IssueType issueType) {
         super("issuetype", Operator.Equals, new SingleValue(issueType.toString()));
+    }
+
+    public IssueTypeEquals(JiraIssueType jiraIssueType) {
+        super("issuetype", Operator.Equals, new SingleValue(jiraIssueType.getName()));
     }
 }

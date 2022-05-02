@@ -22,7 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
@@ -31,25 +30,14 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.connect.RESTClientFactory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.GetRequestOnlyFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.LoggingFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import java.text.ParseException;
 import java.util.Date;
 
 public class TestUtils {
 
-    public static Date getDateFromField(final JiraIssue issue, final String fieldName) throws ParseException {
-        final JsonNode foundFieldValue = issue.getFields().findValue(fieldName);
-        if (!foundFieldValue.isNull()) {
-            return JiraUtils.dateFormat.parse(foundFieldValue.asText());
-        } else {
-            return null;
-        }
-    }
-
     public static WebResource prepareWebResource(String configFileName) {
         final Client client = RESTClientFactory.createDefault();
 
-        XrayConfig.reset();
         XrayConfig.init(configFileName);
         XrayConfig xrayConfig = XrayConfig.getInstance();
         WebResource webResource = client.resource(xrayConfig.getRestServiceUri());

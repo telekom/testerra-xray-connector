@@ -25,11 +25,20 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update.JiraIssueUpdate;
 
 
+@Deprecated
 public interface XrayTestExecutionUpdates {
+    @Deprecated
+    default JiraIssueUpdate updateOnNewExecutionCreated() {
+        return null;
+    }
 
-    JiraIssueUpdate updateOnNewExecutionCreated();
+    @Deprecated
+    default JiraIssueUpdate updateOnExistingExecutionUpdated() {
+        return null;
+    }
 
-    JiraIssueUpdate updateOnExistingExecutionUpdated();
-
-    JiraIssueUpdate updateOnExecutionDone();
+    @Deprecated
+    default JiraIssueUpdate updateOnExecutionDone() {
+        return null;
+    }
 }

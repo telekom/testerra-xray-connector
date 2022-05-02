@@ -39,7 +39,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.xml.XmlSuite;
 
-public class AnnotationsSimulatedRunTest extends SimulatedRunTest {
+public class AnnotationsSimulatedRunTest extends AbstractSimulatedRunTest {
 
     @BeforeMethod(alwaysRun = true)
     protected void setInvalidTestStatus(Method method) throws IOException {

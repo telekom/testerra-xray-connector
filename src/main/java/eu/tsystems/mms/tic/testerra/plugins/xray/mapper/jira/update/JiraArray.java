@@ -25,7 +25,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.update;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-
+@Deprecated
 public class JiraArray implements JiraValue<ArrayNode> {
 
     private final Object[] objects;

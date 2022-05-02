@@ -22,19 +22,28 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssueType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
+import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 
 public enum IssueType {
-    Test("Test"), TestExecution("Test Execution"), TestSet("Test Set");
+    Test(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_ISSUETYPE_NAME, "Test"))),
+    TestExecution(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_EXECUTION_ISSUETYPE_NAME, "Test Execution"))),
+    TestSet(new JiraIssueType(PropertyManager.getProperty(XrayMapper.PROPERTY_TEST_SET_ISSUETYPE_NAME,"Test Set"))),
+    ;
 
-    private final String literal;
+    private final JiraIssueType issueType;
 
-    IssueType(String literal) {
-
-        this.literal = literal;
+    IssueType(JiraIssueType literal) {
+        this.issueType = literal;
     }
 
     @Override
     public String toString() {
-        return literal;
+        return issueType.getName();
+    }
+
+    public JiraIssueType getIssueType() {
+        return this.issueType;
     }
 }

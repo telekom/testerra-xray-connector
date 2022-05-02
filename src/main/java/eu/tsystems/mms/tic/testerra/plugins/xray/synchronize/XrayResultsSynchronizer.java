@@ -22,12 +22,26 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 
 public interface XrayResultsSynchronizer {
-
-    XrayTestExecutionInfo getExecutionInfo();
+    /**
+     * @deprecated Use {@link XrayMapper#updateTestExecution(XrayTestExecutionIssue, ExecutionContext)} instead
+     */
+    default XrayTestExecutionInfo getExecutionInfo() {
+        return null;
+    }
 
     XrayMapper getXrayMapper();
 
-    XrayTestExecutionUpdates getExecutionUpdates();
+    /**
+     * @deprecated Use {@link XrayMapper#updateTestExecution(XrayTestExecutionIssue, ExecutionContext)} instead
+     */
+    default XrayTestExecutionUpdates getExecutionUpdates() {
+        return null;
+    }
+
+    void initialize();
+    void shutdown();
 }

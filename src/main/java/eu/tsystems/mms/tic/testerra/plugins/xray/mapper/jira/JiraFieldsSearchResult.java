@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated
 public class JiraFieldsSearchResult {
 
     private JiraFields fields;

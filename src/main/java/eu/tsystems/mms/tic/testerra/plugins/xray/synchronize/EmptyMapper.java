@@ -22,24 +22,12 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.synchronize;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
-import org.testng.ITestClass;
-import org.testng.ITestResult;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 
-
+/**
+ * The empty mapper doesn't map.
+ * Only mapping via. {@link XrayTest#key()} or {@link XrayTestSet#key()} is supported
+ */
 public class EmptyMapper implements XrayMapper {
-    //    @Override
-    //    public JqlQuery methodToXrayTest(ITestNGMethod testNgMethod) {
-    //        return null;
-    //    }
-
-    @Override
-    public JqlQuery resultToXrayTest(ITestResult testNgResult) {
-        return null;
-    }
-
-    @Override
-    public JqlQuery classToXrayTestSet(ITestClass testNgClass) {
-        return null;
-    }
 }
