@@ -22,23 +22,21 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.hook;
 
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
+import com.google.inject.AbstractModule;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestAnnotationConverter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayResultsSynchronizer;
+import eu.tsystems.mms.tic.testframework.common.Testerra;
 import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
-import eu.tsystems.mms.tic.testframework.report.DefaultReport;
-import eu.tsystems.mms.tic.testframework.report.TesterraListener;
-import java.util.Objects;
-import java.util.Set;
+import eu.tsystems.mms.tic.testframework.report.Report;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import org.testng.ISuite;
-import org.testng.ISuiteListener;
+
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * XrayConnectorHook
@@ -48,21 +46,12 @@ import org.testng.ISuiteListener;
  *
  * @author Eric Kubenka
  */
-public class XrayConnectorHook implements ModuleHook, Loggable, ISuiteListener {
+public class XrayConnectorHook extends AbstractModule implements ModuleHook, Loggable {
     private XrayResultsSynchronizer xrayResultsSynchronizer;
     private static XrayConnectorHook instance;
 
     public XrayConnectorHook() {
         instance = this;
-    }
-
-    @Override
-    @Subscribe
-    public void onStart(ISuite suite) {
-        this.initDefaultListener();
-
-        EventBus eventBus = TesterraListener.getEventBus();
-        eventBus.unregister(this);
     }
 
     public static XrayConnectorHook getInstance() {
@@ -80,20 +69,19 @@ public class XrayConnectorHook implements ModuleHook, Loggable, ISuiteListener {
 
     @Override
     public void init() {
-        EventBus eventBus = TesterraListener.getEventBus();
-        eventBus.register(this);
-
-        DefaultReport report = (DefaultReport) TesterraListener.getReport();
+        this.initDefaultListener();
+        Report report = Testerra.getInjector().getInstance(Report.class);
         report.registerAnnotationConverter(XrayTest.class, new XrayTestAnnotationConverter());
     }
 
     @Override
     public void terminate() {
-        DefaultReport report = (DefaultReport) TesterraListener.getReport();
+        Report report = Testerra.getInjector().getInstance(Report.class);
         report.unregisterAnnotationConverter(XrayTest.class);
 
         if (this.xrayResultsSynchronizer != null) {
             this.xrayResultsSynchronizer.shutdown();
+            Testerra.getEventBus().unregister(xrayResultsSynchronizer);
         }
     }
 
