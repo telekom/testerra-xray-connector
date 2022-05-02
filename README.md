@@ -1,7 +1,7 @@
 # Testerra Xray Connector
 
 <p align="center">
-    <a href="https://mvnrepository.com/artifact/io.testerra/xray-connector" title="MavenCentral"><img src="https://img.shields.io/maven-central/v/io.testerra/xray-connector/1?label=Maven%20Central"></a>
+    <a href="https://mvnrepository.com/artifact/io.testerra/xray-connector" title="MavenCentral"><img src="https://img.shields.io/maven-central/v/io.testerra/xray-connector/2?label=Maven%20Central"></a>
     <a href="/../../commits/" title="Last Commit"><img src="https://img.shields.io/github/last-commit/telekom/testerra-xray-connector?style=flat"></a>
     <a href="/../../issues" title="Open Issues"><img src="https://img.shields.io/github/issues/telekom/testerra-xray-connector?style=flat"></a>
     <a href="./LICENSE" title="License"><img src="https://img.shields.io/badge/License-Apache%202.0-green.svg?style=flat"></a>
@@ -26,13 +26,15 @@ This module allows to synchronize the test results to the test management plugin
 
 ### Requirements
 
-| Xray connector | Testerra     | Xray plugin |
-|----------------|--------------|-------------|
-| `1.0`          | `1.0.0..1.3` | `>= 4.0.0`  |
-| `1.1`          | `1.4..1.7`   | `>= 4.0.0`  |
-| `1.2`          | `1.8`        | `>= 4.0.0`  |
-| `1.3`          | `1.9..1.11`  | `>= 4.0.0`  |
-| `1.4`          | `1.12`       | `>= 5.1.0`  |
+| Xray connector | Testerra       | Xray plugin |
+|----------------|----------------|-------------|
+| `1.0`          | `1.0.0..1.3`   | `>= 4.0.0`  |
+| `1.1`          | `1.4..1.7`     | `>= 4.0.0`  |
+| `1.2`          | `1.8`          | `>= 4.0.0`  |
+| `1.3`          | `1.9..1.11`    | `>= 4.0.0`  |
+| `1.4`          | `1.12`         | `>= 5.1.0`  |
+ | `2.0-RC-5`     | `<= 2.0-RC-19` | `>= 4.0.0`  |
+| `2.0-RC-6`     | `>= 2.0-RC-21` | `>= 5.1.0`  |
 
 ### Usage
 
