@@ -81,7 +81,6 @@ public class XrayConnectorHook extends AbstractModule implements ModuleHook, Log
 
         if (this.xrayResultsSynchronizer != null) {
             this.xrayResultsSynchronizer.shutdown();
-            Testerra.getEventBus().unregister(xrayResultsSynchronizer);
         }
     }
 
