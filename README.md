@@ -219,6 +219,8 @@ In this case the Xray connector will
 - maps all classes to the *Test Set* with summary "*My Tests*" and
 - search for associated Jira *Tests* where the summary matches the class and the method name.
 
+A complete list of conditions can be found [here](#how-to-use-jqlquery)
+
 Please note, that
 
 - `queryTest` is also called if you use `@XrayTest` annotation, but without key attribute
@@ -278,6 +280,70 @@ public class GenericMapper implements XrayMapper {
 If you create new test issues, Xray connector will use the method `getDefaultTestIssueSummery` for generate new issue summary.
 
 In the example above new created test issues get the summery according the format `<TestClass_TestMethod>` like `MyTestClass_testSomething`. 
+
+#### How to use JqlQuery
+
+Create a JQL query for a method in your custom mapper like this:
+
+````java
+@Override
+public JqlQuery queryTestSet(ClassContext classContext) {
+    return JqlQuery.create()
+        // All conditions are linked with AND
+        .addCondition(new IssueTypeEquals(IssueType.TestSet))
+        .addCondition(new SummaryContainsExact("My Tests"))
+        .build();
+}
+````
+
+| Predefined conditions (class)                  | Description                                                                                                          |
+|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `IssueTypeEquals(IssueType issueType)`         | Define the Xray issue type `IssueType.Test`, `IssueType.TestExecution` or `IssueType.TestSet`                        |
+| `IssueTypeEquals(JiraIssueType jiraIssueType)` | Define the Jira issue type like `new JiraIssueType("bug")`                                                           |
+| `KeyIn(String key)`                            | Define the Jira key of the issue.                                                                                    |
+| `KeyIn(List<String> key)`                      | Define a list of Jira keys.                                                                                          |
+| `KeyInTestSetTests(String testSetKey)`         | Define the key of a test within a testset.                                                                           |
+| `ProjectEquals(String projectId)`              | Define the Jira project identifier.                                                                                  |
+| `RevisionContainsExact(String revision)`       | Define the revision of the test execution.                                                                           |
+| `SummaryContainsExact(String summery)`         | Define the summery of the Jira issue.                                                                                |
+| `TestTypeEquals(TestType testType)`            | Define the type of the Xray Test like `TestType.Manual`, `TestType.AutomatedGeneric` or `TestType.AutomatedCucumber` |
+
+
+You can also build your own query with `DefaultJqlCondition(String fieldName, Operator operator, JqlOperand operand)`:
+
+````java
+@Override
+public JqlQuery queryTestSet(ClassContext classContext) {
+    DefaultJqlCondition condition = new DefaultJqlCondition("summary", Operator.Equals, new SingleValue("foo"));
+    return JqlQuery.create()
+        .addCondition(condition)
+        .build();
+}
+````
+
+**Fields**
+
+Use here the technical field name of Jira or the [Jira ID](#jira-custom-fields-ids).
+
+**Operators**
+
+The operators are based on Jira JQL syntax.
+
+| Operator               | JQL meaning |
+|------------------------|-------------|
+| `Operator.Equals`      | `=`         |
+| `Operator.NotEquals`   | `!~`        |
+| `Operator.Contains`    | `~`         |
+| `Operator.NotContains` | `!~`        |
+| `Operator.In`          | `in`        |
+| `Operator.NotIn`       | `not in`    |
+
+**JqlOperands**
+
+| Operand                               | Meaning                                    |
+|---------------------------------------|--------------------------------------------|
+| `new SingleValue(String value)`       | Only a single value is used for operation. |
+| `new MultiValue(List<String> values)` | A list of avalues are used for operation.  |
 
 ### Jira custom fields IDs
 
