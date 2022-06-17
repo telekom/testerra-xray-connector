@@ -314,7 +314,8 @@ You can also build your own query with `DefaultJqlCondition(String fieldName, Op
 ````java
 @Override
 public JqlQuery queryTestSet(ClassContext classContext) {
-    DefaultJqlCondition condition = new DefaultJqlCondition("summary", Operator.Equals, new SingleValue("foo"));
+    DefaultJqlCondition condition 
+        = new DefaultJqlCondition("summary", Operator.Equals, new SingleValue("foo"));
     return JqlQuery.create()
         .addCondition(condition)
         .build();
