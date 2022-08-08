@@ -27,20 +27,13 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.GetRequestOnlyFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.LoggingFilter;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTests;
-import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.ProxyUtils;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+
+import java.io.InputStream;
+import java.net.URL;
 
 public class XrayConnector implements Loggable {
 
@@ -48,9 +41,9 @@ public class XrayConnector implements Loggable {
 
     public XrayConnector() {
         final Client client;
-
-        if (ProxyUtils.getSystemHttpsProxyUrl() != null) {
-            client = RESTClientFactory.createWithProxy(ProxyUtils.getSystemHttpsProxyUrl());
+        URL proxyUrl = ProxyUtils.getSystemHttpsProxyUrl();
+        if (proxyUrl != null && StringUtils.isNotBlank(proxyUrl.getHost()) && proxyUrl.getPort() != -1) {
+            client = RESTClientFactory.createWithProxy(proxyUrl);
         } else {
             client = RESTClientFactory.createDefault();
         }
