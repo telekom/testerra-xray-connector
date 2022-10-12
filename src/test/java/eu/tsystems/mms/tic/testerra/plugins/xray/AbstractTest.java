@@ -23,12 +23,13 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray;
 
 import com.sun.jersey.api.client.WebResource;
-import eu.tsystems.mms.tic.testframework.common.PropertyManager;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.Objects;
 import org.testng.annotations.BeforeTest;
+
+import java.net.URISyntaxException;
 
 public class AbstractTest extends TesterraTest {
     protected WebResource webResource;
@@ -37,4 +38,25 @@ public class AbstractTest extends TesterraTest {
     public void prepareWebResource() throws URISyntaxException {
         webResource = TestUtils.prepareWebResource("sync.test.properties");
     }
+
+    protected XrayTestExecutionIssue generateNewTestExecution(String project, String summary, String description, String revision) {
+        XrayTestExecutionIssue issue = new XrayTestExecutionIssue();
+        issue.setProject(new JiraNameReference(project));
+        issue.getProject().setKey(project);
+        issue.setSummary(summary);
+        issue.setDescription(description);
+        issue.setRevision(revision);
+
+        return issue;
+    }
+
+    protected XrayTestIssue generateNewTestIssue(String project, String summary, String description) {
+        XrayTestIssue issue = new XrayTestIssue();
+        issue.setProject(new JiraNameReference(project));
+        issue.getProject().setKey(project);
+        issue.setSummary(summary);
+        issue.setDescription(summary);
+        return issue;
+    }
+
 }

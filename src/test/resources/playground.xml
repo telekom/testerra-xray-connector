@@ -2,18 +2,25 @@
 
 <suite name="Integration Tests Playground" verbose="4">
 
-        <test name="Connector" parallel="methods" thread-count="4">
-            <classes>
-                <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.CreateEntitiesMapperTest"/>
-            </classes>
-        </test>
+<!--        <test name="Connector" parallel="methods" thread-count="4">-->
+<!--            <classes>-->
+<!--                <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.CreateEntitiesMapperTest"/>-->
+<!--            </classes>-->
+<!--        </test>-->
 
-<!--    <test name="Utils" parallel="methods" thread-count="4">-->
-<!--        <classes>-->
-<!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtilsTest"/>-->
+    <test name="Utils" parallel="none" thread-count="4">
+        <classes>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtilsTest">
+                <methods>
+                    <include name="test_updateIssueWithoutChange" />
+                    <include name="testUpdateIssueWithPredefsRemoveAllLabels" />
+                    <include name="testUpdateIssueWithPredefsSetLabels" />
+                    <include name="testUpdateIssueWithPredefsRemoveSingleLabel" />
+                </methods>
+            </class>
 <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtilsTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+        </classes>
+    </test>
 
 <!--    <test name="Connector" parallel="methods" thread-count="4">-->
 <!--        <classes>-->
@@ -37,3 +44,4 @@
 <!--        </classes>-->
 <!--    </test>-->
 </suite>
+

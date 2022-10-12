@@ -22,27 +22,29 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.connect;
 
-
 import com.sun.jersey.api.client.WebResource;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.DefaultSummaryMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
-import java.net.URISyntaxException;
-import java.util.Optional;
+import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import java.net.URISyntaxException;
+import java.util.Optional;
+
 public class XrayConnectorTest extends AbstractTest {
 
+    private String projectKey = "SWFTE";
     private final String summary = "Dummy Execution";
     private final String description = "dummy description";
     private WebResource webResource;
     private String revision = "2017-04-10_dummy";
-    private XrayInfo xrayInfo;
-    private XrayInfo xrayInfoWithUmlauts;
+    private XrayTestExecutionIssue testExecutionIssue;
+    private XrayTestExecutionIssue testExecutionIssueWithUmlauts;
     private XrayUtils xrayUtils;
     private final DefaultSummaryMapper defaultSummaryMapper = new DefaultSummaryMapper();
 
@@ -50,14 +52,15 @@ public class XrayConnectorTest extends AbstractTest {
     public void prepareWebResource() throws URISyntaxException {
         webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.prepareWebResource("sync.test.properties");
         xrayUtils = new XrayUtils(webResource);
-        xrayInfo = new XrayInfo("SWFTE", summary, description, revision);
-        xrayInfoWithUmlauts = new XrayInfo("SWFTE", "Dummy Umlaut Execution äöüßÄÖÜ", "dummy description mit Umlauten äöüßÄÖÜ", revision);
+        testExecutionIssue = generateNewTestExecution(projectKey, summary, description, revision);
+        testExecutionIssueWithUmlauts = generateNewTestExecution(projectKey, "Dummy Umlaut Execution äöüßÄÖÜ", "dummy description mit Umlauten äöüßÄÖÜ", revision);
     }
 
     @Test
     public void testSearchForExistingTestExecution() {
-        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(xrayInfo))
-                .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution =
+                Optional.ofNullable(defaultSummaryMapper.queryTestExecution(testExecutionIssue))
+                        .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
 
         Assert.assertTrue(optionalExistingTestExecution.isPresent());
         Assert.assertEquals(optionalExistingTestExecution.get().getKey(), "SWFTE-799");
@@ -65,8 +68,9 @@ public class XrayConnectorTest extends AbstractTest {
 
     @Test
     public void testSearchForExistingTestExecutionContainingUmlauts() {
-        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(xrayInfoWithUmlauts))
-                .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution =
+                Optional.ofNullable(defaultSummaryMapper.queryTestExecution(testExecutionIssueWithUmlauts))
+                        .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
 
         Assert.assertTrue(optionalExistingTestExecution.isPresent());
         Assert.assertEquals(optionalExistingTestExecution.get().getKey(), "SWFTE-798");
@@ -74,11 +78,22 @@ public class XrayConnectorTest extends AbstractTest {
 
     @Test
     public void testSearchForNonExistingTestExecution() {
-        final XrayInfo nonExisitngExecution = xrayInfo;
+        XrayTestExecutionIssue nonExisitngExecution = testExecutionIssue;
         nonExisitngExecution.setRevision("not existing");
-        Optional<XrayTestExecutionIssue> optionalExistingTestExecution = Optional.ofNullable(defaultSummaryMapper.queryTestExecution(nonExisitngExecution))
-                .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
+        Optional<XrayTestExecutionIssue> optionalExistingTestExecution =
+                Optional.ofNullable(defaultSummaryMapper.queryTestExecution(nonExisitngExecution))
+                        .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestExecutionIssue::new).findFirst());
         Assert.assertFalse(optionalExistingTestExecution.isPresent());
+    }
+
+    @Test
+    public void testSearchForExistingTestIssue() {
+        MethodContext methodContext = new MethodContext("Dummy Test Issue", MethodContext.Type.TEST_METHOD, null);
+        Optional<XrayTestIssue> testIssue =
+                Optional.ofNullable(defaultSummaryMapper.queryTest(methodContext))
+                        .flatMap(jqlQuery -> xrayUtils.searchIssues(jqlQuery, XrayTestIssue::new).findFirst());
+        Assert.assertTrue(testIssue.isPresent());
+        Assert.assertEquals(testIssue.get().getKey(), "SWFTE-1391");
     }
 
     //

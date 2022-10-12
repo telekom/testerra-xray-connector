@@ -2,32 +2,43 @@
 
 <suite name="Integration Tests" verbose="4">
 
-    <test name="Utils" parallel="methods" thread-count="4">
-        <classes>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtilsTest"/>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtilsTest"/>
-        </classes>
-    </test>
+    <suite-files>
 
-    <test name="Connector" parallel="methods" thread-count="4">
-        <classes>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnectorTest"/>
-        </classes>
-    </test>
+        <suite-file path="testsets/_jql_tests.xml"/>
 
-    <test name="Simulated Test Runs Adhoc Strategy" parallel="false">
-        <parameter name="propertiesFileName" value="xray-test-adhoc.properties"/>
-        <classes>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>
-            <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>-->
-        </classes>
-    </test>
+        <suite-file path="testsets/_connector_tests.xml"/>
 
-    <test name="Simulated Test Runs Posthoc Strategy" parallel="false">
-        <parameter name="propertiesFileName" value="xray-test-posthoc.properties"/>
-        <classes>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>
-            <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>-->
-        </classes>
-    </test>
+        <!-- Test JiraUtils and XrayUtils -->
+        <suite-file path="testsets/_utils_tests.xml"/>
+
+    </suite-files>
+
+    <!--    <test name="Utils" parallel="methods" thread-count="4">-->
+    <!--        <classes>-->
+    <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtilsTest"/>-->
+    <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtilsTest"/>-->
+    <!--        </classes>-->
+    <!--    </test>-->
+
+    <!--    <test name="Connector" parallel="methods" thread-count="4">-->
+    <!--        <classes>-->
+    <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.connect.XrayConnectorTest"/>-->
+    <!--        </classes>-->
+    <!--    </test>-->
+
+    <!--    <test name="Simulated Test Runs Adhoc Strategy" parallel="false">-->
+    <!--        <parameter name="propertiesFileName" value="xray-test-adhoc.properties"/>-->
+    <!--        <classes>-->
+    <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>-->
+    <!--            &lt;!&ndash;            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>&ndash;&gt;-->
+    <!--        </classes>-->
+    <!--    </test>-->
+
+    <!--    <test name="Simulated Test Runs Posthoc Strategy" parallel="false">-->
+    <!--        <parameter name="propertiesFileName" value="xray-test-posthoc.properties"/>-->
+    <!--        <classes>-->
+    <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>-->
+    <!--            &lt;!&ndash;            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>&ndash;&gt;-->
+    <!--        </classes>-->
+    <!--    </test>-->
 </suite>
