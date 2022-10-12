@@ -263,7 +263,9 @@ In the example above new created test issues get the summery according the forma
 
 #### Updating existing entities
 
-The `XrayMapper` also provides callbacks for updating entities. To use these callbacks you have to allow to create new issues (see [Creating new entities](#creating-new-entities)).
+The `XrayMapper` also provides callbacks for updating entities. 
+
+To update Xray testsets and test issues you have to allow to create new issues (see [Creating new entities](#creating-new-entities)).
 
 ```java
 public class GenericMapper implements XrayMapper {
