@@ -170,7 +170,11 @@ A list of other mapping implementations.
 
 #### DefaultSummaryMapper
 
-This maps Java test methods to Jira *Tests* and Java classes to Jira *Test Sets* by their name, when no keys are present in the annotations. Additionally, it creates the issues when they don't exist. You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
+This maps Java test methods to Jira *Tests* and Java classes to Jira *Test Sets* by their name, when no keys are present in the annotations. 
+
+Please note, that this mapper creates the issues when they don't exist! See above for more details how it's work.
+
+You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
 
 ```java
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
@@ -227,36 +231,11 @@ Please note, that
 - `queryTest` is also called if you use `@XrayTest` annotation, but without key attribute
 - `queryTestSet` is also called if you `@XrayTestSet` annotation, but without key attribute
 
-#### Update entities
-
-The `XrayMapper` also provides callbacks for updating entities.
-
-```java
-public class GenericMapper implements XrayMapper {
-    
-    @Override
-    public void updateTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
-        xrayTestExecutionIssue.getTestEnvironments().add("Test");
-        xrayTestExecutionIssue.setFixVersions(List.of(new JiraNameReference("1.0")));
-    }
-
-    @Override
-    public void updateTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
-        xrayTestSetIssue.getLabels().add("TestAutomation");
-    }
-
-    @Override
-    public void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
-        xrayTestIssue.getLabels().add("TestAutomation");
-    }
-}
-```
-
-You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#references).
-
 #### Creating new entities
 
 By default, the Xray connector doesn't create any issues. You can enable that by passing `true` in the interface.
+
+Please note, that existing issues will be updated automatically. All manual changes like test steps will be overwritten.
 
 ```java
 public class GenericMapper implements XrayMapper {
@@ -281,6 +260,33 @@ public class GenericMapper implements XrayMapper {
 If you create new test issues, Xray connector will use the method `getDefaultTestIssueSummery` for generate new issue summary.
 
 In the example above new created test issues get the summery according the format `<TestClass_TestMethod>` like `MyTestClass_testSomething`. 
+
+#### Updating existing entities
+
+The `XrayMapper` also provides callbacks for updating entities. To use these callbacks you have to allow to create new issues (see [Creating new entities](#creating new entities)).
+
+```java
+public class GenericMapper implements XrayMapper {
+    
+    @Override
+    public void updateTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
+        xrayTestExecutionIssue.getTestEnvironments().add("Test");
+        xrayTestExecutionIssue.setFixVersions(List.of(new JiraNameReference("1.0")));
+    }
+
+    @Override
+    public void updateTestSet(XrayTestSetIssue xrayTestSetIssue, ClassContext classContext) {
+        xrayTestSetIssue.getLabels().add("TestAutomation");
+    }
+
+    @Override
+    public void updateTest(XrayTestIssue xrayTestIssue, MethodContext methodContext) {
+        xrayTestIssue.getLabels().add("TestAutomation");
+    }
+}
+```
+
+You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#references).
 
 #### How to use JqlQuery
 
