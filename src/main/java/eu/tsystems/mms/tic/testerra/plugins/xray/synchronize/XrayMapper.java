@@ -69,7 +69,9 @@ public interface XrayMapper {
     }
 
     /**
-     * If true, try to create a Xray Test
+     * If true, try to create or update a Xray Test
+     * <p>
+     * The create/update process includes issue attributes and test steps.
      */
     default boolean shouldCreateNewTest(MethodContext methodContext) {
         return false;
@@ -133,8 +135,6 @@ public interface XrayMapper {
 
     /**
      * Returns the default test issue summery for creating new tests or searching for mapping
-     * @param methodContext
-     * @return
      */
     default String getDefaultTestIssueSummery(MethodContext methodContext) {
         return methodContext.getName();

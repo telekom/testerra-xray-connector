@@ -221,22 +221,29 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         boolean areNewTestsToImport = testSetSyncQueue.stream().anyMatch(xrayTestSetIssue -> {
             return xrayTestSetIssue.getTestKeys().stream().anyMatch(key -> key.contains(XrayUtils.PREFIX_NEW_ISSUE));
         });
-        if (areNewTestsToImport) {
-            xrayTestExecutionImport.getResultTestIssueImport().getSuccess().forEach(jiraIssueReference -> {
-                try {
-                    // Replace the temporary key with real Jira key from the result 'xrayTestExecutionImport'
-                    JiraIssue issue = xrayUtils.getIssue(jiraIssueReference.getKey());
-                    testSetSyncQueue.forEach(xrayTestSetIssue -> {
-                        Optional<String> findKey = xrayTestSetIssue.getTestKeys().stream().filter(key -> key.contains(issue.getSummary())).findFirst();
-                        if (findKey.isPresent()) {
-                            xrayTestSetIssue.getTestKeys().removeIf(key -> key.contains(issue.getSummary()));
-                            xrayTestSetIssue.getTestKeys().add(issue.getKey());
-                        }
-                    });
-                } catch (IOException e) {
-                    log().error(String.format("Unable to read %s", IssueType.TestExecution), e);
-                }
-            });
+        if (areNewTestsToImport && xrayTestExecutionImport.getResultTestIssueImport() != null) {
+            if (xrayTestExecutionImport.getResultTestIssueImport().getError().size() > 0) {
+                log().error("Error at syncing with Jira");
+                xrayTestExecutionImport.getResultTestIssueImport().getError()
+                        .forEach(error -> log().error("{} - {}: {}", error.getProject(), error.getSummary(), error.getMessages().toString()));
+                return;
+            } else if (xrayTestExecutionImport.getResultTestIssueImport().getSuccess().size() > 0) {
+                xrayTestExecutionImport.getResultTestIssueImport().getSuccess().forEach(jiraIssueReference -> {
+                    try {
+                        // Replace the temporary key with real Jira key from the result 'xrayTestExecutionImport'
+                        JiraIssue issue = xrayUtils.getIssue(jiraIssueReference.getKey());
+                        testSetSyncQueue.forEach(xrayTestSetIssue -> {
+                            Optional<String> findKey = xrayTestSetIssue.getTestKeys().stream().filter(key -> key.contains(issue.getSummary())).findFirst();
+                            if (findKey.isPresent()) {
+                                xrayTestSetIssue.getTestKeys().removeIf(key -> key.contains(issue.getSummary()));
+                                xrayTestSetIssue.getTestKeys().add(issue.getKey());
+                            }
+                        });
+                    } catch (IOException e) {
+                        log().error(String.format("Unable to read %s", IssueType.TestExecution), e);
+                    }
+                });
+            }
         }
 
         // After fixing temporary key of test issues, the test set can create or update
@@ -296,7 +303,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         // Get the method's Test issues by annotation
         final Set<XrayTestIssue> currentTestIssues = getTestIssuesForMethod(realMethod);
 
-        // If a method annotation or class annotation was found
+        // If no method annotation, but a class annotation was found
         if (currentTestIssues.isEmpty() || optionalXrayTestSetIssue.isPresent()) {
             final String cacheKey = testResult.getMethod().getQualifiedName();
 
@@ -352,8 +359,12 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
          */
         currentTestIssues.stream()
                 .peek(issue -> xrayMapper.updateTest(issue, methodContext))
-                .map(XrayTestExecutionImport.TestRun::new)
-                .peek(test -> updateTestImport(test, methodContext))
+                .map(issue -> {
+                    XrayTestExecutionImport.TestRun run = new XrayTestExecutionImport.TestRun(issue.getKey());
+                    this.updateTestInfoForImport(run, issue, methodContext);
+                    return run;
+                })
+                .peek(testRun -> updateTestRunForImport(testRun, methodContext))
                 .forEach(testRunSyncQueue::add);
 
         if (testRunSyncQueue.size() >= xrayConfig.getSyncFrequencyTests()) {
@@ -361,7 +372,49 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         }
     }
 
-    private void updateTestImport(XrayTestExecutionImport.TestRun testRun, MethodContext methodContext) {
+    /**
+     * Update the Info object for creating or updating Xray tests.
+     * If no Info object is defined, the Xray test will not update.
+     */
+    private void updateTestInfoForImport(XrayTestExecutionImport.TestRun testRun, XrayTestIssue issue, MethodContext methodContext) {
+        if (this.getXrayMapper().shouldCreateNewTest(methodContext)) {
+
+            XrayTestExecutionImport.TestRun.Info info = new XrayTestExecutionImport.TestRun.Info();
+            info.setDescription(issue.getDescription());
+            info.setSummary(issue.getSummary());
+            info.setLabels(issue.getLabels());
+            info.setDefinition(issue.getSummary());
+            info.setType(TestType.AutomatedGeneric);
+            info.setProjectKey(issue.getProject().getKey());
+
+            /*
+             * The test's test type needs to be {@link TestType.Manual} to support test steps.
+             */
+            info.setType(TestType.Manual);
+
+            List<TestStep> testerraTestSteps = methodContext.readTestSteps().collect(Collectors.toList());
+            for (TestStep testerraTestStep : testerraTestSteps) {
+                if (testerraTestStep.isInternalTestStep()) {
+                    continue;
+                }
+                /*
+                 * The test steps definitions
+                 */
+                final XrayTestExecutionImport.TestStep importTestStep = new XrayTestExecutionImport.TestStep();
+                importTestStep.setAction(testerraTestStep.getName());
+                // We always expect the step to pass
+                importTestStep.setResult(XrayTestExecutionImport.TestRun.Status.PASS.toString());
+                testRun.getTestInfo().addStep(importTestStep);
+            }
+
+            testRun.setTestInfo(info);
+        }
+    }
+
+    /**
+     * Update the TestRun object with result information include test steps
+     */
+    private void updateTestRunForImport(XrayTestExecutionImport.TestRun testRun, MethodContext methodContext) {
         ITestResult testResult = methodContext.getTestNgResult().get();
 
         testRun.setStart(new Date(testResult.getStartMillis()));
@@ -385,15 +438,11 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         testRun.setFinish(new Date(testResult.getEndMillis()));
 
         /**
-         * The test's test type needs to be {@link TestType.Manual} to support test steps.
+         * Add the results for test steps.
+         * The steps will be sync with the order of appearance
          */
-        testRun.getTestInfo().setType(TestType.Manual);
-
         final int lastFailedTestStepIndex = methodContext.getLastFailedTestStepIndex();
-
-        List<TestStep> testerraTestSteps = methodContext.readTestSteps()
-                .collect(Collectors.toList());
-
+        List<TestStep> testerraTestSteps = methodContext.readTestSteps().collect(Collectors.toList());
         int stepIndex = -1;
         for (TestStep testerraTestStep : testerraTestSteps) {
             ++stepIndex;
@@ -402,16 +451,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 continue;
             }
 
-            /**
-             * The test steps definitions
-             */
-            final XrayTestExecutionImport.TestStep importTestStep = new XrayTestExecutionImport.TestStep();
-            importTestStep.setAction(testerraTestStep.getName());
-            // We always expect the step to pass
-            importTestStep.setResult(XrayTestExecutionImport.TestRun.Status.PASS.toString());
-            testRun.getTestInfo().addStep(importTestStep);
-
-            /**
+            /*
              * The actual Test Run step
              */
             XrayTestExecutionImport.TestRun.Status actualStatus = XrayTestExecutionImport.TestRun.Status.PASS;
@@ -423,7 +463,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             testRunStep.setStatus(actualStatus);
             testRun.addStep(testRunStep);
 
-            testerraTestStep.getTestStepActions().stream()
+            testerraTestStep.readActions()
                     .flatMap(TestStepAction::readEntries)
                     .forEach(entry -> {
                         if (entry instanceof ErrorContext) {

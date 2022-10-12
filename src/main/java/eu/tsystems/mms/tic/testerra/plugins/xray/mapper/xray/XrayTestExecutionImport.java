@@ -23,6 +23,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraError;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
@@ -91,13 +92,19 @@ public class XrayTestExecutionImport {
 
     public static class ResultTestIssueImport {
 
-        private JiraKeyReference[] success;
+        private JiraKeyReference[] success = {};
+
+        private JiraError[] error = {};
 
         public ResultTestIssueImport() {
         }
 
         public List<JiraKeyReference> getSuccess() {
             return Arrays.asList(success);
+        }
+
+        public List<JiraError> getError() {
+            return Arrays.asList(this.error);
         }
     }
 
@@ -324,19 +331,8 @@ public class XrayTestExecutionImport {
         private Status status;
         private List<Step> steps;
 
-        public TestRun() {
-        }
-
-        public TestRun(JiraIssue issue) {
-            this(issue.getKey());
-            this.testInfo = new Info();
-            this.testInfo.setDescription(issue.getDescription());
-            this.testInfo.setSummary(issue.getSummary());
-            this.testInfo.setLabels(issue.getLabels());
-            this.testInfo.setDefinition(issue.getSummary());
-            this.testInfo.setType(TestType.AutomatedGeneric);
-            this.testInfo.setProjectKey(issue.getProject().getKey());
-        }
+//        public TestRun() {
+//        }
 
         public TestRun(String testKey) {
             this.testKey = testKey;
