@@ -327,12 +327,12 @@ public class XrayTestExecutionImport {
         private Date start;
         private Date finish;
         private String comment;
-        private Set<Evidence> evidence;
+        private Set<Evidence> evidences;
         private Status status;
         private List<Step> steps;
 
-//        public TestRun() {
-//        }
+        public TestRun() {
+        }
 
         public TestRun(String testKey) {
             this.testKey = testKey;
@@ -381,19 +381,19 @@ public class XrayTestExecutionImport {
             this.comment = comment;
         }
 
-        public Set<Evidence> getEvidence() {
-            return evidence;
+        public Set<Evidence> getEvidences() {
+            return evidences;
         }
 
-        public void setEvidence(Set<Evidence> evidence) {
-            this.evidence = evidence;
+        public void setEvidences(Set<Evidence> evidences) {
+            this.evidences = evidences;
         }
 
         public void addEvidence(Evidence evidence) {
-            if (this.evidence == null) {
-                this.evidence = new HashSet<>();
+            if (this.evidences == null) {
+                this.evidences = new HashSet<>();
             }
-            this.evidence.add(evidence);
+            this.evidences.add(evidence);
         }
 
         public Status getStatus() {

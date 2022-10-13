@@ -185,7 +185,6 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         objectMapper.readValue(json, XrayTestExecutionImport.TestRun[].class);
     }
 
-    @Fails(description = "Reading evidence from created Test Run doesn't work for unknown reason (write-only feature?)")
     @Test()
     public void testSyncTestExecutionWithEvidences() throws Exception {
         final XrayConfig xrayConfig = XrayConfig.getInstance();
@@ -211,7 +210,7 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
         final HashSet<XrayTestExecutionImport.TestRun.Evidence> xrayEvidences = new HashSet<>();
         xrayEvidences.add(htmlEvidence);
         xrayEvidences.add(zipEvidence);
-        testRunWithEvidence.setEvidence(xrayEvidences);
+        testRunWithEvidence.setEvidences(xrayEvidences);
         testExecution.addTest(testRunWithEvidence);
 
         xrayUtils.importTestExecution(testExecution);
@@ -223,8 +222,8 @@ public class XrayUtilsTest extends AbstractTest implements Loggable {
                 .filter(test -> test.getTestKey().equals(desiredTestKey))
                 .findFirst()
                 .get();
-        Assert.assertNotNull(updatedTestRun.getEvidence(), "No evidence present");
-        Assert.assertTrue(updatedTestRun.getEvidence().stream().anyMatch(evidence1 -> evidence1.getFilename().equals("test.html")));
+        Assert.assertNotNull(updatedTestRun.getEvidences(), "No evidence present");
+        Assert.assertTrue(updatedTestRun.getEvidences().stream().anyMatch(evidence1 -> evidence1.getFilename().equals("test.html")));
     }
 
     @Test

@@ -1,8 +1,8 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper;
 
-import eu.tsystems.mms.tic.testframework.common.PropertyManager;
+import eu.tsystems.mms.tic.testframework.common.PropertyManagerProvider;
 
-public class PropertyField implements Field {
+public class PropertyField implements Field, PropertyManagerProvider {
     private final String property;
 
     public PropertyField(String property) {
@@ -15,7 +15,7 @@ public class PropertyField implements Field {
     }
 
     private int getCustomFieldId() {
-        int intProperty = PropertyManager.getIntProperty(property);
+        int intProperty = Long.valueOf(PROPERTY_MANAGER.getLongProperty(property)).intValue();
         if (intProperty > 0) {
             return intProperty;
         } else {

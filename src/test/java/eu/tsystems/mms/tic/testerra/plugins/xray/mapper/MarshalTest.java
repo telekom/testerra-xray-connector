@@ -84,7 +84,7 @@ public class MarshalTest extends AbstractTest {
         evidence.setMediaType(MediaType.TEXT_PLAIN_TYPE);
         final HashSet<XrayTestExecutionImport.TestRun.Evidence> evidences = new HashSet<>();
         evidences.add(evidence);
-        testRun.setEvidence(evidences);
+        testRun.setEvidences(evidences);
 
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
