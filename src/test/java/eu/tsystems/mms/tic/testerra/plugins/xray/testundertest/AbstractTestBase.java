@@ -39,7 +39,7 @@ public abstract class AbstractTestBase extends TesterraTest {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Test
-    public void passes() {
+    public void testMapperPasses() {
         logger.info("starting test 'passes'");
         TimerUtils.sleep(SLEEP_TIME);
         logger.info("test 'passes' done");
@@ -47,15 +47,15 @@ public abstract class AbstractTestBase extends TesterraTest {
     }
 
     @Test
-    public void fails() {
+    public void testMapperFails() {
         logger.info("starting test 'fails'");
         TimerUtils.sleep(SLEEP_TIME);
         logger.info("test 'fails' done");
         Assert.assertTrue(false);
     }
 
-    @Test(dependsOnMethods = "fails")
-    public void skips() {
+    @Test(dependsOnMethods = "testMapperFails")
+    public void testMapperSkips() {
         logger.info("this shouldn't be read anytime");
     }
 

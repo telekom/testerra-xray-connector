@@ -21,7 +21,23 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
+import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
+import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 
 public class EmptyMapperResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+
+    public static final String EXECUTION_SUMMARY = "XrayEmtpyMapperTest";
+
+    @Override
+    public XrayMapper getXrayMapper() {
+        return new XrayMapper() {
+            @Override
+            public void updateTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
+                xrayTestExecutionIssue.setSummary(EXECUTION_SUMMARY);
+            }
+        };
+    }
+
 }

@@ -284,6 +284,7 @@ public class XrayTestExecutionImport {
             }
         }
 
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Step {
             private Status status;
             private String actualResult;

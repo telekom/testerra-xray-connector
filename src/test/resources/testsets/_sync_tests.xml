@@ -1,0 +1,10 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Sync Mapper Tests" verbose="4">
+
+    <test name="Sync Mapper" parallel="methods" thread-count="8">
+        <classes>
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.EmptyMapperTest" />
+        </classes>
+    </test>
+</suite>

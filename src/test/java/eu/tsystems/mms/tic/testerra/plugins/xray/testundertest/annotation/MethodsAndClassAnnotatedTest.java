@@ -33,20 +33,20 @@ public class MethodsAndClassAnnotatedTest extends AbstractTestBase {
     @Override
     @Test
     @XrayTest(key = "SWFTE-4")
-    public void passes() {
-        super.passes();
+    public void testMapperPasses() {
+        super.testMapperPasses();
     }
 
     @Override
     @Test
     @XrayTest(key = "SWFTE-5")
-    public void fails() {
-        super.fails();
+    public void testMapperFails() {
+        super.testMapperFails();
     }
 
     @Override
     @Test
     @XrayTest(key = "SWFTE-6")
-    public void skips() {
+    public void testMapperSkips() {
     }
 }

@@ -31,19 +31,19 @@ public class ClassAnnotatedWithoutKeyTest extends AbstractTestBase {
 
     @Override
     @Test
-    public void passes() {
-        super.passes();
+    public void testMapperPasses() {
+        super.testMapperPasses();
     }
 
     @Override
     @Test
-    public void fails() {
-        super.fails();
+    public void testMapperFails() {
+        super.testMapperFails();
     }
 
     @Override
-    @Test(dependsOnMethods = "fails")
-    public void skips() {
-        super.skips();
+    @Test(dependsOnMethods = "testMapperFails")
+    public void testMapperSkips() {
+        super.testMapperSkips();
     }
 }

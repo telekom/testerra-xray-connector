@@ -1,7 +1,7 @@
 /*
  * Testerra Xray-Connector
  *
- * (C) 2021, Mike Reiche,  T-Systems MMS GmbH, Deutsche Telekom AG
+ * (C) 2022, Martin Großmann,  T-Systems MMS GmbH, Deutsche Telekom AG
  *
  * Deutsche Telekom AG and all other contributors /
  * copyright owners license this file to you under the Apache
@@ -18,21 +18,68 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
-import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
+import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayNoSync;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.MethodsAnnotatedTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.EmptyMapperResultsSynchronizer;
+import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-public class EmptyMapperTest extends MethodsAnnotatedTest {
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+/**
+ * Created on 2022-10-13
+ *
+ * @author mgn
+ */
+public class EmptyMapperTest extends AbstractTest {
+
+    private XrayUtils xrayUtils;
+
+    private List<XrayTestExecutionImport.TestRun> verifyTestRuns;
+
     @BeforeClass
-    public void prepareWebResource() {
-        XrayConfig.init("sync.test.properties");
-        Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
-        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new EmptyMapperResultsSynchronizer());
+    public void prepareWebResource() throws URISyntaxException {
+        super.prepareWebResource();
+        xrayUtils = new XrayUtils(webResource);
+        verifyTestRuns = MethodsAnnotatedTest.getTestRunsForVerification();
     }
+
+    @XrayNoSync
+    @Test
+    public void testEmptyMapperExecution() throws IOException {
+        // Get Test execution based on summary
+
+        Optional<XrayTestExecutionIssue> existingTestExecution = xrayUtils
+                .searchIssues(getTestExecutionJqlQuery(EmptyMapperResultsSynchronizer.EXECUTION_SUMMARY), XrayTestExecutionIssue::new)
+                .min((elem1, elem2) -> elem2.getKey().compareTo(elem1.getKey()));
+        Assert.assertTrue(existingTestExecution.isPresent());
+
+        // Check every test run
+        Set<XrayTestExecutionImport.TestRun> executionTestRuns = xrayUtils.getTestRunsByTestExecutionKey(existingTestExecution.get().getKey());
+        executionTestRuns.forEach(testRun -> {
+            Optional<XrayTestExecutionImport.TestRun> foundTestRun = verifyTestRuns.stream().filter(run -> run.getTestKey().equals(testRun.getTestKey())).findFirst();
+            Assert.assertTrue(foundTestRun.isPresent());
+
+            XrayTestIssue testIssue = getXrayTestIssueByKey(xrayUtils, testRun.getTestKey());
+            Assert.assertNotNull(testIssue);
+
+            Assert.assertEquals(testRun.getStatus(), foundTestRun.get().getStatus());
+            Assert.assertEquals(testIssue.getSummary(), foundTestRun.get().getTestInfo().getSummary());
+            Assert.assertEquals(testIssue.getDescription(), foundTestRun.get().getTestInfo().getDescription());
+        });
+    }
+
+
 }
