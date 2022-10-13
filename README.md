@@ -400,6 +400,12 @@ You can retrieve these IDs directly from a Jira by **editing** an Xray **Test Ex
 
 ---
 
+## Xray connector integration tests
+
+1. To run the integration tests, set up a `xray.properties`
+2. Run pretests for check synchronisation: `gradle preTests`
+3. Run integration test suite: `gradle integrationTests`
+
 ## Troubleshooting
 
 Hints for the following occuring symptoms:

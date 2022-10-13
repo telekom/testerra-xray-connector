@@ -56,12 +56,14 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-task unitTests(type: Test) {
+// Run pre tests for integeratin tests
+task preTests(type: Test) {
     useTestNG() {
-        suites 'src/test/resources/unit_tests.xml'
+        suites 'src/test/resources/integration_pre-tests.xml'
     }
 }
 
+// Run all Xray tests
 task integrationTests(type: Test) {
     useTestNG() {
         suites 'src/test/resources/integration_tests.xml'
