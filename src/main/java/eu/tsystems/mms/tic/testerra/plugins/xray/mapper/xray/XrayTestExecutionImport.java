@@ -22,6 +22,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraError;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
@@ -165,6 +166,7 @@ public class XrayTestExecutionImport {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TestRun {
         public enum Status {
             PASS,
