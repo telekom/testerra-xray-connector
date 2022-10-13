@@ -46,7 +46,7 @@ public class AbstractTest extends TesterraTest implements Loggable {
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
-        webResource = TestUtils.prepareWebResource("sync.test.properties");
+        webResource = TestUtils.prepareWebResource("xray.properties");
     }
 
     protected XrayTestExecutionIssue generateNewTestExecution(String project, String summary, String description, String revision) {
