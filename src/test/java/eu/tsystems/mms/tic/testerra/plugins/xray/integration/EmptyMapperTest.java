@@ -22,8 +22,6 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayNoSync;
-import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
-import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
@@ -55,7 +53,7 @@ public class EmptyMapperTest extends AbstractTest {
     public void prepareWebResource() throws URISyntaxException {
         super.prepareWebResource();
         xrayUtils = new XrayUtils(webResource);
-        verifyTestRuns = MethodsAnnotatedTest.getTestRunsForVerification();
+        verifyTestRuns = MethodsAnnotatedTest.getExpectedTestRuns();
     }
 
     @XrayNoSync

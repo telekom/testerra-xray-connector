@@ -22,8 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest;
 
-import static eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider.DataDrivenType;
-
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
 import eu.tsystems.mms.tic.testframework.utils.TimerUtils;
@@ -32,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import static eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider.DataDrivenType;
 
 public abstract class AbstractTestBase extends TesterraTest {
 

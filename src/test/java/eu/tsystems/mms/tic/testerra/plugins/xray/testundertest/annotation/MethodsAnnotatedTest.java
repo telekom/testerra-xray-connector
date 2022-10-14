@@ -53,7 +53,7 @@ public class MethodsAnnotatedTest extends AbstractTestBase {
         super.testMapperSkips();
     }
 
-    public static List<XrayTestExecutionImport.TestRun> getTestRunsForVerification() {
+    public static List<XrayTestExecutionImport.TestRun> getExpectedTestRuns() {
 
         List<XrayTestExecutionImport.TestRun> testRunList = new ArrayList<>();
 
