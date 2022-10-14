@@ -56,6 +56,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 
+/**
+ * @deprecated Does not work anymore with Testerra 2
+ */
+@Deprecated
 public abstract class AbstractSimulatedRunTest extends TesterraTest {
 
     protected Map<String, XrayTestExecutionImport.TestRun.Status> fullWithoutParametrized = ImmutableMap.of(
