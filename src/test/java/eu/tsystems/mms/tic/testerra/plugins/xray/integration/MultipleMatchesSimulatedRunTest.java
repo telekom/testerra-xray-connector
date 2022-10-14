@@ -33,6 +33,10 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.xml.XmlSuite;
 
+/**
+ * @deprecated Does not work anymore with Testerra 2
+ */
+@Deprecated
 public class MultipleMatchesSimulatedRunTest extends AbstractSimulatedRunTest {
 
     @BeforeMethod

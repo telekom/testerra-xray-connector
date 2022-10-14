@@ -56,7 +56,6 @@ public class EmptyMapperTest extends AbstractTest {
         super.prepareWebResource();
         xrayUtils = new XrayUtils(webResource);
         verifyTestRuns = MethodsAnnotatedTest.getTestRunsForVerification();
-        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(null);
     }
 
     @XrayNoSync

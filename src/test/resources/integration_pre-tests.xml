@@ -16,19 +16,4 @@
     <!--        </classes>-->
     <!--    </test>-->
 
-    <!--    <test name="Simulated Test Runs Adhoc Strategy" parallel="false">-->
-    <!--        <parameter name="propertiesFileName" value="xray-test-adhoc.properties"/>-->
-    <!--        <classes>-->
-    <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>-->
-    <!--            &lt;!&ndash;            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>&ndash;&gt;-->
-    <!--        </classes>-->
-    <!--    </test>-->
-
-    <!--    <test name="Simulated Test Runs Posthoc Strategy" parallel="false">-->
-    <!--        <parameter name="propertiesFileName" value="xray-test-posthoc.properties"/>-->
-    <!--        <classes>-->
-    <!--            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.AnnotationsSimulatedRunTest"/>-->
-    <!--            &lt;!&ndash;            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.MultipleMatchesSimulatedRunTest"/>&ndash;&gt;-->
-    <!--        </classes>-->
-    <!--    </test>-->
 </suite>
