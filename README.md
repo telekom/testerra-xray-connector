@@ -257,15 +257,15 @@ public class GenericMapper implements XrayMapper {
 }
 ```
 
-If you create new test issues, Xray connector will use the method `getDefaultTestIssueSummery` for generate new issue summary.
+If you create new test issues, Xray connector will use the method `getDefaultTestIssueSummery` to generate a new issue summary.
 
-In the example above new created test issues get the summery according the format `<TestClass_TestMethod>` like `MyTestClass_testSomething`. 
+In the example above new created test issues get the summary according to the format `<TestClass_TestMethod>` , e.g. `MyTestClass_testSomething`. 
 
 #### Updating existing entities
 
 The `XrayMapper` also provides callbacks for updating entities. 
 
-To update Xray testsets and test issues you have to allow to create new issues (see [Creating new entities](#creating-new-entities)).
+To update Xray testsets and test issues you have to allow creating new issues (see [Creating new entities](#creating-new-entities)).
 
 ```java
 public class GenericMapper implements XrayMapper {
