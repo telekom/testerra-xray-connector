@@ -433,6 +433,11 @@ gradle publish closeAndReleaseRepository
 ## References
 
 1. Import Xray results: https://docs.getxray.app/display/XRAY/Import+Execution+Results
+2. Xray JSON import format: https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-XrayJSONformat
+
+## Known issues
+
+1. Adding labels for a new Test execution will be ignored because it is not supported by Xray JSON import format. 
 
 ## Code of Conduct
 
