@@ -404,7 +404,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                 importTestStep.setAction(testerraTestStep.getName());
                 // We always expect the step to pass
                 importTestStep.setResult(XrayTestExecutionImport.TestRun.Status.PASS.toString());
-                testRun.getTestInfo().addStep(importTestStep);
+                info.addStep(importTestStep);
             }
 
             testRun.setTestInfo(info);
