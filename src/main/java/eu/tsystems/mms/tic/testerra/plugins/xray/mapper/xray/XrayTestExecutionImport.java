@@ -331,8 +331,8 @@ public class XrayTestExecutionImport {
         private Status status;
         private List<Step> steps;
 
-//        public TestRun() {
-//        }
+        public TestRun() {
+        }
 
         public TestRun(String testKey) {
             this.testKey = testKey;
