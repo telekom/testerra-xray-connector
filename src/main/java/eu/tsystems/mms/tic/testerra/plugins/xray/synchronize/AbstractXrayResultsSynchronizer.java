@@ -64,6 +64,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -233,10 +234,11 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                         // Replace the temporary key with real Jira key from the result 'xrayTestExecutionImport'
                         JiraIssue issue = xrayUtils.getIssue(jiraIssueReference.getKey());
                         testSetSyncQueue.forEach(xrayTestSetIssue -> {
-                            Optional<String> findKey = xrayTestSetIssue.getTestKeys().stream().filter(key -> key.contains(issue.getSummary())).findFirst();
-                            if (findKey.isPresent()) {
-                                xrayTestSetIssue.getTestKeys().removeIf(key -> key.contains(issue.getSummary()));
-                                xrayTestSetIssue.getTestKeys().add(issue.getKey());
+                            for (ListIterator<String> iterator = xrayTestSetIssue.getTestKeys().listIterator(); iterator.hasNext(); ) {
+                                String next = iterator.next();
+                                if (next.contains(issue.getSummary())) {
+                                    iterator.set(issue.getKey());
+                                }
                             }
                         });
                     } catch (IOException e) {
@@ -374,7 +376,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
     /**
      * Update the Info object for creating or updating Xray tests.
-     * If no Info object is defined, the Xray test will not update.
+     * If no Info object is defined, the Xray test will not be updated.
      */
     private void updateTestInfoForImport(XrayTestExecutionImport.TestRun testRun, XrayTestIssue issue, MethodContext methodContext) {
         if (this.getXrayMapper().shouldCreateNewTest(methodContext)) {
@@ -387,9 +389,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             info.setType(TestType.AutomatedGeneric);
             info.setProjectKey(issue.getProject().getKey());
 
-            /*
-             * The test's test type needs to be {@link TestType.Manual} to support test steps.
-             */
+
+            // The test's test type needs to be {@link TestType.Manual} to support test steps.
             info.setType(TestType.Manual);
 
             List<TestStep> testerraTestSteps = methodContext.readTestSteps().collect(Collectors.toList());
