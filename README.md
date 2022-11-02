@@ -257,15 +257,15 @@ public class GenericMapper implements XrayMapper {
 }
 ```
 
-If you create new test issues, Xray connector will use the method `getDefaultTestIssueSummery` for generate new issue summary.
+If you create new test issues, Xray connector will use the method `getDefaultTestIssueSummery` to generate a new issue summary.
 
-In the example above new created test issues get the summery according the format `<TestClass_TestMethod>` like `MyTestClass_testSomething`. 
+In the example above new created test issues get the summary according to the format `<TestClass_TestMethod>` , e.g. `MyTestClass_testSomething`. 
 
 #### Updating existing entities
 
 The `XrayMapper` also provides callbacks for updating entities. 
 
-To update Xray testsets and test issues you have to allow to create new issues (see [Creating new entities](#creating-new-entities)).
+To update Xray testsets and test issues you have to allow creating new issues (see [Creating new entities](#creating-new-entities)).
 
 ```java
 public class GenericMapper implements XrayMapper {
@@ -398,15 +398,9 @@ You can retrieve these IDs directly from a Jira by **editing** an Xray **Test Ex
 |xray.webresource.filter.getrequestsonly.enabled|false|Enable this for debugging to avoid PUT/POST/DELETE requests sent to Jira|
 |xray.webresource.filter.getrequestsonly.fake.response.key|FAKE-666666|This key will returned, when `xray.webresource.filter.getrequestsonly.enabled` set to `true` and PUT/POST/DELETE request was sent.|
 
----
+## Additional information
 
-## Xray connector integration tests
-
-1. To run the integration tests, set up a `xray.properties`
-2. Run pretests for check synchronisation: `gradle preTests`
-3. Run integration test suite: `gradle integrationTests`
-
-## Troubleshooting
+### Troubleshooting
 
 Hints for the following occuring symptoms:
 
@@ -414,6 +408,29 @@ Symptom | Explanation | Solution
 --- | --- | ---
 `{"error": "...java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (JIRA_SCHEMA.SYS_C00134897) violated` | An issue could not be imported because it already exists. | Make sure that the issue key for an existing issue could be found via. the `query()` methods of the `XrayMapper`.
 `{"errorMessages":["We can't create this issue for you right now, it could be due to unsupported content you've entered into one or more of the issue fields...` | Missing data on the issue. | Try to create an issue manually, call the REST API for this issue and check which fields are set by default. |
+
+
+### References
+
+1. Import Xray results: https://docs.getxray.app/display/XRAY/Import+Execution+Results
+2. Xray JSON import format: https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-XrayJSONformat
+3. Jira REST API: https://developer.atlassian.com/server/jira/platform/jira-rest-api-examples/
+
+### Known issues
+
+1. Adding labels for a new Test execution will be ignored because it is not supported by Xray JSON import format.
+2. Using ``DefaultSummeryMapper`` and __identical__ test method names:
+ * The xray connector could create issues with identical summaries and can sync the results.
+ * On the second run Xray connector find existing issue with the given summary = method name. Xray connector uses the first find, it cannot distinguish the other issues with the same summary to the correct Xray issues.
+ * Please note, that in that case the sync is not working as expected. Please extend the mapping, e.g. <classname_methodname>
+
+### Xray connector integration tests
+
+1. To run the integration tests, set up a `xray.properties`
+2. Run pretests for check synchronisation: `gradle preTests`
+3. Run integration test suite: `gradle integrationTests`
+
+---
 
 ## Publication
 
@@ -435,10 +452,6 @@ If all properties are set, call the following to build, deploy and release this 
 ````shell
 gradle publish closeAndReleaseRepository
 ````
-
-## References
-
-1. Import Xray results: https://docs.getxray.app/display/XRAY/Import+Execution+Results
 
 ## Code of Conduct
 
