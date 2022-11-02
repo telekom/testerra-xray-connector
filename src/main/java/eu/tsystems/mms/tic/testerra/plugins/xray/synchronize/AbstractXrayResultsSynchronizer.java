@@ -361,11 +361,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
          */
         currentTestIssues.stream()
                 .peek(issue -> xrayMapper.updateTest(issue, methodContext))
-                .map(issue -> {
-                    XrayTestExecutionImport.TestRun run = new XrayTestExecutionImport.TestRun(issue.getKey());
-                    this.updateTestInfoForImport(run, issue, methodContext);
-                    return run;
-                })
+                .map(issue -> this.updateTestInfoForImport(issue, methodContext))
                 .peek(testRun -> updateTestRunForImport(testRun, methodContext))
                 .forEach(testRunSyncQueue::add);
 
@@ -378,7 +374,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
      * Update the Info object for creating or updating Xray tests.
      * If no Info object is defined, the Xray test will not be updated.
      */
-    private void updateTestInfoForImport(XrayTestExecutionImport.TestRun testRun, XrayTestIssue issue, MethodContext methodContext) {
+    private XrayTestExecutionImport.TestRun updateTestInfoForImport(XrayTestIssue issue, MethodContext methodContext) {
+        XrayTestExecutionImport.TestRun testRun = new XrayTestExecutionImport.TestRun(issue.getKey());
         if (this.getXrayMapper().shouldCreateNewTest(methodContext)) {
 
             XrayTestExecutionImport.TestRun.Info info = new XrayTestExecutionImport.TestRun.Info();
@@ -388,7 +385,6 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             info.setDefinition(issue.getSummary());
             info.setType(TestType.AutomatedGeneric);
             info.setProjectKey(issue.getProject().getKey());
-
 
             // The test's test type needs to be {@link TestType.Manual} to support test steps.
             info.setType(TestType.Manual);
@@ -410,6 +406,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
             testRun.setTestInfo(info);
         }
+        return testRun;
     }
 
     /**
