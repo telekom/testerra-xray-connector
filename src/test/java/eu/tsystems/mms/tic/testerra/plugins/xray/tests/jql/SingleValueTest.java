@@ -20,19 +20,21 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.jql;
 
 import static org.testng.Assert.assertEquals;
 
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.SingleValue;
 import org.testng.annotations.Test;
 
-public class SummaryContainsExactTest extends AbstractTest {
+public class SingleValueTest extends AbstractTest {
 
     @Test
-    public void testCreateJql() throws Exception {
-        assertEquals(new SummaryContainsExact("bli bla blubb").createJql(), "summary ~ \"\\\"bli bla blubb\\\"\"");
-
+    public void testToString() {
+        final SingleValue singleValue = new SingleValue("bla");
+        assertEquals(singleValue.createJql(), "bla");
     }
+
 }

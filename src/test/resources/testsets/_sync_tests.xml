@@ -4,7 +4,7 @@
 
     <test name="Sync Mapper" parallel="methods" thread-count="8">
         <classes>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.integration.EmptyMapperTest" />
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.tests.integration.EmptyMapperTest" />
         </classes>
     </test>
 </suite>

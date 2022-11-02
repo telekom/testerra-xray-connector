@@ -20,10 +20,10 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.connect;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.connect;
 
 import com.sun.jersey.api.client.WebResource;
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.DefaultSummaryMapper;
@@ -50,7 +50,8 @@ public class XrayConnectorTest extends AbstractTest {
 
     @BeforeTest
     public void prepareWebResource() throws URISyntaxException {
-        webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.prepareWebResource("sync.test.properties");
+//        webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.prepareWebResource("sync.test.properties");
+        webResource = eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils.prepareWebResource("xray.properties");
         xrayUtils = new XrayUtils(webResource);
         testExecutionIssue = generateNewTestExecution(projectKey, summary, description, revision);
         testExecutionIssueWithUmlauts = generateNewTestExecution(projectKey, "Dummy Umlaut Execution äöüßÄÖÜ", "dummy description mit Umlauten äöüßÄÖÜ", revision);

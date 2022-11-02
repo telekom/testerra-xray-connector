@@ -20,20 +20,20 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.util;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
-import eu.tsystems.mms.tic.testframework.annotations.Fails;
+import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.utils.RandomUtils;
 import java.io.File;

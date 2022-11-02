@@ -20,20 +20,20 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.jql;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.jql.predefined;
 
 import static org.testng.Assert.assertEquals;
 
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.RevisionContainsExact;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class SingleValueTest extends AbstractTest {
+public class RevisionContainsExactTest extends AbstractTest {
 
     @Test
-    public void testToString() {
-        final SingleValue singleValue = new SingleValue("bla");
-        assertEquals(singleValue.createJql(), "bla");
+    public void testCreateJql() throws Exception {
+        Assert.assertEquals(new RevisionContainsExact("RC6.5.0_129094").createJql(), "cf[14272] ~ \\\"RC6.5.0_129094\\\"");
     }
-
 }

@@ -20,18 +20,22 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.jql;
 
 import static org.testng.Assert.assertEquals;
 
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
+import java.util.Arrays;
+
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.MultiValue;
 import org.testng.annotations.Test;
 
-public class TestTypeEqualsTest extends AbstractTest {
+public class MultiValueTest extends AbstractTest {
 
     @Test
-    public void testCreateJql() throws Exception {
-        assertEquals(new TestTypeEquals(TestType.AutomatedGeneric).createJql(), "\"Testtyp\" = \"Automated[Generic]\"");
+    public void testToString() {
+        final MultiValue multiValue = new MultiValue(Arrays.asList("bli", "bla", "blubb"));
+        assertEquals(multiValue.createJql(), "(bli, bla, blubb)");
     }
 }

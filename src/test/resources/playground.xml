@@ -10,7 +10,7 @@
 
     <test name="Utils" parallel="none" thread-count="4">
         <classes>
-            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtilsTest">
+            <class name="eu.tsystems.mms.tic.testerra.plugins.xray.tests.util.JiraUtilsTest">
                 <methods>
                     <include name="test_updateIssueWithoutChange" />
                     <include name="testUpdateIssueWithPredefsRemoveAllLabels" />

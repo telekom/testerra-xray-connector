@@ -20,11 +20,11 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.util;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTests;
@@ -35,6 +35,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
+import eu.tsystems.mms.tic.testerra.plugins.xray.util.JiraUtils;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;

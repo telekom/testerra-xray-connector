@@ -19,11 +19,11 @@
  * under the License.
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.demotests;
+package eu.tsystems.mms.tic.testerra.plugins.xray.pretests;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.MethodsAnnotatedTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.MethodsAnnotatedTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.EmptyMapperResultsSynchronizer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;

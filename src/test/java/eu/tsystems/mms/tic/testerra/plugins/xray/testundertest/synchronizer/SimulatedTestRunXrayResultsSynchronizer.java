@@ -26,7 +26,6 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResults
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayMapper;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.XrayTestExecutionInfo;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.info.DefaultTestExecutionInfo;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper.ResultMapper;
 
 public class SimulatedTestRunXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 

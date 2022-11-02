@@ -5,7 +5,7 @@
 
         <test name="Pre sync tests" parallel="methods" thread-count="4">
             <classes>
-                <class name="eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.demotests.EmptyMapperPreTest"/>
+                <class name="eu.tsystems.mms.tic.testerra.plugins.xray.pretests.EmptyMapperPreTest"/>
 <!--                <class name="eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtilsTest"/>-->
             </classes>
         </test>

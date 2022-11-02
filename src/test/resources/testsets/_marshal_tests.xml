@@ -4,7 +4,7 @@
 
     <test name="Marshal" parallel="methods" thread-count="8">
         <packages>
-            <package name="eu.tsystems.mms.tic.testerra.plugins.xray.mapper"/>
+            <package name="eu.tsystems.mms.tic.testerra.plugins.xray.tests.mapper"/>
         </packages>
     </test>
 </suite>

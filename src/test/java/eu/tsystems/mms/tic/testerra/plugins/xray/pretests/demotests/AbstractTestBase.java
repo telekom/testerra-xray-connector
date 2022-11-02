@@ -20,7 +20,7 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest;
+package eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;

@@ -20,7 +20,7 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.mapper;
+package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;

@@ -20,19 +20,21 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.jql;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.jql.predefined;
 
 import static org.testng.Assert.assertEquals;
 
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class SingleValueFunctionTest extends AbstractTest {
+public class IssueTypeEqualsTest extends AbstractTest {
 
     @Test
-    public void testToString() throws Exception {
-        final SingleValueFunction singleValueFunction = new SingleValueFunction("func", "blubb");
-        assertEquals(singleValueFunction.createJql(), "func(blubb)");
+    public void testCreateJql() throws Exception {
+        Assert.assertEquals(new IssueTypeEquals(IssueType.TestExecution).createJql(), "issuetype = \"Test Execution\"");
     }
 }

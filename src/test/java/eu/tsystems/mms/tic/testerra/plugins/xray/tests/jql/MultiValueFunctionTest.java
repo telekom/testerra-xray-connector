@@ -20,20 +20,22 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.jql;
 
 import static org.testng.Assert.assertEquals;
 
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
+import java.util.Arrays;
+
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.MultiValueFunction;
 import org.testng.annotations.Test;
 
-public class KeyInTestSetTestsTest extends AbstractTest {
+public class MultiValueFunctionTest extends AbstractTest {
 
     @Test
-    public void testToString() {
-        final KeyInTestSetTests keyInTestSetTests = new KeyInTestSetTests("BLA-1234");
-        assertEquals(keyInTestSetTests.createJql(), "key in testSetTests(BLA-1234)");
+    public void testToString() throws Exception {
+        final MultiValueFunction multiValueFunction = new MultiValueFunction("func", Arrays.asList("bli", "bla", "blubb"));
+        assertEquals(multiValueFunction.createJql(), "func(bli, bla, blubb)");
     }
-
 }

@@ -20,12 +20,16 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.jql;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.jql;
 
 import static org.testng.Assert.assertEquals;
 
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.DefaultJqlCondition;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.ExactSingleValue;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.SingleValue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.Operator;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Fields;
 import org.testng.annotations.Test;

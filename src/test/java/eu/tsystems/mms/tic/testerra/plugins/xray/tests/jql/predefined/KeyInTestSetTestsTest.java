@@ -20,18 +20,21 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.jql.predefined;
 
 import static org.testng.Assert.assertEquals;
 
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.KeyInTestSetTests;
 import org.testng.annotations.Test;
 
-public class RevisionContainsExactTest extends AbstractTest {
+public class KeyInTestSetTestsTest extends AbstractTest {
 
     @Test
-    public void testCreateJql() throws Exception {
-        assertEquals(new RevisionContainsExact("RC6.5.0_129094").createJql(), "cf[14272] ~ \\\"RC6.5.0_129094\\\"");
+    public void testToString() {
+        final KeyInTestSetTests keyInTestSetTests = new KeyInTestSetTests("BLA-1234");
+        assertEquals(keyInTestSetTests.createJql(), "key in testSetTests(BLA-1234)");
     }
+
 }

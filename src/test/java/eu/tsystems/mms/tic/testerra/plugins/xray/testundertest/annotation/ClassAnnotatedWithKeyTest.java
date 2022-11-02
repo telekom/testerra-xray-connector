@@ -23,7 +23,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.AbstractTestBase;
+import eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.AbstractTestBase;
 
 @XrayTestSet(key = "SWFTE-8")
 public class ClassAnnotatedWithKeyTest extends AbstractTestBase {

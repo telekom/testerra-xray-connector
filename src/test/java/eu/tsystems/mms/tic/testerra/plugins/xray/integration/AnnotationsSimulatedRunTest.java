@@ -28,7 +28,7 @@ import static eu.tsystems.mms.tic.testerra.plugins.xray.TestData.TEST_EXEC_KEY_D
 import com.google.common.collect.ImmutableList;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.ClassAnnotatedWithKeyTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.ClassAnnotatedWithoutKeyTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.MethodsAnnotatedTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.MethodsAnnotatedTest;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
 import java.io.IOException;
 import java.lang.reflect.Method;

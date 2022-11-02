@@ -20,20 +20,20 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.jql;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.jql.predefined;
 
 import static org.testng.Assert.assertEquals;
 
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
-import java.util.Arrays;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class MultiValueFunctionTest extends AbstractTest {
+public class ProjectEqualsTest extends AbstractTest {
 
     @Test
-    public void testToString() throws Exception {
-        final MultiValueFunction multiValueFunction = new MultiValueFunction("func", Arrays.asList("bli", "bla", "blubb"));
-        assertEquals(multiValueFunction.createJql(), "func(bli, bla, blubb)");
+    public void testCreateJql() throws Exception {
+        Assert.assertEquals(new ProjectEquals("BLA-1234").createJql(), "project = BLA-1234");
     }
 }

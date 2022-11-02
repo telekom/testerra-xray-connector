@@ -4,7 +4,7 @@
 
     <test name="Utils" parallel="none" thread-count="8">
         <packages>
-            <package name="eu.tsystems.mms.tic.testerra.plugins.xray.util"/>
+            <package name="eu.tsystems.mms.tic.testerra.plugins.xray.tests.util"/>
         </packages>
     </test>
 </suite>

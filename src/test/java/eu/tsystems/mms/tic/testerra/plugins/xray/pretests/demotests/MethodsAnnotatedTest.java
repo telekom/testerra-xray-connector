@@ -20,11 +20,10 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
+package eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.AbstractTestBase;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;

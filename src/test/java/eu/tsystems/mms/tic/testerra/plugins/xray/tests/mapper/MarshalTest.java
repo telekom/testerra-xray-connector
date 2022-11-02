@@ -20,13 +20,13 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.mapper;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.mapper;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import java.io.IOException;
 import java.net.URISyntaxException;

@@ -18,14 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests.integration;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayNoSync;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.MethodsAnnotatedTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.MethodsAnnotatedTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.EmptyMapperResultsSynchronizer;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
 import org.testng.Assert;

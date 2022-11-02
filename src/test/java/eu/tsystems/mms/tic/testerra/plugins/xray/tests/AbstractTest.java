@@ -20,9 +20,10 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray;
+package eu.tsystems.mms.tic.testerra.plugins.xray.tests;
 
 import com.sun.jersey.api.client.WebResource;
+import eu.tsystems.mms.tic.testerra.plugins.xray.TestUtils;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
