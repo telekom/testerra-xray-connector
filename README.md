@@ -63,7 +63,7 @@ Maven:
 Steps to use the Xray Connector plugin:
 1. [Define properties](#add-property-file) 
 2. [Implement synchronizer](#implement-synchronizer-interface)
-3. [Define the issue mapping and the annotations](#default-mapping)
+3. [Define the issue mapping and the annotations](#how-tests-are-sync)
 
 ### Add property file
 
@@ -100,22 +100,34 @@ public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 }
 ```
 
-### Default mapping
+### How tests are sync
 
-To synchronize your test results to a specific Jira issue, the Xray connector will use some mapping mechanism.
+The common way of sync the results to Jira Xray is working like as follows:
+
+`Execute Testerra test -> Get result of test -> Map to Jira issue -> Sync result to Jira issue -> Create/update Jira Xray test execution`  
+
+To find the correct Jira Xray test, the Xray connector will use some mapping mechanism:
+
+* via test annotation ([default way]())
+* via test method name ()
+* and a custom implementation
 
 #### Test Execution
 
-The default mapping implementation of a *Test Execution* is done by the following search criteria:
+Xray connector tries to find an existing test execution. The default mapping implementation of a *Test Execution* is done by the following search criteria:
 
-- Project key
-- Issue type
-- Summary
-- Revision
+- Project key (set by `xray.properties`)
+- Issue type (set by `xray.properties`)
+- Summary (default is `Testerra Xray connector automated Test Execution`)
+- Revision (default is current date)
 
 When a *Test Execution* was found, it will be reused, otherwise a new *Test Execution* will be created when at least one test should be synchronized.
 
-You can control the mapping by implementing [updateTestExecution()](#update-entities), which will be called right before [queryTestExecution()](#custom-mapping-implementations).
+Please note: Because ``revision`` is per default the current date, every test run will create a new test execution.
+
+You can control the mapping by implementing [updateTestExecution()](#updating-existing-entities), which will be called right before [queryTestExecution()](#custom-mapping).
+
+### Mapping variants
 
 #### Annotated Test
 
@@ -133,38 +145,56 @@ public class MethodsAnnotatedTest extends TesterraTest {
 }
 ```
 
-#### Annotated Test Set
+[//]: # (#### Annotated Test Set)
 
-You can also annotate the *Test Set* by its issue key. All methods (even setup methods) in this class will be handled as having the `@XrayTest` annotation present. When you don't want to synchronize specific methods, add the `@XrayNoSync` annotation.
+[//]: # ()
+[//]: # (You can also annotate the *Test Set* by its issue key. All methods &#40;even setup methods&#41; in this class will be handled as having the `@XrayTest` annotation present. When you don't want to synchronize specific methods, add the `@XrayNoSync` annotation.)
 
-Setup methods like `@BeforeTest` are ignored automatically by synchronizer.
+[//]: # ()
+[//]: # (Setup methods like `@BeforeTest` are ignored automatically by synchronizer.)
 
-```java
+[//]: # ()
+[//]: # (```java)
 
-@XrayTestSet(key = "EXAMPLE-5")
-public class AnnotatedClassTest extends TesterraTest {
+[//]: # ()
+[//]: # (@XrayTestSet&#40;key = "EXAMPLE-5"&#41;)
 
-    @BeforeTest
-    public void setup() {
-        // Do some setup here
-        // Here is no annotation XrayNoSync needed
-    }
-    
-    @Test
-    @XrayNoSync
-    public void test_other() {
+[//]: # (public class AnnotatedClassTest extends TesterraTest {)
 
-    }
-    
-    
-    @Test
-    public void test_fails() {
-        Assert.assertTrue(false);
-    }
-}
-```
+[//]: # ()
+[//]: # (    @BeforeTest)
 
-### Other mapping implementations
+[//]: # (    public void setup&#40;&#41; {)
+
+[//]: # (        // Do some setup here)
+
+[//]: # (        // Here is no annotation XrayNoSync needed)
+
+[//]: # (    })
+
+[//]: # (    )
+[//]: # (    @Test)
+
+[//]: # (    @XrayNoSync)
+
+[//]: # (    public void test_other&#40;&#41; {)
+
+[//]: # ()
+[//]: # (    })
+
+[//]: # (    )
+[//]: # (    )
+[//]: # (    @Test)
+
+[//]: # (    public void test_fails&#40;&#41; {)
+
+[//]: # (        Assert.assertTrue&#40;false&#41;;)
+
+[//]: # (    })
+
+[//]: # (})
+
+[//]: # (```)
 
 A list of other mapping implementations.
 
@@ -186,7 +216,33 @@ public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 
 You need to configure the property [xray.test.set.tests.field.id](#jira-custom-fields-ids) before.
 
-### Custom mapping
+Example of a test class can look like this:
+
+```java
+@XrayTestSet(key = "EXAMPLE-5")
+public class AnnotatedClassTest extends TesterraTest {
+
+    @BeforeTest
+    public void setup() {
+        // Here is no annotation XrayNoSync needed
+        // Setup methods like `@BeforeTest` are ignored automatically by synchronizer.
+    }
+    
+    @Test
+    @XrayNoSync
+    public void test_other() {
+        // You can use @XrayNoSync to ignore synchronization 
+    }
+    
+    @Test
+    public void test_ok() {
+        // This test will sync with Jira Xray test `test_ok`
+    }
+}
+```
+
+
+#### Custom mapping
 
 When you want to have full control over the mapping, you can provide your own implementation of `XrayMapper`.
 
@@ -231,7 +287,7 @@ Please note, that
 - `queryTest` is also called if you use `@XrayTest` annotation, but without key attribute
 - `queryTestSet` is also called if you `@XrayTestSet` annotation, but without key attribute
 
-#### Creating new entities
+##### Creating new entities
 
 By default, the Xray connector doesn't create any issues. You can enable that by passing `true` in the interface.
 
@@ -261,7 +317,7 @@ If you create new test issues, Xray connector will use the method `getDefaultTes
 
 In the example above new created test issues get the summary according to the format `<TestClass_TestMethod>` , e.g. `MyTestClass_testSomething`. 
 
-#### Updating existing entities
+##### Updating existing entities
 
 The `XrayMapper` also provides callbacks for updating entities. 
 
