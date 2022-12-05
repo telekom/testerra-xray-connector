@@ -109,7 +109,7 @@ The common way of sync the results to Jira Xray is working like as follows:
 To find the correct Jira Xray test, the Xray connector will use some mapping mechanism:
 
 * via test annotation ([default way](#annotated-test))
-* via test method name ([#defaultsummarymapper](#defaultsummarymapper))
+* via test method name ([DefaultSummaryMapper](#defaultsummarymapper))
 * and a custom implementation ([Custom mapping](#custom-mapping))
 
 #### Test Execution
