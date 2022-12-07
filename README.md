@@ -241,7 +241,6 @@ public class AnnotatedClassTest extends TesterraTest {
 }
 ```
 
-
 #### Custom mapping
 
 When you want to have full control over the mapping, you can provide your own implementation of `XrayMapper`.
@@ -345,6 +344,50 @@ public class GenericMapper implements XrayMapper {
 ```
 
 You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#references).
+
+##### Perform transitions of issues
+
+_Common_
+
+Xray connector can change the status of created Test executions. The connector identifies the next possible transitions and update the issue with the correct Jira status category.
+
+It is not necessary to define the locale names of transition or statuses. Every status is assigned to a status category: `new`, `indeterminate`, `done`.
+
+With the url ``https://<jira-host>/rest/api/2/issue/<issue-key>/transitions`` you can identify the next possible transitions and the following statuses (including the category).
+
+_Test executions_
+
+The default implementation is as follows:
+
+````java
+public interface XrayMapper {
+    [...]
+    // Every test execution is updated at the end of the test run
+    default boolean shouldUpdateTestExecutionStatus() {
+        return true;
+    }
+
+    /**
+     * Define the order of transitions to close a Xray test execution beginning in status 'NEW':
+     * 'Ready for test' (category 'indeterminate')
+     * 'In test' (category 'indeterminate')
+     * 'Resolved' (category 'done')
+     *
+     * Because the name of the status can change, you only set up the categories of transitions. Xray connector checks which transition is
+     * possible from the current status and select the next transition with needed category.
+     */
+    default LinkedList<JiraStatusCategory> getTestExecutionTransitions() {
+        LinkedList<JiraStatusCategory> list = new LinkedList<>();
+        list.add(JiraStatusCategory.INDETERMINATE);
+        list.add(JiraStatusCategory.INDETERMINATE);
+        list.add(JiraStatusCategory.DONE);
+        return list;
+    }
+    [...]
+}
+````
+
+Overwrite the implementation in your own mapper class.
 
 #### How to use JqlQuery
 

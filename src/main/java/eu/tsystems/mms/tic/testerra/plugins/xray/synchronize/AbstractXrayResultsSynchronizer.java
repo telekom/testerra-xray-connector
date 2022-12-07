@@ -374,6 +374,9 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     }
 
     private void updateTestExecution() {
+        if (!this.getXrayMapper().shouldUpdateTestExecutionStatus()) {
+            return;
+        }
         LinkedList<JiraStatusCategory> testExecutionTransitions = this.getXrayMapper().getTestExecutionTransitions();
         if (testExecutionTransitions == null || testExecutionTransitions.size() == 0 || this.testExecutionIssue == null) {
             return;

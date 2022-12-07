@@ -144,6 +144,13 @@ public interface XrayMapper {
     }
 
     /**
+     * If true, Xray connector tries to update test execution status according {@link #getTestExecutionTransitions()}.
+     */
+    default boolean shouldUpdateTestExecutionStatus() {
+        return true;
+    }
+
+    /**
      * Define the order of transitions to close a Xray test execution beginning in status 'NEW':
      * 'Ready for test' (category 'indeterminate')
      * 'In test' (category 'indeterminate')
