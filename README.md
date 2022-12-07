@@ -60,6 +60,23 @@ Maven:
 
 ## Documentation
 
+__Content__
+
+* [Add property file](#add-property-file)
+* [Implement synchronizer interface](#implement-synchronizer-interface)
+* [How tests are sync](#how-tests-are-sync)
+  * [Test Execution](#test-execution)
+* [Mapping variants](#mapping-variants)
+  * [Annotated Test](#annotated-test)
+  * [DefaultSummaryMapper](#defaultsummarymapper)
+  * [Custom mapping](#custom-mapping)
+    * [Creating new entities](#creating-new-entities)
+    * [Updating existing entities](#updating-existing-entities)
+    * [Perform transitions of issues](#perform-transitions-of-issues)
+  * [How to use JqlQuery](#how-to-use-jqlquery)
+* [Jira custom fields IDs](#jira-custom-fields-ids)
+* [Properties](#properties)
+  
 Steps to use the Xray Connector plugin:
 1. [Define properties](#add-property-file) 
 2. [Implement synchronizer](#implement-synchronizer-interface)
@@ -145,6 +162,16 @@ public class MethodsAnnotatedTest extends TesterraTest {
 }
 ```
 
+The corresponding default mapper is the `EmptyMapper`. The following implementation is optional:
+
+```java
+public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+    public XrayMapper getXrayMapper() {
+        return new EmptyMapper();
+    }
+}
+```
+
 [//]: # (#### Annotated Test Set)
 
 [//]: # ()
@@ -195,8 +222,6 @@ public class MethodsAnnotatedTest extends TesterraTest {
 [//]: # (})
 
 [//]: # (```)
-
-A list of other mapping implementations.
 
 #### DefaultSummaryMapper
 
@@ -347,7 +372,7 @@ You can use these methods to update the Jira issues right before importing. Plea
 
 ##### Perform transitions of issues
 
-_Common_
+___Common___
 
 Xray connector can change the status of created Test executions. The connector identifies the next possible transitions and update the issue with the correct Jira status category.
 
@@ -355,7 +380,7 @@ It is not necessary to define the locale names of transition or statuses. Every 
 
 With the url ``https://<jira-host>/rest/api/2/issue/<issue-key>/transitions`` you can identify the next possible transitions and the following statuses (including the category).
 
-_Test executions_
+___Test executions___
 
 The default implementation is as follows:
 
