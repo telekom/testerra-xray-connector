@@ -7,8 +7,11 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'io.codearte.nexus-staging'
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
 
 ext {
     // Minimum required Testerra version
@@ -45,15 +48,11 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.3.1'
 
     testImplementation 'io.testerra:driver-ui-desktop:' + testerraTestVersion
-    //testImplementation 'io.testerra:report-ng:' + testerraTestVersion
+    testImplementation 'io.testerra:report-ng:' + testerraTestVersion
 }
 
 test {
     useTestNG()
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
 }
 
 task unitTests(type: Test) {

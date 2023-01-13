@@ -37,6 +37,8 @@ This module allows to synchronize the test results to the test management plugin
 | `2.0-RC-6`     | `>= 2.0-RC-21` | `>= 5.1.0`  |
 | `>=2.0`        | `>= 2.0`       | `>= 5.1.0`  |
 
+From 2.3 you need at least __JDK11__.
+
 ### Usage
 
 Include the following dependency in your project. Please replace the versions with the latest version.
@@ -44,7 +46,7 @@ Include the following dependency in your project. Please replace the versions wi
 Gradle:
 
 ```groovy
-implementation 'io.testerra:xray-connector:2.2'
+implementation 'io.testerra:xray-connector:2.3'
 ```
 
 Maven:
@@ -54,7 +56,7 @@ Maven:
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>2.2</version>
+    <version>2.3</version>
 </dependency>
 ```
 
