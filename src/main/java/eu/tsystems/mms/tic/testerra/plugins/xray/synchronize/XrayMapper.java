@@ -27,6 +27,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueTypeEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.ProjectEquals;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.RevisionContainsExact;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.SummaryContainsExact;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
@@ -35,6 +36,8 @@ import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 import eu.tsystems.mms.tic.testframework.report.model.context.MethodContext;
 import org.testng.ITestClass;
 import org.testng.ITestResult;
+
+import java.util.LinkedList;
 
 public interface XrayMapper {
     String PROPERTY_TEST_SET_TESTS = "xray.test.set.tests.field.id";
@@ -138,5 +141,29 @@ public interface XrayMapper {
      */
     default String getDefaultTestIssueSummery(MethodContext methodContext) {
         return methodContext.getName();
+    }
+
+    /**
+     * If true, Xray connector tries to update test execution status according {@link #getTestExecutionTransitions()}.
+     */
+    default boolean shouldUpdateTestExecutionStatus() {
+        return true;
+    }
+
+    /**
+     * Define the order of transitions to close a Xray test execution beginning in status 'NEW':
+     * 'Ready for test' (category 'indeterminate')
+     * 'In test' (category 'indeterminate')
+     * 'Resolved' (category 'done')
+     *
+     * Because the name of the status can change, you only set up the categories of transitions. Xray connector checks which transition is
+     * possible from the current status and select the next transition with needed category.
+     */
+    default LinkedList<JiraStatusCategory> getTestExecutionTransitions() {
+        LinkedList<JiraStatusCategory> list = new LinkedList<>();
+        list.add(JiraStatusCategory.INDETERMINATE);
+        list.add(JiraStatusCategory.INDETERMINATE);
+        list.add(JiraStatusCategory.DONE);
+        return list;
     }
 }

@@ -60,6 +60,23 @@ Maven:
 
 ## Documentation
 
+__Content__
+
+* [Add property file](#add-property-file)
+* [Implement synchronizer interface](#implement-synchronizer-interface)
+* [How tests are sync](#how-tests-are-sync)
+  * [Test Execution](#test-execution)
+* [Mapping variants](#mapping-variants)
+  * [Annotated Test](#annotated-test)
+  * [DefaultSummaryMapper](#defaultsummarymapper)
+  * [Custom mapping](#custom-mapping)
+    * [Creating new entities](#creating-new-entities)
+    * [Updating existing entities](#updating-existing-entities)
+    * [Perform transitions of issues](#perform-transitions-of-issues)
+  * [How to use JqlQuery](#how-to-use-jqlquery)
+* [Jira custom fields IDs](#jira-custom-fields-ids)
+* [Properties](#properties)
+  
 Steps to use the Xray Connector plugin:
 1. [Define properties](#add-property-file) 
 2. [Implement synchronizer](#implement-synchronizer-interface)
@@ -145,6 +162,16 @@ public class MethodsAnnotatedTest extends TesterraTest {
 }
 ```
 
+The corresponding default mapper is the `EmptyMapper`. The following implementation is optional:
+
+```java
+public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+    public XrayMapper getXrayMapper() {
+        return new EmptyMapper();
+    }
+}
+```
+
 [//]: # (#### Annotated Test Set)
 
 [//]: # ()
@@ -196,8 +223,6 @@ public class MethodsAnnotatedTest extends TesterraTest {
 
 [//]: # (```)
 
-A list of other mapping implementations.
-
 #### DefaultSummaryMapper
 
 This maps Java test methods to Jira *Tests* and Java classes to Jira *Test Sets* by their name, when no keys are present in the annotations. 
@@ -240,7 +265,6 @@ public class AnnotatedClassTest extends TesterraTest {
     }
 }
 ```
-
 
 #### Custom mapping
 
@@ -345,6 +369,50 @@ public class GenericMapper implements XrayMapper {
 ```
 
 You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#references).
+
+##### Perform transitions of issues
+
+___Common___
+
+Xray connector can change the status of created Test executions. The connector identifies the next possible transitions and update the issue with the correct Jira status category.
+
+It is not necessary to define the locale names of transition or statuses. Every status is assigned to a status category: `new`, `indeterminate`, `done`.
+
+With the url ``https://<jira-host>/rest/api/2/issue/<issue-key>/transitions`` you can identify the next possible transitions and the following statuses (including the category).
+
+___Test executions___
+
+The default implementation is as follows:
+
+````java
+public interface XrayMapper {
+    [...]
+    // Every test execution is updated at the end of the test run
+    default boolean shouldUpdateTestExecutionStatus() {
+        return true;
+    }
+
+    /**
+     * Define the order of transitions to close a Xray test execution beginning in status 'NEW':
+     * 'Ready for test' (category 'indeterminate')
+     * 'In test' (category 'indeterminate')
+     * 'Resolved' (category 'done')
+     *
+     * Because the name of the status can change, you only set up the categories of transitions. Xray connector checks which transition is
+     * possible from the current status and select the next transition with needed category.
+     */
+    default LinkedList<JiraStatusCategory> getTestExecutionTransitions() {
+        LinkedList<JiraStatusCategory> list = new LinkedList<>();
+        list.add(JiraStatusCategory.INDETERMINATE);
+        list.add(JiraStatusCategory.INDETERMINATE);
+        list.add(JiraStatusCategory.DONE);
+        return list;
+    }
+    [...]
+}
+````
+
+Overwrite the implementation in your own mapper class.
 
 #### How to use JqlQuery
 

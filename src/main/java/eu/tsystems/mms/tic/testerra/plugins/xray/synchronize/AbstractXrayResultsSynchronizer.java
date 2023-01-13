@@ -34,6 +34,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraNameReference;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
@@ -63,6 +64,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
@@ -159,111 +161,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     @Override
     public void shutdown() {
         flushSyncQueue();
+        updateTestExecution();
         unregisterSync();
-    }
-
-    private synchronized void unregisterSync() {
-        if (isSyncEnabled) {
-            EventBus eventBus = TesterraListener.getEventBus();
-            eventBus.unregister(this);
-
-            isSyncEnabled = false;
-        }
-    }
-
-    private synchronized void flushSyncQueue() {
-        if (!isSyncEnabled) {
-            return;
-        }
-
-        final int numTestSetsToSync = testSetSyncQueue.size();
-        final int numTestsToSync = testRunSyncQueue.size();
-
-        if (numTestSetsToSync == 0 && numTestsToSync == 0) {
-            return;
-        }
-
-        log().info("Synchronizing...");
-
-        final XrayUtils xrayUtils = getXrayUtils();
-
-        // Prepare Xray Test execution for import
-        XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(getTestExecutionIssue());
-
-        // Add all new tests to execution
-        testRunSyncQueue.forEach(test -> {
-            xrayTestExecutionImport.addTest(test);
-            testRunSyncQueue.remove(test);
-        });
-
-        if (this.getExecutionUpdates() != null) {
-            log().warn("getExecutionUpdates() is ignored");
-        }
-
-        try {
-            xrayTestExecutionImport.getInfo().setFinishDate(new Date());
-            xrayUtils.importTestExecution(xrayTestExecutionImport);
-            this.testExecutionIssue.setKey(xrayTestExecutionImport.getTestExecutionKey());
-            Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestExecutionImport.getTestExecutionKey());
-            log().info(String.format("Synchronized %s (%s) with %d %s",
-                    IssueType.TestExecution,
-                    issueUrl.orElse(null),
-                    numTestsToSync,
-                    IssueType.Test
-            ));
-        } catch (IOException e) {
-            log().error(String.format("Unable to synchronize %s", IssueType.TestExecution), e);
-        }
-
-        // xrayTestExecutionImport now contains all keys of created and updated test issues
-        //
-        // Only run key update on testSetSyncQueue if new tests have to create:
-        // New test issues have special key: XrayUtils.PREFIX_NEW_ISSUE + method name
-        boolean areNewTestsToImport = testSetSyncQueue.stream().anyMatch(xrayTestSetIssue -> {
-            return xrayTestSetIssue.getTestKeys().stream().anyMatch(key -> key.contains(XrayUtils.PREFIX_NEW_ISSUE));
-        });
-        if (areNewTestsToImport && xrayTestExecutionImport.getResultTestIssueImport() != null) {
-            if (xrayTestExecutionImport.getResultTestIssueImport().getError().size() > 0) {
-                log().error("Error at syncing with Jira");
-                xrayTestExecutionImport.getResultTestIssueImport().getError()
-                        .forEach(error -> log().error("{} - {}: {}", error.getProject(), error.getSummary(), error.getMessages().toString()));
-                return;
-            } else if (xrayTestExecutionImport.getResultTestIssueImport().getSuccess().size() > 0) {
-                xrayTestExecutionImport.getResultTestIssueImport().getSuccess().forEach(jiraIssueReference -> {
-                    try {
-                        // Replace the temporary key with real Jira key from the result 'xrayTestExecutionImport'
-                        JiraIssue issue = xrayUtils.getIssue(jiraIssueReference.getKey());
-                        testSetSyncQueue.forEach(xrayTestSetIssue -> {
-                            for (ListIterator<String> iterator = xrayTestSetIssue.getTestKeys().listIterator(); iterator.hasNext(); ) {
-                                String next = iterator.next();
-                                if (next.contains(issue.getSummary())) {
-                                    iterator.set(issue.getKey());
-                                }
-                            }
-                        });
-                    } catch (IOException e) {
-                        log().error(String.format("Unable to read %s", IssueType.TestExecution), e);
-                    }
-                });
-            }
-        }
-
-        // After fixing temporary key of test issues, the test set can create or update
-        testSetSyncQueue.forEach(xrayTestSetIssue -> {
-            try {
-                xrayUtils.createOrUpdateIssue(xrayTestSetIssue);
-                final Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestSetIssue.getKey());
-                log().info(String.format("Synchronized %s (%s) with %d %s",
-                        IssueType.TestSet,
-                        issueUrl.orElse(null),
-                        xrayTestSetIssue.getTestKeys().size(),
-                        IssueType.Test
-                ));
-            } catch (IOException e) {
-                log().error(String.format("Unable to update %s", IssueType.TestSet), e);
-            }
-            testSetSyncQueue.remove(xrayTestSetIssue);
-        });
     }
 
     @Override
@@ -368,6 +267,122 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         if (testRunSyncQueue.size() >= xrayConfig.getSyncFrequencyTests()) {
             flushSyncQueue();
         }
+    }
+
+    private synchronized void flushSyncQueue() {
+        if (!isSyncEnabled) {
+            return;
+        }
+
+        final int numTestSetsToSync = testSetSyncQueue.size();
+        final int numTestsToSync = testRunSyncQueue.size();
+
+        if (numTestSetsToSync == 0 && numTestsToSync == 0) {
+            return;
+        }
+
+        log().info("Synchronizing...");
+
+        final XrayUtils xrayUtils = getXrayUtils();
+
+        // Prepare Xray Test execution for import
+        XrayTestExecutionImport xrayTestExecutionImport = new XrayTestExecutionImport(getTestExecutionIssue());
+
+        // Add all new tests to execution
+        testRunSyncQueue.forEach(test -> {
+            xrayTestExecutionImport.addTest(test);
+            testRunSyncQueue.remove(test);
+        });
+
+        if (this.getExecutionUpdates() != null) {
+            log().warn("getExecutionUpdates() is ignored");
+        }
+
+        try {
+            xrayTestExecutionImport.getInfo().setFinishDate(new Date());
+            xrayUtils.importTestExecution(xrayTestExecutionImport);
+            this.testExecutionIssue.setKey(xrayTestExecutionImport.getTestExecutionKey());
+            Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestExecutionImport.getTestExecutionKey());
+            log().info(String.format("Synchronized %s (%s) with %d %s",
+                    IssueType.TestExecution,
+                    issueUrl.orElse(null),
+                    numTestsToSync,
+                    IssueType.Test
+            ));
+        } catch (IOException e) {
+            log().error(String.format("Unable to synchronize %s", IssueType.TestExecution), e);
+        }
+
+        // xrayTestExecutionImport now contains all keys of created and updated test issues
+        //
+        // Only run key update on testSetSyncQueue if new tests have to create:
+        // New test issues have special key: XrayUtils.PREFIX_NEW_ISSUE + method name
+        boolean areNewTestsToImport = testSetSyncQueue.stream().anyMatch(xrayTestSetIssue -> {
+            return xrayTestSetIssue.getTestKeys().stream().anyMatch(key -> key.contains(XrayUtils.PREFIX_NEW_ISSUE));
+        });
+        if (areNewTestsToImport && xrayTestExecutionImport.getResultTestIssueImport() != null) {
+            if (xrayTestExecutionImport.getResultTestIssueImport().getError().size() > 0) {
+                log().error("Error at syncing with Jira");
+                xrayTestExecutionImport.getResultTestIssueImport().getError()
+                        .forEach(error -> log().error("{} - {}: {}", error.getProject(), error.getSummary(), error.getMessages().toString()));
+                return;
+            } else if (xrayTestExecutionImport.getResultTestIssueImport().getSuccess().size() > 0) {
+                xrayTestExecutionImport.getResultTestIssueImport().getSuccess().forEach(jiraIssueReference -> {
+                    try {
+                        // Replace the temporary key with real Jira key from the result 'xrayTestExecutionImport'
+                        JiraIssue issue = xrayUtils.getIssue(jiraIssueReference.getKey());
+                        testSetSyncQueue.forEach(xrayTestSetIssue -> {
+                            for (ListIterator<String> iterator = xrayTestSetIssue.getTestKeys().listIterator(); iterator.hasNext(); ) {
+                                String next = iterator.next();
+                                if (next.contains(issue.getSummary())) {
+                                    iterator.set(issue.getKey());
+                                }
+                            }
+                        });
+                    } catch (IOException e) {
+                        log().error(String.format("Unable to read %s", IssueType.TestExecution), e);
+                    }
+                });
+            }
+        }
+
+        // After fixing temporary key of test issues, the test set can create or update
+        testSetSyncQueue.forEach(xrayTestSetIssue -> {
+            try {
+                xrayUtils.createOrUpdateIssue(xrayTestSetIssue);
+                final Optional<URI> issueUrl = getXrayConfig().getIssueUrl(xrayTestSetIssue.getKey());
+                log().info(String.format("Synchronized %s (%s) with %d %s",
+                        IssueType.TestSet,
+                        issueUrl.orElse(null),
+                        xrayTestSetIssue.getTestKeys().size(),
+                        IssueType.Test
+                ));
+            } catch (IOException e) {
+                log().error(String.format("Unable to update %s", IssueType.TestSet), e);
+            }
+            testSetSyncQueue.remove(xrayTestSetIssue);
+        });
+    }
+
+    private synchronized void unregisterSync() {
+        if (isSyncEnabled) {
+            EventBus eventBus = TesterraListener.getEventBus();
+            eventBus.unregister(this);
+
+            isSyncEnabled = false;
+        }
+    }
+
+    private void updateTestExecution() {
+        if (!this.getXrayMapper().shouldUpdateTestExecutionStatus()) {
+            return;
+        }
+        LinkedList<JiraStatusCategory> testExecutionTransitions = this.getXrayMapper().getTestExecutionTransitions();
+        if (testExecutionTransitions == null || testExecutionTransitions.size() == 0 || this.testExecutionIssue == null) {
+            return;
+        }
+        final String key = this.testExecutionIssue.getKey();
+        this.getXrayUtils().performTransitionChain(key, testExecutionTransitions);
     }
 
     /**
