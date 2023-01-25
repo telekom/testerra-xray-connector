@@ -40,6 +40,7 @@ import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIs
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestSetIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.util.XrayUtils;
+import eu.tsystems.mms.tic.testframework.events.ExecutionFinishEvent;
 import eu.tsystems.mms.tic.testframework.events.TestStatusUpdateEvent;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
 import eu.tsystems.mms.tic.testframework.report.TesterraListener;
@@ -73,7 +74,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSynchronizer, Loggable, TestStatusUpdateEvent.Listener {
+public abstract class AbstractXrayResultsSynchronizer implements
+        XrayResultsSynchronizer,
+        TestStatusUpdateEvent.Listener,
+        ExecutionFinishEvent.Listener,
+        Loggable {
     private static final String VENDOR_PREFIX = "Testerra Xray connector";
     private boolean isSyncEnabled = false;
     private XrayTestExecutionIssue testExecutionIssue;
@@ -83,6 +88,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
     private final HashMap<String, XrayTestIssue> testCacheByMethodName = new HashMap<>();
     private final ConcurrentLinkedQueue<XrayTestExecutionImport.TestRun> testRunSyncQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<XrayTestSetIssue> testSetSyncQueue = new ConcurrentLinkedQueue<>();
+
+    private HashMap<String, LogLevel> loggablePromts = new HashMap<>();
 
     private XrayConfig getXrayConfig() {
         return XrayConfig.getInstance();
@@ -160,8 +167,6 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
 
     @Override
     public void shutdown() {
-        flushSyncQueue();
-        updateTestExecution();
         unregisterSync();
     }
 
@@ -194,7 +199,8 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         final XrayConfig xrayConfig = getXrayConfig();
 
         if (!xrayConfig.isSyncEnabled()) {
-            log().info("Xray sync is disabled.");
+            this.addLoggablePromt("Xray sync is disabled.", LogLevel.WARN);
+//            log().warn("Xray sync is disabled.", Loggable.prompt);
             return;
         }
 
@@ -269,6 +275,14 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         }
     }
 
+    @Override
+    @Subscribe
+    public void onExecutionFinish(ExecutionFinishEvent event) {
+        flushSyncQueue();
+        updateTestExecution();
+        printPromptLogs();
+    }
+
     private synchronized void flushSyncQueue() {
         if (!isSyncEnabled) {
             return;
@@ -310,7 +324,9 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                     IssueType.Test
             ));
         } catch (IOException e) {
-            log().error(String.format("Unable to synchronize %s", IssueType.TestExecution), e);
+            final String message = String.format("Unable to synchronize %s: %s", IssueType.TestExecution, e.getMessage());
+//            log().error("Unable to synchronize {}: {}", IssueType.TestExecution, e.getMessage(), Loggable.prompt);
+            this.addLoggablePromt(message, LogLevel.ERROR);
         }
 
         // xrayTestExecutionImport now contains all keys of created and updated test issues
@@ -340,7 +356,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                             }
                         });
                     } catch (IOException e) {
-                        log().error(String.format("Unable to read %s", IssueType.TestExecution), e);
+                        log().error("Unable to read {}:", IssueType.TestExecution, e);
                     }
                 });
             }
@@ -358,7 +374,7 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
                         IssueType.Test
                 ));
             } catch (IOException e) {
-                log().error(String.format("Unable to update %s", IssueType.TestSet), e);
+                log().error("Unable to update {}", IssueType.TestSet, e);
             }
             testSetSyncQueue.remove(xrayTestSetIssue);
         });
@@ -381,8 +397,12 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
         if (testExecutionTransitions == null || testExecutionTransitions.size() == 0 || this.testExecutionIssue == null) {
             return;
         }
-        final String key = this.testExecutionIssue.getKey();
-        this.getXrayUtils().performTransitionChain(key, testExecutionTransitions);
+        try {
+            final String key = this.testExecutionIssue.getKey();
+            this.getXrayUtils().performTransitionChain(key, testExecutionTransitions);
+        } catch (Exception e) {
+            this.addLoggablePromt(e.getMessage(), LogLevel.ERROR);
+        }
     }
 
     /**
@@ -575,4 +595,25 @@ public abstract class AbstractXrayResultsSynchronizer implements XrayResultsSync
             xrayTestSetIssue.setDescription(String.format("%s generated %s by class %s", VENDOR_PREFIX, IssueType.TestSet, clazz.getCanonicalName()));
         }
     }
+
+    private void addLoggablePromt(String message, LogLevel level) {
+        this.loggablePromts.put(message, level);
+    }
+
+    private void printPromptLogs() {
+        this.loggablePromts.forEach((key, value) -> {
+            switch (value) {
+                case WARN:
+                    log().warn(key, Loggable.prompt);
+                    break;
+                case ERROR:
+                    log().error(key, Loggable.prompt);
+            }
+        });
+    }
+
+    private enum LogLevel {
+        WARN, ERROR;
+    }
+
 }

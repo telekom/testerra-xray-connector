@@ -150,6 +150,26 @@ public class JiraUtilsTest extends AbstractTest implements Loggable {
         jiraUtils.performTransition(statusIssueKey, transitionByStatusCategory.get());
     }
 
+    @Test
+    public void test_performTransition_Execution() throws IOException {
+        String key = "SWFTE-1540";
+
+        // An Test übergeben
+        Set<JiraTransition> transitions = jiraUtils.getAvailableTransitions(key);
+        Optional<JiraTransition> transitionByStatusCategory = jiraUtils.getTransitionByStatusCategory(transitions, JiraStatusCategory.INDETERMINATE);
+        jiraUtils.performTransition(key, transitionByStatusCategory.get());
+
+        // Test beginnen
+        transitions = jiraUtils.getAvailableTransitions(key);
+        transitionByStatusCategory = jiraUtils.getTransitionByStatusCategory(transitions, JiraStatusCategory.INDETERMINATE);
+        jiraUtils.performTransition(key, transitionByStatusCategory.get());
+
+        // Testdurchführung beenden
+        transitions = jiraUtils.getAvailableTransitions(key);
+        transitionByStatusCategory = jiraUtils.getTransitionByStatusCategory(transitions, JiraStatusCategory.DONE);
+        jiraUtils.performTransition(key, transitionByStatusCategory.get());
+    }
+
     @Test(groups = "issueStatus")
     public void testGetIssueStatus() throws IOException {
         final JiraStatus issueStatus = JiraUtils.getIssueStatus(webResource, statusIssueKey);
