@@ -317,7 +317,7 @@ Please note, that
 
 By default, the Xray connector doesn't create any issues. You can enable that by passing `true` in the interface.
 
-Please note, that existing issues will be updated automatically. All manual changes like test steps will be overwritten.
+Please note, that already existing issues will be updated automatically. All manual changes like test steps in a Xray test will be overwritten!
 
 ```java
 public class GenericMapper implements XrayMapper {
