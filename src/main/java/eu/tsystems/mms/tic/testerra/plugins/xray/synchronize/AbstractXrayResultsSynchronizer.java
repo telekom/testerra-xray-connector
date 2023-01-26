@@ -329,7 +329,10 @@ public abstract class AbstractXrayResultsSynchronizer implements
                         IssueType.Test
                 ));
             } catch (IOException e) {
-                log().error("Unable to update {}", IssueType.TestSet, e);
+                // A typical cause of an exception could be an existing Jira key which does not belong to a Test set
+//                log().error("Unable to update {}", IssueType.TestSet, e);
+                final String message = String.format("Unable to update %s by key %s: %s", IssueType.TestSet, xrayTestSetIssue.getKey(), e.getMessage());
+                this.addLoggablePromt(message, LogLevel.ERROR);
             }
             testSetSyncQueue.remove(xrayTestSetIssue);
         });
