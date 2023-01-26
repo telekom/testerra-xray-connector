@@ -574,7 +574,9 @@ public abstract class AbstractXrayResultsSynchronizer implements
                 final XrayTestSetIssue existingTestSetIssue = xrayUtils.getIssue(testSetKey, XrayTestSetIssue::new);
                 xrayTestSetIssue = new XrayTestSetIssue(existingTestSetIssue);
             } catch (IOException e) {
-                log().error(String.format("Unable to query %s by key: %s", IssueType.TestSet, testSetKey), e);
+                final String message = String.format("Cannot find %s %s by key %s", IssueType.TestSet, clazz.getSimpleName(), testSetKey);
+                this.addLoggablePromt(message, LogLevel.WARN);
+//                log().error(String.format("Unable to query %s by key: %s", IssueType.TestSet, testSetKey), e);
             }
         } else {
             final JqlQuery testSetQuery = xrayMapper.queryTestSet(classContext);
@@ -585,7 +587,12 @@ public abstract class AbstractXrayResultsSynchronizer implements
                 } else if (xrayMapper.shouldCreateNewTestSet(classContext)) {
                     xrayTestSetIssue = new XrayTestSetIssue();
                     xrayTestSetIssue.getProject().setKey(xrayConfig.getProjectKey());
+                } else {
+                    // Test set was not found but it's not allowed to create new test sets
+                    final String message = String.format("Cannot create or update test set %s", clazz.getSimpleName());
+                    this.addLoggablePromt(message, LogLevel.WARN);
                 }
+
             }
         }
 
