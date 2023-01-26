@@ -421,7 +421,9 @@ public abstract class AbstractXrayResultsSynchronizer implements
         }
         try {
             final String key = this.testExecutionIssue.getKey();
-            this.getXrayUtils().performTransitionChain(key, testExecutionTransitions);
+            if (key != null) {
+                this.getXrayUtils().performTransitionChain(key, testExecutionTransitions);
+            }
         } catch (Exception e) {
             this.addLoggablePromt(e.getMessage(), LogLevel.ERROR);
         }
