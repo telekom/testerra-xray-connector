@@ -103,8 +103,6 @@ public abstract class AbstractXrayResultsSynchronizer implements
         return this.xrayUtils;
     }
 
-
-
     @Override
     public void initialize() {
         EventBus eventBus = TesterraListener.getEventBus();
@@ -178,6 +176,10 @@ public abstract class AbstractXrayResultsSynchronizer implements
                         testIssue.setSummary(getXrayMapper().getDefaultTestIssueSummery(methodContext));
                         testIssue.setDescription(String.format("%s generated %s by method %s", VENDOR_PREFIX, IssueType.Test, testResult.getMethod().getQualifiedName()));
                         testCacheByMethodName.put(cacheKey, testIssue);
+                    } else {
+                        // Mapping by test summery, but without creating new tests
+                        this.addLoggablePromt("Creating new Xray tests is disabled!", LogLevel.WARN);
+                        this.addLoggablePromt(String.format("Could not find %s as Xray test.", cacheKey), LogLevel.ERROR);
                     }
                 }
             }
@@ -285,10 +287,15 @@ public abstract class AbstractXrayResultsSynchronizer implements
             return xrayTestSetIssue.getTestKeys().stream().anyMatch(key -> key.contains(XrayUtils.PREFIX_NEW_ISSUE));
         });
         if (areNewTestsToImport && xrayTestExecutionImport.getResultTestIssueImport() != null) {
+            // POST request returns no exception but error messages
             if (xrayTestExecutionImport.getResultTestIssueImport().getError().size() > 0) {
-                log().error("Error at syncing with Jira");
                 xrayTestExecutionImport.getResultTestIssueImport().getError()
-                        .forEach(error -> log().error("{} - {}: {}", error.getProject(), error.getSummary(), error.getMessages().toString()));
+                        .forEach(error ->
+                                this.addLoggablePromt(
+                                        String.format("Error at syncing with Xray: %s: %s", error.getSummary(), error.getMessages().toString()),
+                                        LogLevel.ERROR
+                                )
+                        );
                 return;
             } else if (xrayTestExecutionImport.getResultTestIssueImport().getSuccess().size() > 0) {
                 xrayTestExecutionImport.getResultTestIssueImport().getSuccess().forEach(jiraIssueReference -> {
