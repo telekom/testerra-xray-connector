@@ -76,6 +76,7 @@ __Content__
     * [Updating existing entities](#updating-existing-entities)
     * [Perform transitions of issues](#perform-transitions-of-issues)
   * [How to use JqlQuery](#how-to-use-jqlquery)
+* [Errors at synchronization](#errors-at-synchronization)
 * [Jira custom fields IDs](#jira-custom-fields-ids)
 * [Properties](#properties)
   
