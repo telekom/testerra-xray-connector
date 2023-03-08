@@ -25,7 +25,7 @@ public class DefaultSummaryMapper implements XrayMapper {
 
     @Override
     public boolean shouldCreateNewTest(MethodContext methodContext) {
-        return true;
+        return false;
     }
 
     @Override

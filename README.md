@@ -230,9 +230,9 @@ public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 
 This maps Java test methods to Jira *Tests* and Java classes to Jira *Test Sets* by their name, when no keys are present in the annotations. 
 
-Please note, that this mapper creates the issues when they don't exist! See above for more details how it's work.
+Please note, that a test method will not be synchronized if Xray connector has not found a Xray test with the name of the test method (see also [Creating new entities](#creating-new-entities)).  
 
-You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
+Activate this mapper by passing `DefaultSummaryMapper` in your `XrayResultsSynchronizer`:
 
 ```java
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
@@ -318,7 +318,7 @@ Please note, that
 
 By default, the Xray connector doesn't create any issues. You can enable that by passing `true` in the interface.
 
-Please note, that existing issues will be updated automatically. All manual changes like test steps will be overwritten.
+Please note, that already existing issues will be updated automatically. All manual changes like test steps in a Xray test will be overwritten!
 
 ```java
 public class GenericMapper implements XrayMapper {
