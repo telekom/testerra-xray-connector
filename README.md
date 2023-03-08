@@ -76,6 +76,7 @@ __Content__
     * [Updating existing entities](#updating-existing-entities)
     * [Perform transitions of issues](#perform-transitions-of-issues)
   * [How to use JqlQuery](#how-to-use-jqlquery)
+* [Errors at synchronization](#errors-at-synchronization)
 * [Jira custom fields IDs](#jira-custom-fields-ids)
 * [Properties](#properties)
   
@@ -480,6 +481,14 @@ The operators are based on Jira JQL syntax.
 |---------------------------------------|--------------------------------------------|
 | `new SingleValue(String value)`       | Only a single value is used for operation. |
 | `new MultiValue(List<String> values)` | A list of avalues are used for operation.  |
+
+### Errors at synchronization
+
+If something went wrong during the synchronization with Jira Xray you will find warnings or errors at the report's dashboard.
+
+The following example shows an error message which Xray API reports in case of unknown key `SWFTE-invalid` of a test method:
+
+![](doc/sync-error.png)
 
 ### Jira custom fields IDs
 

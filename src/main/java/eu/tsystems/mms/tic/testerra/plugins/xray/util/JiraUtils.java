@@ -261,8 +261,9 @@ public class JiraUtils implements Loggable {
                 }
             }
             log().info("Update status of {}", issueKey);
-        } catch (IOException e) {
-            log().error("Cannot perform transition at test execution {}", issueKey, e);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot perform transition at test execution " + issueKey, e);
+//            log().error("Cannot perform transition at test execution {}", issueKey, e);
         }
     }
 
