@@ -24,6 +24,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -50,6 +51,12 @@ public class MethodsAnnotatedTest extends AbstractTestBase {
     @XrayTest(key = "SWFTE-133")
     public void testMapperSkips() {
         super.testMapperSkips();
+    }
+
+    @Test(dataProviderClass = Provider.class, dataProvider = "provide")
+    @XrayTest(key = "SWFTE-140")
+    public void testDataProvider(Provider.DataDrivenType type, int number) {
+        super.parametrized(type, number);
     }
 
     public static List<XrayTestExecutionImport.TestRun> getExpectedTestRuns() {

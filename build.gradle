@@ -15,6 +15,7 @@ ext {
     testerraCompileVersion = '2.0'
     // Unit tests use the latest Testerra version
     testerraTestVersion = '[2,3-SNAPSHOT)'
+    testerraTestVersion = '2.3'
 
     // Default version
     moduleVersion = '2-SNAPSHOT'

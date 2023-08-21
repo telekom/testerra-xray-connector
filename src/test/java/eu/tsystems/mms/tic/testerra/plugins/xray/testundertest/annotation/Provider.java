@@ -32,7 +32,7 @@ public class Provider {
 
     @DataProvider
     public static Object[][] provide() {
-        return new Object[][] {{Foo, 1}, {Bar, 2}};
+        return new Object[][] {{Foo, 1}, {Bar, 2}, {Foo, 3}};
     }
 
     public enum DataDrivenType {
