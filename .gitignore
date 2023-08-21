@@ -21,3 +21,4 @@ gradlew.bat
 /test-output
 
 logs/integration-test-log4j.log
+/src/test/resources/xray.properties

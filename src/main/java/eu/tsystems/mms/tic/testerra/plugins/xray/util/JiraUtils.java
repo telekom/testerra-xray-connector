@@ -33,25 +33,29 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.JqlQuery;
+import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.IssueType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIdReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
-import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssuesSearchResult;
+import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraKeyReference;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatus;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraStatusCategory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransition;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraTransitionsSearchResult;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.ws.rs.core.MediaType;
-import org.apache.commons.lang3.StringUtils;
+
 import static java.lang.String.format;
 
 public class JiraUtils implements Loggable {
@@ -180,7 +184,7 @@ public class JiraUtils implements Loggable {
     }
 
     private Set<JiraIssue> searchIssues(final WebResource webResource, final String jqlQuery,
-                                              final Collection<String> fields) {
+                                        final Collection<String> fields) {
         JiraUtils jiraUtils = new JiraUtils(webResource);
         WebResource request = webResource.path(SEARCH_PATH)
                 .queryParam("validateQuery", "true")
@@ -211,7 +215,6 @@ public class JiraUtils implements Loggable {
         return searchIssues(jqlQuery).map(issueSupplier);
     }
 
-
     /**
      * @deprecated Use {@link #getAvailableTransitions(String)} instead
      */
@@ -240,6 +243,28 @@ public class JiraUtils implements Loggable {
         ObjectMapper objectMapper = this.objectMapper.copy();
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
         post(format("%s/%s/transitions", ISSUE_PATH, issueKey), objectMapper.writeValueAsString(jiraTransition));
+    }
+
+    public void performTransitionChain(String issueKey, LinkedList<JiraStatusCategory> statuslist) {
+        if (statuslist == null || statuslist.size() == 0) {
+            log().warn("Cannot perform transitions on {}: Status list is empty.", issueKey);
+            return;
+        }
+        try {
+            for (JiraStatusCategory elem : statuslist) {
+                Set<JiraTransition> transitions = this.getAvailableTransitions(issueKey);
+                Optional<JiraTransition> transitionByStatusCategory = this.getTransitionByStatusCategory(transitions, elem);
+                if (transitionByStatusCategory.isPresent()) {
+                    this.performTransition(issueKey, transitionByStatusCategory.get());
+                } else {
+                    log().warn("Cannot continue performing transition, because {} is not available.", elem.getName());
+                }
+            }
+            log().info("Update status of {}", issueKey);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot perform transition at test execution " + issueKey, e);
+//            log().error("Cannot perform transition at test execution {}", issueKey, e);
+        }
     }
 
     public Optional<JiraTransition> getTransitionByStatusCategory(Set<JiraTransition> jiraTransitions, JiraStatusCategory statusCategory) {

@@ -37,6 +37,8 @@ This module allows to synchronize the test results to the test management plugin
 | `2.0-RC-6`     | `>= 2.0-RC-21` | `>= 5.1.0`  |
 | `>=2.0`        | `>= 2.0`       | `>= 5.1.0`  |
 
+From 2.3 you need at least __JDK11__.
+
 ### Usage
 
 Include the following dependency in your project. Please replace the versions with the latest version.
@@ -44,7 +46,7 @@ Include the following dependency in your project. Please replace the versions wi
 Gradle:
 
 ```groovy
-implementation 'io.testerra:xray-connector:2.2'
+implementation 'io.testerra:xray-connector:2.4'
 ```
 
 Maven:
@@ -54,12 +56,30 @@ Maven:
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>2.2</version>
+    <version>2.4</version>
 </dependency>
 ```
 
 ## Documentation
 
+__Content__
+
+* [Add property file](#add-property-file)
+* [Implement synchronizer interface](#implement-synchronizer-interface)
+* [How tests are sync](#how-tests-are-sync)
+  * [Test Execution](#test-execution)
+* [Mapping variants](#mapping-variants)
+  * [Annotated Test](#annotated-test)
+  * [DefaultSummaryMapper](#defaultsummarymapper)
+  * [Custom mapping](#custom-mapping)
+    * [Creating new entities](#creating-new-entities)
+    * [Updating existing entities](#updating-existing-entities)
+    * [Perform transitions of issues](#perform-transitions-of-issues)
+  * [How to use JqlQuery](#how-to-use-jqlquery)
+* [Errors at synchronization](#errors-at-synchronization)
+* [Jira custom fields IDs](#jira-custom-fields-ids)
+* [Properties](#properties)
+  
 Steps to use the Xray Connector plugin:
 1. [Define properties](#add-property-file) 
 2. [Implement synchronizer](#implement-synchronizer-interface)
@@ -145,6 +165,16 @@ public class MethodsAnnotatedTest extends TesterraTest {
 }
 ```
 
+The corresponding default mapper is the `EmptyMapper`. The following implementation is optional:
+
+```java
+public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
+    public XrayMapper getXrayMapper() {
+        return new EmptyMapper();
+    }
+}
+```
+
 [//]: # (#### Annotated Test Set)
 
 [//]: # ()
@@ -196,15 +226,13 @@ public class MethodsAnnotatedTest extends TesterraTest {
 
 [//]: # (```)
 
-A list of other mapping implementations.
-
 #### DefaultSummaryMapper
 
 This maps Java test methods to Jira *Tests* and Java classes to Jira *Test Sets* by their name, when no keys are present in the annotations. 
 
-Please note, that this mapper creates the issues when they don't exist! See above for more details how it's work.
+Please note, that a test method will not be synchronized if Xray connector has not found a Xray test with the name of the test method (see also [Creating new entities](#creating-new-entities)).  
 
-You enable that feature by passing that mapper in your `XrayResultsSynchronizer`.
+Activate this mapper by passing `DefaultSummaryMapper` in your `XrayResultsSynchronizer`:
 
 ```java
 public class MyXrayResultsSynchronizer extends AbstractXrayResultsSynchronizer {
@@ -240,7 +268,6 @@ public class AnnotatedClassTest extends TesterraTest {
     }
 }
 ```
-
 
 #### Custom mapping
 
@@ -291,7 +318,7 @@ Please note, that
 
 By default, the Xray connector doesn't create any issues. You can enable that by passing `true` in the interface.
 
-Please note, that existing issues will be updated automatically. All manual changes like test steps will be overwritten.
+Please note, that already existing issues will be updated automatically. All manual changes like test steps in a Xray test will be overwritten!
 
 ```java
 public class GenericMapper implements XrayMapper {
@@ -345,6 +372,50 @@ public class GenericMapper implements XrayMapper {
 ```
 
 You can use these methods to update the Jira issues right before importing. Please mind, that not all features are supported by the [Xray import API](#references).
+
+##### Perform transitions of issues
+
+___Common___
+
+Xray connector can change the status of created Test executions. The connector identifies the next possible transitions and update the issue with the correct Jira status category.
+
+It is not necessary to define the locale names of transition or statuses. Every status is assigned to a status category: `new`, `indeterminate`, `done`.
+
+With the url ``https://<jira-host>/rest/api/2/issue/<issue-key>/transitions`` you can identify the next possible transitions and the following statuses (including the category).
+
+___Test executions___
+
+The default implementation is as follows:
+
+````java
+public interface XrayMapper {
+    [...]
+    // Every test execution is updated at the end of the test run
+    default boolean shouldUpdateTestExecutionStatus() {
+        return true;
+    }
+
+    /**
+     * Define the order of transitions to close a Xray test execution beginning in status 'NEW':
+     * 'Ready for test' (category 'indeterminate')
+     * 'In test' (category 'indeterminate')
+     * 'Resolved' (category 'done')
+     *
+     * Because the name of the status can change, you only set up the categories of transitions. Xray connector checks which transition is
+     * possible from the current status and select the next transition with needed category.
+     */
+    default LinkedList<JiraStatusCategory> getTestExecutionTransitions() {
+        LinkedList<JiraStatusCategory> list = new LinkedList<>();
+        list.add(JiraStatusCategory.INDETERMINATE);
+        list.add(JiraStatusCategory.INDETERMINATE);
+        list.add(JiraStatusCategory.DONE);
+        return list;
+    }
+    [...]
+}
+````
+
+Overwrite the implementation in your own mapper class.
 
 #### How to use JqlQuery
 
@@ -410,6 +481,14 @@ The operators are based on Jira JQL syntax.
 |---------------------------------------|--------------------------------------------|
 | `new SingleValue(String value)`       | Only a single value is used for operation. |
 | `new MultiValue(List<String> values)` | A list of avalues are used for operation.  |
+
+### Errors at synchronization
+
+If something went wrong during the synchronization with Jira Xray you will find warnings or errors at the report's dashboard.
+
+The following example shows an error message which Xray API reports in case of unknown key `SWFTE-invalid` of a test method:
+
+![](doc/sync-error.png)
 
 ### Jira custom fields IDs
 
