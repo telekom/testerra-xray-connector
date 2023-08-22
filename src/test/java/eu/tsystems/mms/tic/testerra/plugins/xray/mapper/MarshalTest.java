@@ -28,18 +28,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import eu.tsystems.mms.tic.testerra.plugins.xray.AbstractTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.HashSet;
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.JAXBException;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class MarshalTest extends AbstractTest {
-
 
     @Test
     public void testMarshalTestToJson() throws JsonProcessingException {
@@ -100,7 +99,7 @@ public class MarshalTest extends AbstractTest {
     }
 
     @Test
-    public void testUnmarshalExampleToObject() throws JAXBException, URISyntaxException, IOException {
+    public void testUnmarshalExampleToObject() throws URISyntaxException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final URL url = getClass().getResource("/example.json").toURI().toURL();
         objectMapper.readValue(url, XrayTestExecutionImport.TestRun[].class);
