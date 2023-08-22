@@ -48,6 +48,9 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.3.1'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.3.1'
 
+    // Workaround for a ClassNotFoundException, see https://github.com/telekom/testerra-xray-connector/issues/8
+    implementation 'javax.activation:activation:1.1.1'
+
     testImplementation 'io.testerra:driver-ui-desktop:' + testerraTestVersion
     testImplementation 'io.testerra:report-ng:' + testerraTestVersion
 }
