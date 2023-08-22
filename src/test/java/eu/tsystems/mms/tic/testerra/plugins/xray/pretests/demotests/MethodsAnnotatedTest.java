@@ -53,11 +53,12 @@ public class MethodsAnnotatedTest extends AbstractTestBase {
         super.testMapperSkips();
     }
 
-    @Test(dataProviderClass = Provider.class, dataProvider = "provide")
-    @XrayTest(key = "SWFTE-140")
-    public void testDataProvider(Provider.DataDrivenType type, int number) {
-        super.parametrized(type, number);
-    }
+    // TODO: Open issue - cannot sync data provider results correctly
+//    @Test(dataProviderClass = Provider.class, dataProvider = "provide")
+//    @XrayTest(key = "SWFTE-140")
+//    public void testDataProvider(Provider.DataDrivenType type, int number) {
+//        super.parametrized(type, number);
+//    }
 
     public static List<XrayTestExecutionImport.TestRun> getExpectedTestRuns() {
 

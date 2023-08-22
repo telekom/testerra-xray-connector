@@ -24,6 +24,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
+import eu.tsystems.mms.tic.testframework.testing.WebDriverManagerProvider;
 import eu.tsystems.mms.tic.testframework.utils.TimerUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ import org.testng.annotations.Test;
 
 import static eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider.DataDrivenType;
 
-public abstract class AbstractTestBase extends TesterraTest {
+public abstract class AbstractTestBase extends TesterraTest implements WebDriverManagerProvider {
 
     private static final int SLEEP_TIME = 100;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
