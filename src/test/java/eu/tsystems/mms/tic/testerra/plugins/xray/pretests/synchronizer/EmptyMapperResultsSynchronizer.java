@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer;
+package eu.tsystems.mms.tic.testerra.plugins.xray.pretests.synchronizer;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionIssue;
 import eu.tsystems.mms.tic.testerra.plugins.xray.synchronize.AbstractXrayResultsSynchronizer;
@@ -28,14 +28,21 @@ import eu.tsystems.mms.tic.testframework.report.model.context.ExecutionContext;
 
 public class EmptyMapperResultsSynchronizer extends AbstractXrayResultsSynchronizer {
 
-    public static final String EXECUTION_SUMMARY = "XrayEmtpyMapperTest";
+    public static final String EXECUTION_SUMMARY1 = "XrayEmtpyMapperTest";
+    public static final String EXECUTION_SUMMERY2 = "XrayEmtpyMapperTestWithSteps";
+
+    private String executionSummary;
+
+    public EmptyMapperResultsSynchronizer(final String executionSummary) {
+        this.executionSummary = executionSummary;
+    }
 
     @Override
     public XrayMapper getXrayMapper() {
         return new XrayMapper() {
             @Override
             public void updateTestExecution(XrayTestExecutionIssue xrayTestExecutionIssue, ExecutionContext executionContext) {
-                xrayTestExecutionIssue.setSummary(EXECUTION_SUMMARY);
+                xrayTestExecutionIssue.setSummary(executionSummary);
             }
         };
     }

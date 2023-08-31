@@ -22,7 +22,6 @@
 
 package eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider;
 import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
 import eu.tsystems.mms.tic.testframework.testing.WebDriverManagerProvider;
 import eu.tsystems.mms.tic.testframework.utils.TimerUtils;
@@ -30,7 +29,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
-import org.testng.annotations.Test;
 
 import static eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider.DataDrivenType;
 
@@ -39,7 +37,6 @@ public abstract class AbstractTestBase extends TesterraTest implements WebDriver
     private static final int SLEEP_TIME = 100;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Test
     public void testMapperPasses() {
         logger.info("starting test 'passes'");
         TimerUtils.sleep(SLEEP_TIME);
@@ -47,7 +44,6 @@ public abstract class AbstractTestBase extends TesterraTest implements WebDriver
         Assert.assertTrue(true);
     }
 
-    @Test
     public void testMapperFails() {
         logger.info("starting test 'fails'");
         TimerUtils.sleep(SLEEP_TIME);
@@ -55,12 +51,11 @@ public abstract class AbstractTestBase extends TesterraTest implements WebDriver
         Assert.assertTrue(false);
     }
 
-    @Test(dependsOnMethods = "testMapperFails")
     public void testMapperSkips() {
         logger.info("this shouldn't be read anytime");
     }
 
-    @Test(dataProviderClass = Provider.class, dataProvider = "provide")
+    //    @Test(dataProviderClass = Provider.class, dataProvider = "provide")
     public void parametrized(DataDrivenType type, int number) {
         logger.info("starting test 'dataDriven' with parameters {}", String.format("type: %s, number: %s", type, number));
         TimerUtils.sleep(SLEEP_TIME);

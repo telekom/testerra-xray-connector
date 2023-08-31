@@ -29,7 +29,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MethodsAnnotatedWithStepsTest extends AbstractTestBase {
 
@@ -49,6 +51,7 @@ public class MethodsAnnotatedWithStepsTest extends AbstractTestBase {
         TestStep.begin("Step 2");
         Assert.fail("Failed step");
     }
+
 //
 //    @Override
 //    @Test(dependsOnMethods = "testMapperFails")
@@ -57,32 +60,52 @@ public class MethodsAnnotatedWithStepsTest extends AbstractTestBase {
 //        super.testMapperSkips();
 //    }
 
-//    public static List<XrayTestExecutionImport.TestRun> getExpectedTestRuns() {
-//
-//        List<XrayTestExecutionImport.TestRun> testRunList = new ArrayList<>();
-//
-//        XrayTestExecutionImport.TestRun run1 = new XrayTestExecutionImport.TestRun("SWFTE-123");
-//        run1.setStatus(XrayTestExecutionImport.TestRun.Status.PASS);
-//        run1.setTestInfo(new XrayTestExecutionImport.TestRun.Info());
-//        run1.getTestInfo().setSummary("EmptyMapper_Passes");
-//        run1.getTestInfo().setDescription("EmptyMapper_Passes");
-//        testRunList.add(run1);
-//
-//        XrayTestExecutionImport.TestRun run2 = new XrayTestExecutionImport.TestRun("SWFTE-125");
-//        run2.setStatus(XrayTestExecutionImport.TestRun.Status.FAIL);
-//        run2.setTestInfo(new XrayTestExecutionImport.TestRun.Info());
-//        run2.getTestInfo().setSummary("EmptyMapper_Fails");
-//        run2.getTestInfo().setDescription("EmptyMapper_Fails");
-//        testRunList.add(run2);
-//
+    public static Map<String, XrayTestExecutionImport.TestRun> getExpectedTestRuns() {
+
+        Map<String, XrayTestExecutionImport.TestRun> runMap = new HashMap<>();
+
+        // Test run 1 with passed steps
+        XrayTestExecutionImport.TestRun run1 = new XrayTestExecutionImport.TestRun("SWFTE-141");
+        run1.setStatus(XrayTestExecutionImport.TestRun.Status.PASS);
+        run1.setTestInfo(new XrayTestExecutionImport.TestRun.Info());
+        run1.getTestInfo().setSummary("testMapperTestStepsPassed");
+
+        List<XrayTestExecutionImport.TestRun.Step> steps = new ArrayList<>();
+        XrayTestExecutionImport.TestRun.Step step1 = new XrayTestExecutionImport.TestRun.Step();
+        step1.setStatus(XrayTestExecutionImport.TestRun.Status.PASS);
+        steps.add(step1);
+        XrayTestExecutionImport.TestRun.Step step2 = new XrayTestExecutionImport.TestRun.Step();
+        step2.setStatus(XrayTestExecutionImport.TestRun.Status.PASS);
+        steps.add(step1);
+        run1.setSteps(steps);
+
+        runMap.put(run1.getTestKey(), run1);
+
+        // Test run 2 with passed and failed steps
+        XrayTestExecutionImport.TestRun run2 = new XrayTestExecutionImport.TestRun("SWFTE-145");
+        run2.setStatus(XrayTestExecutionImport.TestRun.Status.FAIL);
+        run2.setTestInfo(new XrayTestExecutionImport.TestRun.Info());
+        run2.getTestInfo().setSummary("testMapperTestStepsFailed");
+
+        steps = new ArrayList<>();
+        step1 = new XrayTestExecutionImport.TestRun.Step();
+        step1.setStatus(XrayTestExecutionImport.TestRun.Status.PASS);
+        steps.add(step1);
+        step2 = new XrayTestExecutionImport.TestRun.Step();
+        step2.setStatus(XrayTestExecutionImport.TestRun.Status.FAIL);
+        steps.add(step2);
+        run2.setSteps(steps);
+
+        runMap.put(run2.getTestKey(), run2);
+
 //        XrayTestExecutionImport.TestRun run3 = new XrayTestExecutionImport.TestRun("SWFTE-133");
 //        run3.setStatus(XrayTestExecutionImport.TestRun.Status.SKIPPED);
 //        run3.setTestInfo(new XrayTestExecutionImport.TestRun.Info());
-//        run3.getTestInfo().setSummary("EmptyMapper_Skips");
-//        run3.getTestInfo().setDescription("EmptyMapper_Skips");
-//        testRunList.add(run3);
-//
-//        return testRunList;
-//    }
+//        run3.getTestInfo().setSummary("testMapperSkips");
+//        runMap.put(run3.getTestKey(), run3);
+
+        return runMap;
+    }
+
 
 }

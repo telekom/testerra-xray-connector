@@ -19,25 +19,29 @@
  * under the License.
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
+package eu.tsystems.mms.tic.testerra.plugins.xray.pretests;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.AbstractAnnotationsWithoutKeys;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.MethodsAndClassAnnotatedTest;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.SimulatedTestRunXrayResultsSynchronizer;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.SummaryMapperResultsSynchronizer;
+import eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.ClassAnnotatedTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.pretests.synchronizer.SummaryMapperResultsSynchronizer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 
-@XrayTestSet(key = "SWFTE-7")
-public class CustomMapperTest extends MethodsAndClassAnnotatedTest {
+@XrayTestSet(key = "SWFTE-136")
+public class SummeryMapperPreTestWithKey extends ClassAnnotatedTest {
+
+    // TODO:
+    // Cleanup test set with all tests --> needed update of REST https://docs.getxray.app/display/XRAY/Test+Executions+-+REST
+    // Execute tests
+    // Check if tests associate with test set
 
     @BeforeClass
     public void prepareWebResource() {
         XrayConfig.init("sync.test.properties");
         Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
-        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SimulatedTestRunXrayResultsSynchronizer());
+        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SummaryMapperResultsSynchronizer(SummaryMapperResultsSynchronizer.EXECUTION_SUMMARY1));
     }
+
 }

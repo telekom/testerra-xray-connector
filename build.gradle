@@ -56,34 +56,35 @@ dependencies {
 }
 
 test {
-    useTestNG()
+    def profiles = [
+            "pre1": "integration_pre-tests1.xml",
+            "pre2": "integration_pre-tests2.xml",
+            "pre3": "integration_pre-tests3.xml",
+            "pre4": "integration_pre-tests4.xml",
+            "integration": "integration_tests.xml"
+    ]
+
+    def suiteFiles = []
+    profiles.each { k, v ->
+        if (project.hasProperty("" + k)) {
+            def f = 'src/test/resources/' + v
+            suiteFiles << f
+        }
+    }
+
+    useTestNG() {
+        suites(suiteFiles as String[])
+        testLogging {
+            outputs.upToDateWhen { false }
+            showStandardStreams = true
+        }
+        options {
+            systemProperties(System.getProperties())
+        }
+        ignoreFailures = true
+    }
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-}
-
-// Run pre tests for integration tests
-task preTests(type: Test) {
-    useTestNG() {
-        suites 'src/test/resources/integration_pre-tests.xml'
-    }
-}
-
-// Run all Xray tests
-task integrationTests(type: Test) {
-    useTestNG() {
-        suites 'src/test/resources/integration_tests.xml'
-    }
-
-    testLogging {
-        outputs.upToDateWhen { false }
-        showStandardStreams = true
-    }
-
-    options {
-        systemProperties(System.getProperties())
-    }
-
-    ignoreFailures = true
 }

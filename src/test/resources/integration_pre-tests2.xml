@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Integration PreTests" verbose="4">
+
+        <test name="Pre sync tests 2" parallel="methods" thread-count="4">
+            <classes>
+                <class name="eu.tsystems.mms.tic.testerra.plugins.xray.pretests.SummeryMapperPreTestWithKey"/>
+            </classes>
+        </test>
+
+</suite>

@@ -24,11 +24,10 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray.XrayTestExecutionImport;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MethodsAnnotatedTest extends AbstractTestBase {
 
@@ -60,32 +59,29 @@ public class MethodsAnnotatedTest extends AbstractTestBase {
 //        super.parametrized(type, number);
 //    }
 
-    public static List<XrayTestExecutionImport.TestRun> getExpectedTestRuns() {
+    public static Map<String, XrayTestExecutionImport.TestRun> getExpectedTestRuns() {
 
-        List<XrayTestExecutionImport.TestRun> testRunList = new ArrayList<>();
+        Map<String, XrayTestExecutionImport.TestRun> runMap = new HashMap<>();
 
         XrayTestExecutionImport.TestRun run1 = new XrayTestExecutionImport.TestRun("SWFTE-123");
         run1.setStatus(XrayTestExecutionImport.TestRun.Status.PASS);
         run1.setTestInfo(new XrayTestExecutionImport.TestRun.Info());
-        run1.getTestInfo().setSummary("EmptyMapper_Passes");
-        run1.getTestInfo().setDescription("EmptyMapper_Passes");
-        testRunList.add(run1);
+        run1.getTestInfo().setSummary("testMapperPasses");
+        runMap.put(run1.getTestKey(), run1);
 
         XrayTestExecutionImport.TestRun run2 = new XrayTestExecutionImport.TestRun("SWFTE-125");
         run2.setStatus(XrayTestExecutionImport.TestRun.Status.FAIL);
         run2.setTestInfo(new XrayTestExecutionImport.TestRun.Info());
-        run2.getTestInfo().setSummary("EmptyMapper_Fails");
-        run2.getTestInfo().setDescription("EmptyMapper_Fails");
-        testRunList.add(run2);
+        run2.getTestInfo().setSummary("testMapperFails");
+        runMap.put(run2.getTestKey(), run2);
 
         XrayTestExecutionImport.TestRun run3 = new XrayTestExecutionImport.TestRun("SWFTE-133");
         run3.setStatus(XrayTestExecutionImport.TestRun.Status.SKIPPED);
         run3.setTestInfo(new XrayTestExecutionImport.TestRun.Info());
-        run3.getTestInfo().setSummary("EmptyMapper_Skips");
-        run3.getTestInfo().setDescription("EmptyMapper_Skips");
-        testRunList.add(run3);
+        run3.getTestInfo().setSummary("testMapperSkips");
+        runMap.put(run3.getTestKey(), run3);
 
-        return testRunList;
+        return runMap;
     }
 
 }

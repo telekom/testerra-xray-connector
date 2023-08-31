@@ -19,23 +19,22 @@
  * under the License.
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.integration;
+package eu.tsystems.mms.tic.testerra.plugins.xray.pretests;
 
-import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTestSet;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
 import eu.tsystems.mms.tic.testerra.plugins.xray.hook.XrayConnectorHook;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.AbstractAnnotationsWithoutKeys;
-import eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.synchronizer.SummaryMapperResultsSynchronizer;
+import eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.MethodsAnnotatedTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.pretests.synchronizer.EmptyMapperResultsSynchronizer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 
-@XrayTestSet
-public class DefaultSummaryMapperTest extends AbstractAnnotationsWithoutKeys {
+public class EmptyMapper1PreTest extends MethodsAnnotatedTest {
 
     @BeforeClass
     public void prepareWebResource() {
         XrayConfig.init("sync.test.properties");
         Assert.assertTrue(XrayConfig.getInstance().isSyncEnabled());
-        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new SummaryMapperResultsSynchronizer());
+        XrayConnectorHook.getInstance().setXrayResultsSynchronizer(new EmptyMapperResultsSynchronizer(EmptyMapperResultsSynchronizer.EXECUTION_SUMMARY1));
     }
+
 }
