@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 
-import static eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider.DataDrivenType;
+import static eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.Provider.DataDrivenType;
 
 public abstract class AbstractTestBase extends TesterraTest implements WebDriverManagerProvider {
 

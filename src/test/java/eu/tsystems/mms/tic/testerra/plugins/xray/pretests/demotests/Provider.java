@@ -20,10 +20,10 @@
  *
  */
 
-package eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation;
+package eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests;
 
-import static eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider.DataDrivenType.Bar;
-import static eu.tsystems.mms.tic.testerra.plugins.xray.testundertest.annotation.Provider.DataDrivenType.Foo;
+import static eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.Provider.DataDrivenType.Bar;
+import static eu.tsystems.mms.tic.testerra.plugins.xray.pretests.demotests.Provider.DataDrivenType.Foo;
 
 
 import org.testng.annotations.DataProvider;
