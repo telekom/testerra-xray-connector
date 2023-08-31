@@ -46,7 +46,7 @@ Include the following dependency in your project. Please replace the versions wi
 Gradle:
 
 ```groovy
-implementation 'io.testerra:xray-connector:2.4'
+implementation 'io.testerra:xray-connector:2.5'
 ```
 
 Maven:
@@ -56,7 +56,7 @@ Maven:
 <dependency>
     <groupId>io.testerra</groupId>
     <artifactId>xray-connector</artifactId>
-    <version>2.4</version>
+    <version>2.5</version>
 </dependency>
 ```
 
