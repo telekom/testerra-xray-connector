@@ -1,6 +1,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray;
 
 import eu.tsystems.mms.tic.testerra.plugins.xray.annotation.XrayTest;
+import eu.tsystems.mms.tic.testerra.plugins.xray.tests.AbstractTest;
 import eu.tsystems.mms.tic.testframework.annotations.Fails;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import org.testng.annotations.Test;

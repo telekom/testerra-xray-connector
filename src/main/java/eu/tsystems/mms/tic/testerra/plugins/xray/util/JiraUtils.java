@@ -308,14 +308,13 @@ public class JiraUtils implements Loggable {
         return issue.getStatus();
     }
 
-    public static void uploadJsonAttachment(final WebResource webResource, final String issueKey, final String content,
-                                            final String displayedFileName) {
+    public void uploadJsonAttachment(final String issueKey, final String content, final String displayedFileName) {
         final FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
         final FormDataContentDisposition dispo = FormDataContentDisposition.name("file").fileName(displayedFileName).build();
         final FormDataBodyPart bodyPart = new FormDataBodyPart(dispo, content, MediaType.APPLICATION_JSON_TYPE);
         formDataMultiPart.bodyPart(bodyPart);
 
-        webResource.path(format("%s/%s/attachments", ISSUE_PATH, issueKey))
+        this.webResource.path(format("%s/%s/attachments", ISSUE_PATH, issueKey))
                 .header("X-Atlassian-Token", "nocheck")
                 .type(MediaType.MULTIPART_FORM_DATA)
                 .post(String.class, formDataMultiPart);
@@ -334,8 +333,8 @@ public class JiraUtils implements Loggable {
                 .post(formDataMultiPart);
     }
 
-    public static void deleteAllAttachments(final WebResource webResource, final String issueKey) throws IOException {
-        final JiraIssue issue = JiraUtils.getIssue(webResource, issueKey, Lists.newArrayList("attachment"));
+    public void deleteAllAttachments(final String issueKey) throws IOException {
+        final JiraIssue issue = getIssue(this.webResource, issueKey, Lists.newArrayList("attachment"));
         issue.getAttachments().forEach(issueRef -> {
             webResource.path(format("%s/%s", ATTACHMENT_PATH, issueRef.getId()))
                     .delete();

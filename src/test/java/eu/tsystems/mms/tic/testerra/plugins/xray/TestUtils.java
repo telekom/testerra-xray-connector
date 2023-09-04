@@ -26,10 +26,13 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.config.XrayConfig;
+import eu.tsystems.mms.tic.testerra.plugins.xray.connect.HttpBearerTokenAuthFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.RESTClientFactory;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.GetRequestOnlyFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.connect.filter.LoggingFilter;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
+import org.apache.commons.lang3.StringUtils;
+
 import java.text.ParseException;
 import java.util.Date;
 
@@ -41,7 +44,11 @@ public class TestUtils {
         XrayConfig.init(configFileName);
         XrayConfig xrayConfig = XrayConfig.getInstance();
         WebResource webResource = client.resource(xrayConfig.getRestServiceUri());
-        webResource.addFilter(new HTTPBasicAuthFilter(XrayConfig.getInstance().getUsername(), XrayConfig.getInstance().getPassword()));
+        if (StringUtils.isNotEmpty(xrayConfig.getToken())) {
+            webResource.addFilter(new HttpBearerTokenAuthFilter(XrayConfig.getInstance().getToken()));
+        } else {
+            webResource.addFilter(new HTTPBasicAuthFilter(XrayConfig.getInstance().getUsername(), XrayConfig.getInstance().getPassword()));
+        }
         if (xrayConfig.isWebResourceFilterGetRequestsOnlyEnabled()) {
             webResource.addFilter(new GetRequestOnlyFilter());
         }

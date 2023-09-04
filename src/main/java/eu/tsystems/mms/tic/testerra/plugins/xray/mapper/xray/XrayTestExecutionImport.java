@@ -22,6 +22,7 @@
 package eu.tsystems.mms.tic.testerra.plugins.xray.mapper.xray;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import eu.tsystems.mms.tic.testerra.plugins.xray.jql.predefined.TestType;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraError;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.jira.JiraIssue;
@@ -165,6 +166,7 @@ public class XrayTestExecutionImport {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TestRun {
         public enum Status {
             PASS,
@@ -282,6 +284,7 @@ public class XrayTestExecutionImport {
             }
         }
 
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Step {
             private Status status;
             private String actualResult;
@@ -327,7 +330,7 @@ public class XrayTestExecutionImport {
         private Date start;
         private Date finish;
         private String comment;
-        private Set<Evidence> evidence;
+        private Set<Evidence> evidences;
         private Status status;
         private List<Step> steps;
 
@@ -381,19 +384,19 @@ public class XrayTestExecutionImport {
             this.comment = comment;
         }
 
-        public Set<Evidence> getEvidence() {
-            return evidence;
+        public Set<Evidence> getEvidences() {
+            return evidences;
         }
 
-        public void setEvidence(Set<Evidence> evidence) {
-            this.evidence = evidence;
+        public void setEvidences(Set<Evidence> evidences) {
+            this.evidences = evidences;
         }
 
         public void addEvidence(Evidence evidence) {
-            if (this.evidence == null) {
-                this.evidence = new HashSet<>();
+            if (this.evidences == null) {
+                this.evidences = new HashSet<>();
             }
-            this.evidence.add(evidence);
+            this.evidences.add(evidence);
         }
 
         public Status getStatus() {

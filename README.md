@@ -559,6 +559,16 @@ Symptom | Explanation | Solution
  * On the second run Xray connector find existing issue with the given summary = method name. Xray connector uses the first find, it cannot distinguish the other issues with the same summary to the correct Xray issues.
  * Please note, that in that case the sync is not working as expected. Please extend the mapping, e.g. <classname_methodname>
 
+### Xray connector tests
+
+1. To run the integration tests, set up a `xray.properties`
+2. Run some pretest sets for create synchronisation results:
+   * `gradle test -Ppre1`
+   * `gradle test -Ppre2`
+   * `gradle test -Ppre3`
+   * `gradle test -Ppre4`
+3. Run integration test suite: `gradle test -Pintegration`
+
 ---
 
 ## Publication

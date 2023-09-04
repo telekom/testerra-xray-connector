@@ -18,6 +18,7 @@ ext {
     testerraCompileVersion = '2.0'
     // Unit tests use the latest Testerra version
     testerraTestVersion = '[2,3-SNAPSHOT)'
+    testerraTestVersion = '2.3'
 
     // Default version
     moduleVersion = '2-SNAPSHOT'
@@ -55,17 +56,35 @@ dependencies {
 }
 
 test {
-    useTestNG()
-}
+    def profiles = [
+            "pre1": "integration_pre-tests1.xml",
+            "pre2": "integration_pre-tests2.xml",
+            "pre3": "integration_pre-tests3.xml",
+            "pre4": "integration_pre-tests4.xml",
+            "integration": "integration_tests.xml"
+    ]
 
-task unitTests(type: Test) {
+    def suiteFiles = []
+    profiles.each { k, v ->
+        if (project.hasProperty("" + k)) {
+            def f = 'src/test/resources/' + v
+            suiteFiles << f
+        }
+    }
+
     useTestNG() {
-        suites 'src/test/resources/unit_tests.xml'
+        suites(suiteFiles as String[])
+        testLogging {
+            outputs.upToDateWhen { false }
+            showStandardStreams = true
+        }
+        options {
+            systemProperties(System.getProperties())
+        }
+        ignoreFailures = true
     }
 }
 
-task integrationTests(type: Test) {
-    useTestNG() {
-        suites 'src/test/resources/integration_tests.xml'
-    }
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
