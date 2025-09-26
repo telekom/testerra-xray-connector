@@ -1,17 +1,10 @@
 plugins {
-    id "io.codearte.nexus-staging" version "0.30.0"
+    id "org.danilopianini.publish-on-central" version "9.1.0"
 }
 
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
-apply plugin: 'io.codearte.nexus-staging'
-
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-
-compileJava.options.encoding = 'UTF-8'
-compileTestJava.options.encoding = 'UTF-8'
 
 ext {
     // Minimum required Testerra version
@@ -25,9 +18,19 @@ ext {
     if (System.properties.containsKey('moduleVersion')) {
         moduleVersion = System.getProperty('moduleVersion')
     }
+}
 
-    group 'io.testerra'
-    version moduleVersion
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+
+group 'io.testerra'
+version moduleVersion
+
+repositories {
+    mavenCentral()
 }
 
 // Do not move this integration because `group` and `version` is needed for publishing
@@ -57,10 +60,10 @@ dependencies {
 
 test {
     def profiles = [
-            "pre1": "integration_pre-tests1.xml",
-            "pre2": "integration_pre-tests2.xml",
-            "pre3": "integration_pre-tests3.xml",
-            "pre4": "integration_pre-tests4.xml",
+            "pre1"       : "integration_pre-tests1.xml",
+            "pre2"       : "integration_pre-tests2.xml",
+            "pre3"       : "integration_pre-tests3.xml",
+            "pre4"       : "integration_pre-tests4.xml",
             "integration": "integration_tests.xml"
     ]
 
