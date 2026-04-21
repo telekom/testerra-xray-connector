@@ -65,10 +65,10 @@ public class XrayConfig implements Loggable {
             try {
                 uri = new URI(baseURI);
             } catch (final URISyntaxException e) {
-                log().error(String.format("Unable to parse property %s", baseUriProperty), e);
+                log().error("Unable to parse property {}", baseUriProperty, e);
             }
         } else {
-            log().error(String.format("Xray REST URI property %s is not defined", baseUriProperty));
+            log().error("Xray REST URI property {} is not defined", baseUriProperty);
         }
         restServiceUri = uri;
         webResourceFilterLoggingEnabled = PropertyManager.getBooleanProperty("xray.webresource.filter.logging.enabled", false);
