@@ -563,11 +563,11 @@ Symptom | Explanation | Solution
 
 1. To run the integration tests, set up a `xray.properties`
 2. Run some pretest sets for create synchronisation results:
-   * `gradle test -Ppre1`
-   * `gradle test -Ppre2`
-   * `gradle test -Ppre3`
-   * `gradle test -Ppre4`
-3. Run integration test suite: `gradle test -Pintegration`
+   * `./gradlew test -Ppre1`
+   * `./gradlew test -Ppre2`
+   * `./gradlew test -Ppre3`
+   * `./gradlew test -Ppre4`
+3. Run integration test suite: `./gradlew test -Pintegration`
 
 ---
 
@@ -590,7 +590,7 @@ For the signing and publishing the following environment variables have to be se
 Publishing snapshots the default ``maven-publish`` plugin is used:
 
 ````shell
-gradle publish
+./gradlew publish
 ````
 
 ### Publish release
@@ -598,7 +598,7 @@ gradle publish
 Publishing releases the ``org.danilopianini.publish-on-central`` plugin is used:
 
 ````shell
-gradle publishMavenJavaPublicationToProjectLocalRepository zipMavenCentralPortalPublication releaseMavenCentralPortalPublication -DmoduleVersion=2.1 
+./gradlew publishMavenJavaPublicationToProjectLocalRepository zipMavenCentralPortalPublication releaseMavenCentralPortalPublication -DmoduleVersion=2.1 
 ````
 
 ## Code of Conduct
