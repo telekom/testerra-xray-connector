@@ -25,6 +25,7 @@ package eu.tsystems.mms.tic.testerra.plugins.xray.config;
 import eu.tsystems.mms.tic.testerra.plugins.xray.mapper.Field;
 import eu.tsystems.mms.tic.testframework.common.PropertyManager;
 import eu.tsystems.mms.tic.testframework.logging.Loggable;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,10 +60,15 @@ public class XrayConfig implements Loggable {
 
         URI uri = null;
         final String baseUriProperty = "xray.rest.service.uri";
-        try {
-            uri = new URI(PropertyManager.getProperty(baseUriProperty));
-        } catch (final URISyntaxException e) {
-            log().error(String.format("Unable to parse property %s", baseUriProperty), e);
+        String baseURI = PropertyManager.getProperty(baseUriProperty);
+        if (StringUtils.isNotBlank(baseURI)) {
+            try {
+                uri = new URI(baseURI);
+            } catch (final URISyntaxException e) {
+                log().error(String.format("Unable to parse property %s", baseUriProperty), e);
+            }
+        } else {
+            log().error(String.format("Xray REST URI property %s is not defined", baseUriProperty));
         }
         restServiceUri = uri;
         webResourceFilterLoggingEnabled = PropertyManager.getBooleanProperty("xray.webresource.filter.logging.enabled", false);
@@ -150,6 +156,9 @@ public class XrayConfig implements Loggable {
     }
 
     public Optional<URI> getIssueUrl(String issueKey) {
+        if (restServiceUri == null) {
+            return Optional.empty();
+        }
         URI url = null;
         try {
             url = new URI(restServiceUri.getScheme(), restServiceUri.getUserInfo(), restServiceUri.getHost(), restServiceUri.getPort(), String.format("/browse/%s", issueKey), null, null);
